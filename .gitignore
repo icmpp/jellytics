@@ -1,0 +1,51 @@
+# Environment & secrets
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+.env.*.local
+
+# Node / Next.js (frontend)
+node_modules/
+.next/
+.turbo/
+out/
+*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Go (backend)
+bin/
+*.exe
+*.test
+coverage.out
+coverage.html
+vendor/
+
+# Database
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+data/
+
+# IDE & editors
+.idea/
+.vscode/
+.cursor/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build & cache
+dist/
+build/
+*.log
+.cache/

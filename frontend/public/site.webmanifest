@@ -1,0 +1,17 @@
+{
+  "name": "Jellytics",
+  "short_name": "Jellytics",
+  "description": "Beautiful analytics for your Jellyfin media server",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "theme_color": "#0a0a0b",
+  "background_color": "#0a0a0b",
+  "display": "standalone",
+  "start_url": "/"
+}

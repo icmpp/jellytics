@@ -1,0 +1,43 @@
+services:
+  jellytics:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_URL=/api/v1
+    container_name: jellytics
+    restart: unless-stopped
+    ports:
+      # Use "127.0.0.1:80:3000" for localhost-only (more secure)
+      - "80:3000"
+    volumes:
+      - default:/app/data
+    environment:
+      - JELLYTICS_SERVER_PORT=8080
+      - JELLYTICS_SERVER_HOST=0.0.0.0
+      - JELLYTICS_DATABASE_PATH=/app/data/jellytics.db
+      - JELLYTICS_LOG_LEVEL=info
+      - JELLYTICS_CORS_ALLOWED_ORIGINS=http://localhost,http://localhost:3000
+      - JELLYTICS_SYNC_INTERVAL_SECONDS=300
+      - JELLYTICS_SYNC_WORKER_POOL_SIZE=1
+      # Optional: lower limits if 429s persist (defaults: 12/min, burst 3)
+      # - JELLYTICS_JELLYFIN_RATE_LIMIT=8
+      # - JELLYTICS_JELLYFIN_IMAGE_RATE_LIMIT=8
+      # Optional: uncomment for persistent sessions across restarts (generate: openssl rand -base64 32)
+      # - JWT_SECRET=
+    healthcheck:
+      test:
+        ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - default
+
+volumes:
+  default:
+    driver: local
+
+networks:
+  default:
+    driver: bridge
