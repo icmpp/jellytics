@@ -66,7 +66,7 @@ Drop this into a new file called `docker-compose.yml`:
 ```yaml
 services:
   jellytics:
-    image: iicmp/jellytics:latest
+    image: icmppp/jellytics:latest
     container_name: jellytics
     restart: unless-stopped
     ports:
