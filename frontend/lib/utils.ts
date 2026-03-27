@@ -32,8 +32,7 @@ export function cn(...inputs: ClassValue[]) {
 
 /** Base URL for API (without trailing path). Used to resolve relative image paths. */
 export function getApiOrigin(): string {
-  const base = API_BASE_URL.replace(/\/api\/v1\/?$/, "");
-  return base || "http://localhost:8080";
+  return API_BASE_URL.replace(/\/api\/v1\/?$/, "");
 }
 
 /** Resolves a poster URL from the API. Handles both full URLs and relative paths like /api/v1/images/... */
