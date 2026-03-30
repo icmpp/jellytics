@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -281,8 +282,27 @@ func newClientError(errType ErrorType, message string, statusCode int, cause err
 	}
 }
 
+// validateServerURL checks that serverURL is a well-formed http/https URL.
+// This prevents SSRF via non-HTTP schemes (e.g. file://, ftp://).
+func validateServerURL(serverURL string) error {
+	u, err := url.Parse(serverURL)
+	if err != nil {
+		return errors.Wrap(err, errors.CodeValidationError, "Invalid server URL")
+	}
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return errors.New(errors.CodeValidationError, "Server URL must use http or https scheme")
+	}
+	if u.Host == "" {
+		return errors.New(errors.CodeValidationError, "Server URL must include a host")
+	}
+	return nil
+}
+
 func ValidateURL(ctx context.Context, serverURL string) error {
 	serverURL = strings.TrimSuffix(serverURL, "/")
+	if err := validateServerURL(serverURL); err != nil {
+		return err
+	}
 	testURL := fmt.Sprintf("%s/System/Info/Public", serverURL)
 
 	client := &http.Client{
@@ -317,6 +337,9 @@ type SystemInfoPublic struct {
 
 func GetServerID(ctx context.Context, serverURL string) (string, error) {
 	serverURL = strings.TrimSuffix(serverURL, "/")
+	if err := validateServerURL(serverURL); err != nil {
+		return "", err
+	}
 	url := fmt.Sprintf("%s/System/Info/Public", serverURL)
 
 	client := &http.Client{Timeout: 5 * time.Second}

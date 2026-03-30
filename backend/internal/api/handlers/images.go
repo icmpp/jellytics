@@ -112,9 +112,23 @@ func (h *ImagesHandler) GetImage(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ImagesHandler) serveLocalImage(w http.ResponseWriter, r *http.Request, filePath string) {
-	file, err := os.Open(filePath)
+	safeBase, err := filepath.Abs(filepath.Join(h.dataPath, "images"))
 	if err != nil {
-		log.Warn().Err(err).Str("path", filePath).Msg("Failed to open local image")
+		http.NotFound(w, r)
+		return
+	}
+	safeBase = safeBase + string(filepath.Separator)
+
+	absPath, err := filepath.Abs(filePath)
+	if err != nil || !strings.HasPrefix(absPath, safeBase) {
+		log.Warn().Str("path", filePath).Msg("Path traversal attempt detected in image request")
+		http.NotFound(w, r)
+		return
+	}
+
+	file, err := os.Open(absPath)
+	if err != nil {
+		log.Warn().Err(err).Str("path", absPath).Msg("Failed to open local image")
 		http.NotFound(w, r)
 		return
 	}
@@ -122,12 +136,12 @@ func (h *ImagesHandler) serveLocalImage(w http.ResponseWriter, r *http.Request, 
 
 	fileInfo, err := file.Stat()
 	if err != nil {
-		log.Warn().Err(err).Str("path", filePath).Msg("Failed to stat local image")
+		log.Warn().Err(err).Str("path", absPath).Msg("Failed to stat local image")
 		http.NotFound(w, r)
 		return
 	}
 
-	ext := strings.ToLower(filepath.Ext(filePath))
+	ext := strings.ToLower(filepath.Ext(absPath))
 	contentType := "image/jpeg"
 	switch ext {
 	case ".png":
@@ -140,7 +154,7 @@ func (h *ImagesHandler) serveLocalImage(w http.ResponseWriter, r *http.Request, 
 
 	w.Header().Set("Content-Type", contentType)
 	w.Header().Set("Cache-Control", "public, max-age=86400")
-	http.ServeContent(w, r, filepath.Base(filePath), fileInfo.ModTime(), file)
+	http.ServeContent(w, r, filepath.Base(absPath), fileInfo.ModTime(), file)
 }
 
 func (h *ImagesHandler) proxyImage(w http.ResponseWriter, r *http.Request, imageURL string, jellyfinToken string) {

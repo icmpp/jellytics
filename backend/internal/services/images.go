@@ -52,6 +52,12 @@ func (s *ImageService) EnsureDirectories() error {
 	return nil
 }
 
+// isValidPathComponent returns true if s is safe to use as a single path segment.
+// It rejects empty strings, path separators, and ".." sequences.
+func isValidPathComponent(s string) bool {
+	return s != "" && !strings.ContainsAny(s, "/\\") && !strings.Contains(s, "..")
+}
+
 func (s *ImageService) GetImagePath(itemType, jellyfinID, imageType string) string {
 	return filepath.Join(s.basePath, itemType, jellyfinID, imageType+".jpg")
 }
@@ -71,6 +77,10 @@ func (s *ImageService) DownloadAndSaveImage(imageURL, itemType, jellyfinID, imag
 }
 
 func (s *ImageService) DownloadAndSaveImageWithContext(ctx context.Context, imageURL, itemType, jellyfinID, imageType string) (string, error) {
+	if !isValidPathComponent(itemType) || !isValidPathComponent(jellyfinID) || !isValidPathComponent(imageType) {
+		return "", fmt.Errorf("invalid path component in image request")
+	}
+
 	itemDir := filepath.Join(s.basePath, itemType, jellyfinID)
 	if err := os.MkdirAll(itemDir, 0755); err != nil {
 		return "", fmt.Errorf("failed to create directory: %w", err)
@@ -150,6 +160,10 @@ func (s *ImageService) DownloadAndSaveImageWithContext(ctx context.Context, imag
 }
 
 func (s *ImageService) DeleteItemImages(itemType, jellyfinID string) error {
+	if !isValidPathComponent(itemType) || !isValidPathComponent(jellyfinID) {
+		return fmt.Errorf("invalid path component in image request")
+	}
+
 	itemDir := filepath.Join(s.basePath, itemType, jellyfinID)
 	if err := os.RemoveAll(itemDir); err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("failed to delete images: %w", err)
@@ -158,6 +172,10 @@ func (s *ImageService) DeleteItemImages(itemType, jellyfinID string) error {
 }
 
 func (s *ImageService) GetLocalImageFile(itemType, jellyfinID, imageType string) (string, error) {
+	if !isValidPathComponent(itemType) || !isValidPathComponent(jellyfinID) || !isValidPathComponent(imageType) {
+		return "", fmt.Errorf("invalid path component in image request")
+	}
+
 	itemDir := filepath.Join(s.basePath, itemType, jellyfinID)
 
 	extensions := []string{".jpg", ".jpeg", ".png", ".webp", ".gif"}
