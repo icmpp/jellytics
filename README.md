@@ -19,7 +19,7 @@
 **Jellytics** connects to your Jellyfin server and gives you a beautiful dashboard for everything you watch.
 Track your habits. Rate what you love. Build watchlists. See what the whole household is watching, all in one place, all self-hosted, all yours.
 
-[🐳 Docker Hub](https://hub.docker.com/r/iicmp/jellytics) · [🐛 Report a Bug](https://github.com/icmpp/jellytics/issues) · [💡 Request a Feature](https://github.com/icmpp/jellytics/issues)
+[🐳 Docker Hub](https://hub.docker.com/r/icmppp/jellytics) · [🐛 Report a Bug](https://github.com/icmpp/jellytics/issues) · [💡 Request a Feature](https://github.com/icmpp/jellytics/issues)
 
 </div>
 
