@@ -30,8 +30,7 @@ export function RatingStars({
     lg: "h-6 w-6",
   };
 
-  const displayRating =
-    isHovering && hoveredRating !== null ? hoveredRating : rating || 0;
+  const displayRating = isHovering && hoveredRating !== null ? hoveredRating : rating || 0;
 
   const handleClick = (value: number) => {
     if (interactive && onRatingChange) {
@@ -79,12 +78,8 @@ export function RatingStars({
                 className={cn(
                   sizeClasses[size],
                   "transition-colors duration-200",
-                  isFilled
-                    ? "fill-purple-400 text-purple-400"
-                    : "fill-white/10 text-white/30",
-                  interactive &&
-                    !isFilled &&
-                    "hover:fill-purple-400/50 hover:text-purple-400/50",
+                  isFilled ? "fill-purple-400 text-purple-400" : "fill-white/10 text-white/30",
+                  interactive && !isFilled && "hover:fill-purple-400/50 hover:text-purple-400/50",
                 )}
               />
             </button>

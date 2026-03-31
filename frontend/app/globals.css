@@ -31,9 +31,7 @@
 
     /* Media card grid: consistent layout across Movies, Shows, Watchlist, Archive */
     --media-card-title-lines: 2;
-    --media-card-title-min-height: calc(
-      1em * var(--media-card-title-lines) * 1.25
-    );
+    --media-card-title-min-height: calc(1em * var(--media-card-title-lines) * 1.25);
   }
 }
 
@@ -119,8 +117,7 @@
 
 * {
   transition-property:
-    color, background-color, border-color, text-decoration-color, fill, stroke,
-    box-shadow;
+    color, background-color, border-color, text-decoration-color, fill, stroke, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
 }
@@ -257,14 +254,6 @@ input[type="date"]::-moz-focus-inner {
 }
 .scrollbar-none::-webkit-scrollbar {
   display: none;
-}
-
-.scroll-snap-x {
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
-.scroll-snap-x > * {
-  scroll-snap-align: start;
 }
 
 /**

@@ -1,17 +1,18 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { useCollections, useCreateCollection, useDeleteCollection, type Collection } from "@/hooks/useCollections";
+import {
+  useCollections,
+  useCreateCollection,
+  useDeleteCollection,
+  type Collection,
+} from "@/hooks/useCollections";
 import { SimpleMediaGridPage } from "@/components/media";
 import { CollectionsGridSkeleton } from "@/components/ui/collections-grid-skeleton";
 import { Button } from "@/components/ui/button";
 import { FolderPlus, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ConfirmPopover } from "@/components/ui/confirm-popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,257 +20,261 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn, MEDIA_CARD_BASE, COLLECTIONS_GRID_CLASS, MEDIA_CARD_TITLE_CLASS } from "@/lib/utils";
 
 export default function CollectionsPage() {
-	const { data: collections = [], isLoading, isError, refetch } = useCollections();
-	const createCollection = useCreateCollection();
-	const deleteCollection = useDeleteCollection();
-	const [createOpen, setCreateOpen] = useState(false);
-	const [newName, setNewName] = useState("");
-	const [newDesc, setNewDesc] = useState("");
-	const createNameInputRef = useRef<HTMLInputElement>(null);
+  const { data: collections = [], isLoading, isError, refetch } = useCollections();
+  const createCollection = useCreateCollection();
+  const deleteCollection = useDeleteCollection();
+  const [createOpen, setCreateOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const createNameInputRef = useRef<HTMLInputElement>(null);
 
-	useEffect(() => {
-		if (createOpen) {
-			createNameInputRef.current?.focus();
-		}
-	}, [createOpen]);
+  useEffect(() => {
+    if (createOpen) {
+      createNameInputRef.current?.focus();
+    }
+  }, [createOpen]);
 
-	const handleCreate = (e?: React.FormEvent) => {
-		e?.preventDefault();
-		if (!newName.trim()) return;
-		createCollection.mutate(
-			{ name: newName.trim(), description: newDesc.trim() || undefined },
-			{
-				onSuccess: () => {
-					setNewName("");
-					setNewDesc("");
-					setCreateOpen(false);
-				},
-			},
-		);
-	};
+  const handleCreate = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!newName.trim()) return;
+    createCollection.mutate(
+      { name: newName.trim(), description: newDesc.trim() || undefined },
+      {
+        onSuccess: () => {
+          setNewName("");
+          setNewDesc("");
+          setCreateOpen(false);
+        },
+      },
+    );
+  };
 
-	const breadcrumbItems = [
-		{ icon: "home" as const, href: "/dashboard" },
-		{ label: "Collections" },
-	];
+  const breadcrumbItems = [{ icon: "home" as const, href: "/dashboard" }, { label: "Collections" }];
 
-	const actions = (
-		<Popover open={createOpen} onOpenChange={setCreateOpen}>
-			<PopoverTrigger asChild>
-				<Button variant="outline" size="sm">
-					<FolderPlus className="h-4 w-4 mr-2" />
-					New collection
-				</Button>
-			</PopoverTrigger>
-			<PopoverContent align="end" className="w-[min(20rem,calc(100vw-2rem))]">
-				<form
-					onSubmit={(e) => {
-						e.preventDefault();
-						handleCreate(e);
-					}}
-					className="space-y-4"
-					role="form"
-					aria-label="Create collection"
-				>
-					<div>
-						<Label htmlFor="collection-name">Name</Label>
-						<Input
-							ref={createNameInputRef}
-							id="collection-name"
-							value={newName}
-							onChange={(e) => setNewName(e.target.value)}
-							placeholder="e.g. Sci-Fi favorites"
-							className="mt-1.5"
-						/>
-					</div>
-					<div>
-						<Label htmlFor="collection-desc">Description (optional)</Label>
-						<Textarea
-							id="collection-desc"
-							value={newDesc}
-							onChange={(e) => setNewDesc(e.target.value)}
-							placeholder="A short description..."
-							rows={2}
-							className="mt-1.5"
-						/>
-					</div>
-					<Button
-						type="submit"
-						disabled={!newName.trim() || createCollection.isPending}
-					>
-						{createCollection.isPending ? (
-							<>
-								<Loader2 className="h-4 w-4 animate-spin mr-2" />
-								Creating…
-							</>
-						) : (
-							"Create"
-						)}
-					</Button>
-				</form>
-			</PopoverContent>
-		</Popover>
-	);
+  const actions = (
+    <Popover open={createOpen} onOpenChange={setCreateOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" size="sm">
+          <FolderPlus className="h-4 w-4 mr-2" />
+          New collection
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="end" className="w-[min(20rem,calc(100vw-2rem))]">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleCreate(e);
+          }}
+          className="space-y-4"
+          role="form"
+          aria-label="Create collection"
+        >
+          <div>
+            <Label htmlFor="collection-name">Name</Label>
+            <Input
+              ref={createNameInputRef}
+              id="collection-name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="e.g. Sci-Fi favorites"
+              className="mt-1.5"
+            />
+          </div>
+          <div>
+            <Label htmlFor="collection-desc">Description (optional)</Label>
+            <Textarea
+              id="collection-desc"
+              value={newDesc}
+              onChange={(e) => setNewDesc(e.target.value)}
+              placeholder="A short description..."
+              rows={2}
+              className="mt-1.5"
+            />
+          </div>
+          <Button type="submit" disabled={!newName.trim() || createCollection.isPending}>
+            {createCollection.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Creating…
+              </>
+            ) : (
+              "Create"
+            )}
+          </Button>
+        </form>
+      </PopoverContent>
+    </Popover>
+  );
 
-	return (
-		<SimpleMediaGridPage<Collection>
-			breadcrumb={breadcrumbItems}
-			title="Collections"
-			description="Organize your movies and shows into custom collections"
-			icon={<FolderPlus className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
-			actions={actions}
-			isLoading={isLoading}
-			isError={isError}
-			skeletonContent={<CollectionsGridSkeleton count={6} />}
-			errorContent={
-				<div className="flex flex-col items-center py-24 text-center">
-					<FolderPlus className="h-16 w-16 text-white/20 mx-auto mb-4" />
-					<p className="text-base font-medium text-white/60 mb-1.5">
-						Failed to load collections
-					</p>
-					<p className="text-sm text-white/40 mb-4">
-						Something went wrong. Please try again.
-					</p>
-					<Button variant="outline" onClick={() => refetch()}>
-						Retry
-					</Button>
-				</div>
-			}
-			isEmpty={collections.length === 0}
-			emptyContent={
-				<div className="flex flex-col items-center py-24 gap-6">
-					<FolderPlus className="h-12 w-12 text-white/20" />
-					<div className="text-center max-w-sm w-full">
-						<p className="text-white/60 text-lg mb-2 font-medium">
-							No collections yet
-						</p>
-						<p className="text-sm text-white/40 mb-6 mx-auto">
-							Create a collection to group your movies and shows. Add items from
-							any movie or show detail page.
-						</p>
-						<form
-							onSubmit={(e) => {
-								e.preventDefault();
-								handleCreate(e);
-							}}
-							className="flex flex-col gap-4 p-6 rounded-2xl bg-white/[0.03] border border-white/[0.08] text-left"
-							aria-label="Create your first collection"
-						>
-							<div>
-								<Label htmlFor="empty-collection-name">Name</Label>
-								<Input
-									id="empty-collection-name"
-									value={newName}
-									onChange={(e) => setNewName(e.target.value)}
-									placeholder="e.g. Sci-Fi favorites"
-									className="mt-1.5"
-								/>
-							</div>
-							<div>
-								<Label htmlFor="empty-collection-desc">Description (optional)</Label>
-								<Textarea
-									id="empty-collection-desc"
-									value={newDesc}
-									onChange={(e) => setNewDesc(e.target.value)}
-									placeholder="A short description..."
-									rows={2}
-									className="mt-1.5"
-								/>
-							</div>
-							<Button
-								type="submit"
-								disabled={!newName.trim() || createCollection.isPending}
-								className="w-full"
-							>
-								{createCollection.isPending ? (
-									<>
-										<Loader2 className="h-4 w-4 animate-spin mr-2" />
-										Creating…
-									</>
-								) : (
-									<>
-										<FolderPlus className="h-4 w-4 mr-2" />
-										Create your first collection
-									</>
-								)}
-							</Button>
-						</form>
-					</div>
-				</div>
-			}
-			countLabel={`${collections.length} ${collections.length === 1 ? "collection" : "collections"}`}
-			items={collections}
-			renderCard={(c) => (
-				<CollectionCard
-					collection={c}
-					onDelete={() => deleteCollection.mutate(c.id)}
-					isDeleting={deleteCollection.isPending && deleteCollection.variables === c.id}
-				/>
-			)}
-			getItemKey={(c) => String(c.id)}
-			gridClass={COLLECTIONS_GRID_CLASS}
-		/>
-	);
+  return (
+    <SimpleMediaGridPage<Collection>
+      breadcrumb={breadcrumbItems}
+      title="Collections"
+      description="Organize your movies and shows into custom collections"
+      icon={<FolderPlus className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
+      actions={actions}
+      isLoading={isLoading}
+      isError={isError}
+      skeletonContent={<CollectionsGridSkeleton count={6} />}
+      errorContent={
+        <div className="flex flex-col items-center py-24 text-center">
+          <FolderPlus className="h-16 w-16 text-white/20 mx-auto mb-4" />
+          <p className="text-base font-medium text-white/60 mb-1.5">Failed to load collections</p>
+          <p className="text-sm text-white/40 mb-4">Something went wrong. Please try again.</p>
+          <Button variant="outline" onClick={() => refetch()}>
+            Retry
+          </Button>
+        </div>
+      }
+      isEmpty={collections.length === 0}
+      emptyContent={
+        <div className="flex flex-col items-center py-24 gap-6">
+          <FolderPlus className="h-12 w-12 text-white/20" />
+          <div className="text-center max-w-sm w-full">
+            <p className="text-white/60 text-lg mb-2 font-medium">No collections yet</p>
+            <p className="text-sm text-white/40 mb-6 mx-auto">
+              Create a collection to group your movies and shows. Add items from any movie or show
+              detail page.
+            </p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleCreate(e);
+              }}
+              className="flex flex-col gap-4 p-6 rounded-2xl bg-white/3 border border-white/8 text-left"
+              aria-label="Create your first collection"
+            >
+              <div>
+                <Label htmlFor="empty-collection-name">Name</Label>
+                <Input
+                  id="empty-collection-name"
+                  value={newName}
+                  onChange={(e) => setNewName(e.target.value)}
+                  placeholder="e.g. Sci-Fi favorites"
+                  className="mt-1.5"
+                />
+              </div>
+              <div>
+                <Label htmlFor="empty-collection-desc">Description (optional)</Label>
+                <Textarea
+                  id="empty-collection-desc"
+                  value={newDesc}
+                  onChange={(e) => setNewDesc(e.target.value)}
+                  placeholder="A short description..."
+                  rows={2}
+                  className="mt-1.5"
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={!newName.trim() || createCollection.isPending}
+                className="w-full"
+              >
+                {createCollection.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Creating…
+                  </>
+                ) : (
+                  <>
+                    <FolderPlus className="h-4 w-4 mr-2" />
+                    Create your first collection
+                  </>
+                )}
+              </Button>
+            </form>
+          </div>
+        </div>
+      }
+      countLabel={`${collections.length} ${collections.length === 1 ? "collection" : "collections"}`}
+      items={collections}
+      renderCard={(c) => (
+        <CollectionCard
+          collection={c}
+          onDelete={() => deleteCollection.mutate(c.id)}
+          isDeleting={deleteCollection.isPending && deleteCollection.variables === c.id}
+        />
+      )}
+      getItemKey={(c) => String(c.id)}
+      gridClass={COLLECTIONS_GRID_CLASS}
+    />
+  );
 }
 
 function CollectionCard({
-	collection,
-	onDelete,
-	isDeleting,
+  collection,
+  onDelete,
+  isDeleting,
 }: {
-	collection: { id: number; name: string; description?: string; itemCount: number };
-	onDelete: () => void;
-	isDeleting: boolean;
+  collection: {
+    id: number;
+    name: string;
+    description?: string;
+    itemCount: number;
+  };
+  onDelete: () => void;
+  isDeleting: boolean;
 }) {
-	const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-	return (
-		<Link
-			href={`/collections/${collection.id}`}
-			className={cn(MEDIA_CARD_BASE, "block group")}
-			aria-label={`Open collection: ${collection.name}`}
-		>
-			<div className="p-4 flex items-start justify-between gap-2">
-				<div className="min-w-0 flex-1">
-					<h3 className={cn(MEDIA_CARD_TITLE_CLASS, "group-hover:text-purple-400 transition-colors")}>{collection.name}</h3>
-					<p className="text-sm text-white/40 mt-0.5">
-						{collection.itemCount} {collection.itemCount === 1 ? "item" : "items"}
-					</p>
-					{collection.description && (
-						<p className="text-sm text-white/50 mt-1 line-clamp-2">
-							{collection.description}
-						</p>
-					)}
-				</div>
-				<div onClick={(e) => e.stopPropagation()}>
-					<ConfirmPopover
-						open={confirmOpen}
-						onOpenChange={setConfirmOpen}
-						title="Delete collection"
-						description={`Are you sure you want to delete "${collection.name}"? Items will be removed from the collection.`}
-						confirmLabel="Delete"
-						confirmIcon={Trash2}
-						variant="destructive"
-						isLoading={isDeleting}
-						onConfirm={() => {
-							onDelete();
-							setConfirmOpen(false);
-						}}
-						align="end"
-						side="left"
-					>
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon-sm"
-							className="p-2 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10"
-							aria-label="Delete collection"
-						>
-							<Trash2 className="h-4 w-4" />
-						</Button>
-					</ConfirmPopover>
-				</div>
-			</div>
-		</Link>
-	);
+  return (
+    <Link
+      href={`/collections/${collection.id}`}
+      className={cn(MEDIA_CARD_BASE, "block group")}
+      aria-label={`Open collection: ${collection.name}`}
+    >
+      <div className="p-4 flex items-start justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <h3
+            className={cn(MEDIA_CARD_TITLE_CLASS, "group-hover:text-purple-400 transition-colors")}
+          >
+            {collection.name}
+          </h3>
+          <p className="text-sm text-white/40 mt-0.5">
+            {collection.itemCount} {collection.itemCount === 1 ? "item" : "items"}
+          </p>
+          {collection.description && (
+            <p className="text-sm text-white/50 mt-1 line-clamp-2">{collection.description}</p>
+          )}
+        </div>
+        <div
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+        >
+          <ConfirmPopover
+            open={confirmOpen}
+            onOpenChange={setConfirmOpen}
+            title="Delete collection?"
+            description={
+              <>
+                <span className="text-white/70">&quot;{collection.name}&quot;</span> and all its
+                items will be permanently removed.
+              </>
+            }
+            confirmLabel="Delete"
+            cancelLabel="Cancel"
+            confirmIcon={Trash2}
+            variant="destructive"
+            isLoading={isDeleting}
+            onConfirm={() => {
+              onDelete();
+              setConfirmOpen(false);
+            }}
+          >
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className="p-2 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10"
+              aria-label="Delete collection"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </ConfirmPopover>
+        </div>
+      </div>
+    </Link>
+  );
 }

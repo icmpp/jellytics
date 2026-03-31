@@ -58,16 +58,11 @@ export function MediaEmptyState({
             ? `No results for "${filters.searchFilter}"`
             : `No ${label} match your filters`}
         </p>
-        <p className="text-sm text-white/30 mb-8">
-          Try adjusting or clearing your filters
-        </p>
+        <p className="text-sm text-white/30 mb-8">Try adjusting or clearing your filters</p>
 
         <div className="flex flex-wrap gap-2 justify-center mb-8">
           {filters.statusFilter && (
-            <FilterPill
-              label={filters.statusFilter}
-              onRemove={() => filters.setStatusFilter("")}
-            />
+            <FilterPill label={filters.statusFilter} onRemove={() => filters.setStatusFilter("")} />
           )}
           {filters.searchFilter && (
             <FilterPill
@@ -76,10 +71,7 @@ export function MediaEmptyState({
             />
           )}
           {filters.genreFilter && (
-            <FilterPill
-              label={filters.genreFilter}
-              onRemove={() => filters.setGenreFilter("")}
-            />
+            <FilterPill label={filters.genreFilter} onRemove={() => filters.setGenreFilter("")} />
           )}
           {(filters.yearFrom || filters.yearTo) && (
             <FilterPill
@@ -107,11 +99,7 @@ export function MediaEmptyState({
           )}
         </div>
 
-        <Button
-          variant="outline"
-          onClick={() => clearAllFilters(filters)}
-          className="gap-2"
-        >
+        <Button variant="outline" onClick={() => clearAllFilters(filters)} className="gap-2">
           <X className="h-4 w-4" />
           Clear filters
         </Button>
@@ -123,9 +111,7 @@ export function MediaEmptyState({
     return (
       <div className="flex flex-col items-center py-24 px-4 text-center">
         <Icon className="h-12 w-12 text-white/15 mb-5" />
-        <p className="text-base font-medium text-white/60 mb-1.5">
-          No {label} yet
-        </p>
+        <p className="text-base font-medium text-white/60 mb-1.5">No {label} yet</p>
         <p className="text-sm text-white/30 mb-8">
           {isSyncing
             ? "Syncing your library - check back in a moment."
@@ -146,10 +132,7 @@ export function MediaEmptyState({
               </Button>
             )}
             <Link href="/settings">
-              <Button
-                variant="ghost"
-                className="text-white/40 hover:text-white"
-              >
+              <Button variant="ghost" className="text-white/40 hover:text-white">
                 Settings
               </Button>
             </Link>
@@ -162,12 +145,8 @@ export function MediaEmptyState({
   return (
     <div className="flex flex-col items-center py-24 px-4 text-center">
       <Icon className="h-12 w-12 text-white/15 mb-5" />
-      <p className="text-base font-medium text-white/60 mb-1.5">
-        No {label} found
-      </p>
-      <p className="text-sm text-white/30 mb-8">
-        Try adjusting your search or filters
-      </p>
+      <p className="text-base font-medium text-white/60 mb-1.5">No {label} found</p>
+      <p className="text-sm text-white/30 mb-8">Try adjusting your search or filters</p>
 
       {filters.statusFilter ? (
         <Button variant="outline" onClick={() => filters.setStatusFilter("")}>
@@ -175,15 +154,8 @@ export function MediaEmptyState({
         </Button>
       ) : (
         <Link href={isMovies ? "/shows" : "/movies"}>
-          <Button
-            variant="ghost"
-            className="gap-2 text-white/40 hover:text-white"
-          >
-            {isMovies ? (
-              <Tv className="h-4 w-4" />
-            ) : (
-              <Film className="h-4 w-4" />
-            )}
+          <Button variant="ghost" className="gap-2 text-white/40 hover:text-white">
+            {isMovies ? <Tv className="h-4 w-4" /> : <Film className="h-4 w-4" />}
             Browse {isMovies ? "shows" : "movies"}
           </Button>
         </Link>
@@ -192,13 +164,7 @@ export function MediaEmptyState({
   );
 }
 
-function FilterPill({
-  label,
-  onRemove,
-}: {
-  label: string;
-  onRemove: () => void;
-}) {
+function FilterPill({ label, onRemove }: { label: string; onRemove: () => void }) {
   return (
     <button
       onClick={onRemove}

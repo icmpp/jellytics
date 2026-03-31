@@ -10,13 +10,7 @@ interface RemoveFromWatchlistButtonProps {
   watchlistItemId?: number;
   itemType?: "show" | "movie";
   itemId?: number;
-  variant?:
-    | "default"
-    | "outline"
-    | "ghost"
-    | "destructive"
-    | "secondary"
-    | "link";
+  variant?: "default" | "outline" | "ghost" | "destructive" | "secondary" | "link";
   size?: "default" | "sm" | "lg" | "icon" | "icon-sm" | "icon-lg";
   className?: string;
   showConfirmation?: boolean;
@@ -68,9 +62,7 @@ export function RemoveFromWatchlistButton({
     }
 
     try {
-      const params = watchlistItemId
-        ? watchlistItemId
-        : { itemType: itemType!, itemId: itemId! };
+      const params = watchlistItemId ? watchlistItemId : { itemType: itemType!, itemId: itemId! };
 
       await removeFromWatchlist.mutateAsync(params);
       setOpen(false);
@@ -95,8 +87,8 @@ export function RemoveFromWatchlistButton({
         description={
           itemTitle ? (
             <>
-              <span className="text-white/60">&quot;{itemTitle}&quot;</span> will
-              be removed.
+              <span className="text-white/70">&quot;{itemTitle}&quot;</span> will be removed from
+              your watchlist.
             </>
           ) : (
             "This item will be removed from your watchlist."
@@ -116,11 +108,7 @@ export function RemoveFromWatchlistButton({
           className={className}
           aria-label="Remove from watchlist"
         >
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            buttonContent
-          )}
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : buttonContent}
         </Button>
       </ConfirmPopover>
     );

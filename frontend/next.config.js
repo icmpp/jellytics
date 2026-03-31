@@ -1,42 +1,42 @@
 const nextConfig = {
-  output: 'standalone',
+  output: "standalone",
   trailingSlash: false,
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**',
+        protocol: "https",
+        hostname: "**",
       },
       {
-        protocol: 'http',
-        hostname: '**',
+        protocol: "http",
+        hostname: "**",
       },
     ],
     dangerouslyAllowSVG: true,
-    contentDispositionType: 'attachment',
+    contentDispositionType: "attachment",
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     unoptimized: true,
   },
   experimental: {
-    optimizePackageImports: ['lucide-react', 'recharts'],
+    optimizePackageImports: ["lucide-react", "recharts"],
   },
   async rewrites() {
-    const backendUrl = process.env.BACKEND_URL || 'http://backend:8080';
+    const backendUrl = process.env.BACKEND_URL || "http://backend:8080";
     return [
       {
-        source: '/api/:path*',
+        source: "/api/:path*",
         destination: `${backendUrl}/api/:path*`,
       },
       {
-        source: '/health',
+        source: "/health",
         destination: `${backendUrl}/health`,
       },
       {
-        source: '/metrics',
+        source: "/metrics",
         destination: `${backendUrl}/metrics`,
       },
     ];
   },
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

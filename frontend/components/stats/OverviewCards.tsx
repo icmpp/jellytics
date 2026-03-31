@@ -3,14 +3,7 @@
 import { useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useStatsOverview, useTrends } from "@/hooks/useStats";
-import {
-  Clock,
-  CheckCircle2,
-  PlayCircle,
-  Clock3,
-  TrendingUp,
-  TrendingDown,
-} from "lucide-react";
+import { Clock, CheckCircle2, PlayCircle, Clock3, TrendingUp, TrendingDown } from "lucide-react";
 import { formatRuntime } from "@/lib/utils";
 
 interface Delta {
@@ -28,18 +21,14 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon, iconColor, delta }: StatCardProps) {
   return (
-    <Card className="hover:bg-white/[0.06] hover:border-white/[0.12] transition-all h-full flex flex-col py-4 sm:py-5 gap-0">
+    <Card className="hover:bg-white/6 hover:border-white/12 transition-all h-full flex flex-col py-4 sm:py-5 gap-0">
       <CardContent className="p-3 sm:p-5 flex-1 flex justify-start items-center min-h-0">
         <div className="grid grid-cols-[auto_1fr] items-center gap-3 sm:gap-4 text-left w-full">
-          <div
-            className={`p-2.5 sm:p-3 rounded-xl flex items-center justify-center ${iconColor}`}
-          >
+          <div className={`p-2.5 sm:p-3 rounded-xl flex items-center justify-center ${iconColor}`}>
             {icon}
           </div>
           <div className="flex-1 min-w-0 flex flex-col text-left mt-2.5">
-            <p className="text-xs sm:text-sm font-medium text-white/50 mb-1">
-              {title}
-            </p>
+            <p className="text-xs sm:text-sm font-medium text-white/50 mb-1">{title}</p>
             <p className="text-lg sm:text-2xl font-bold text-white tabular-nums leading-tight">
               {value}
             </p>
@@ -84,11 +73,9 @@ function computeDeltas(trends: TrendItem[] | undefined): {
   }
 
   const sorted = [...trends].sort(
-    (a, b) =>
-      new Date(a.snapshot_date).getTime() - new Date(b.snapshot_date).getTime(),
+    (a, b) => new Date(a.snapshot_date).getTime() - new Date(b.snapshot_date).getTime(),
   );
 
-  const half = Math.floor(sorted.length / 2);
   const recent = sorted.slice(-7);
   const prior = sorted.slice(-14, -7);
 
@@ -98,8 +85,7 @@ function computeDeltas(trends: TrendItem[] | undefined): {
 
   const sumWt = (arr: TrendItem[]) =>
     arr.reduce((s, d) => s + (d.delta_watch_time_minutes ?? 0), 0);
-  const sumEp = (arr: TrendItem[]) =>
-    arr.reduce((s, d) => s + (d.delta_episodes_watched ?? 0), 0);
+  const sumEp = (arr: TrendItem[]) => arr.reduce((s, d) => s + (d.delta_episodes_watched ?? 0), 0);
 
   const recentWt = sumWt(recent);
   const priorWt = sumWt(prior);
@@ -118,9 +104,7 @@ function computeDeltas(trends: TrendItem[] | undefined): {
           }
         : undefined,
     episodesDelta:
-      priorEp > 0
-        ? { value: Math.abs(epDiff).toString(), positive: epDiff >= 0 }
-        : undefined,
+      priorEp > 0 ? { value: Math.abs(epDiff).toString(), positive: epDiff >= 0 } : undefined,
   };
 }
 
@@ -140,10 +124,10 @@ export function OverviewCards() {
           <Card key={i}>
             <CardContent className="p-3 sm:p-6">
               <div className="flex items-center gap-2 sm:gap-4">
-                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-white/[0.08] animate-pulse shrink-0" />
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl bg-white/8 animate-pulse shrink-0" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 w-24 bg-white/[0.08] rounded-xl animate-pulse" />
-                  <div className="h-6 w-16 bg-white/[0.08] rounded-xl animate-pulse" />
+                  <div className="h-4 w-24 bg-white/8 rounded-xl animate-pulse" />
+                  <div className="h-6 w-16 bg-white/8 rounded-xl animate-pulse" />
                 </div>
               </div>
             </CardContent>
@@ -160,10 +144,7 @@ export function OverviewCards() {
       {isFetching && !isLoading && (
         <div className="absolute -top-2 right-0 z-10">
           <div className="h-1 w-20 bg-purple-500/20 rounded-full overflow-hidden">
-            <div
-              className="h-full bg-purple-500 animate-pulse"
-              style={{ width: "60%" }}
-            />
+            <div className="h-full bg-purple-500 animate-pulse" style={{ width: "60%" }} />
           </div>
         </div>
       )}
@@ -177,9 +158,7 @@ export function OverviewCards() {
       <StatCard
         title="Shows Watched"
         value={data.shows_watched}
-        icon={
-          <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />
-        }
+        icon={<CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />}
         iconColor="bg-emerald-500/20 border border-emerald-500/30"
       />
       <StatCard

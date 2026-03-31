@@ -38,11 +38,7 @@ import {
 import { useRating, useSetRating, useDeleteRating } from "@/hooks/useRatings";
 import { useTagsForItem, useRemoveTagFromItem } from "@/hooks/useTags";
 import { RatingStars } from "@/components/reviews";
-import {
-  useReview,
-  useCreateOrUpdateReview,
-  useDeleteReview,
-} from "@/hooks/useReviews";
+import { useReview, useCreateOrUpdateReview, useDeleteReview } from "@/hooks/useReviews";
 import { ReviewEditor } from "@/components/reviews";
 import { useSettings } from "@/hooks/useSettings";
 
@@ -62,10 +58,7 @@ export default function MovieDetailPage() {
   const createOrUpdateReview = useCreateOrUpdateReview();
   const deleteReview = useDeleteReview();
 
-  const genres = useMemo(
-    () => (movie ? parseGenres(movie.genre) : []),
-    [movie?.genre],
-  );
+  const genres = useMemo(() => (movie ? parseGenres(movie.genre) : []), [movie]);
   const breadcrumbItems = useMemo(
     () => [
       { icon: "home" as const, href: "/dashboard" },
@@ -81,7 +74,7 @@ export default function MovieDetailPage() {
         <div className="space-y-6">
           <Skeleton className="h-8 w-32" />
           <div className="grid gap-8 lg:grid-cols-[300px_1fr]">
-            <Skeleton className="aspect-[2/3] w-full" />
+            <Skeleton className="aspect-2/3 w-full" />
             <div className="space-y-4">
               <Skeleton className="h-10 w-3/4" />
               <Skeleton className="h-6 w-1/2" />
@@ -100,7 +93,7 @@ export default function MovieDetailPage() {
           <Film className="h-16 w-16 text-white/20 mx-auto mb-4" />
           <p className="text-red-400 text-lg mb-2">Movie not found</p>
           <p className="text-white/40 text-sm mb-6">
-            The movie you're looking for doesn't exist.
+            The movie you&apos;re looking for doesn&apos;t exist.
           </p>
           <Link href="/movies">
             <Button variant="outline">
@@ -132,7 +125,7 @@ export default function MovieDetailPage() {
       )}
 
       <div className="grid gap-6 md:gap-8 lg:grid-cols-[280px_1fr] min-w-0 w-full">
-        <div className="flex-shrink-0 w-full max-w-[180px] sm:max-w-[200px] mx-auto lg:max-w-none lg:mx-0">
+        <div className="shrink-0 w-full max-w-[180px] sm:max-w-[200px] mx-auto lg:max-w-none lg:mx-0">
           <div className={MEDIA_POSTER_CONTAINER}>
             {movie.jellyfin_id && !posterError ? (
               <Image
@@ -157,7 +150,7 @@ export default function MovieDetailPage() {
           <div className="min-w-0">
             <div className="flex flex-wrap items-start gap-3 sm:gap-4 mb-4">
               <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 break-words">
+                <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 wrap-break-word">
                   {movie.title}
                 </h1>
                 <div className="flex flex-wrap items-center gap-3 text-white/50">
@@ -185,18 +178,26 @@ export default function MovieDetailPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
                 {settings?.jellyfin_server_url && movie.jellyfin_id && (
                   <a
-                    href={buildJellyfinItemUrl(settings.jellyfin_server_url, movie.jellyfin_id, settings.jellyfin_server_id, "movie")}
+                    href={buildJellyfinItemUrl(
+                      settings.jellyfin_server_url,
+                      movie.jellyfin_id,
+                      settings.jellyfin_server_id,
+                      "movie",
+                    )}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Button variant="outline" size="sm">
-                      <PlayCircle className="h-3 w-3 mr-2" />
-                      {movie.completion_percentage > 0
-                        ? "Resume in Jellyfin"
-                        : "Play in Jellyfin"}
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      aria-label={
+                        movie.completion_percentage > 0 ? "Resume in Jellyfin" : "Play in Jellyfin"
+                      }
+                    >
+                      <PlayCircle className="size-6" />
                     </Button>
                   </a>
                 )}
@@ -206,26 +207,30 @@ export default function MovieDetailPage() {
                       itemType="movie"
                       itemId={movieId}
                       variant="outline"
-                      size="sm"
+                      size="icon"
+                      iconOnly
                     />
                     <AddToCollectionButton
                       itemType="movie"
                       itemId={movieId}
                       variant="outline"
-                      size="sm"
+                      size="icon"
+                      iconOnly
                     />
                     <AddTagButton
                       itemType="movie"
                       itemId={movieId}
                       variant="outline"
-                      size="sm"
+                      size="icon"
+                      iconOnly
                     />
                     <RemoveFromLibraryButton
                       itemType="movie"
                       itemId={movieId}
                       itemTitle={movie.title}
                       variant="outline"
-                      size="sm"
+                      size="icon"
+                      iconOnly
                       className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/30"
                     />
                   </>
@@ -261,15 +266,11 @@ export default function MovieDetailPage() {
             )}
 
             {movie.overview && (
-              <p className="text-white/60 mb-6 leading-relaxed break-words">
-                {movie.overview}
-              </p>
+              <p className="text-white/60 mb-6 leading-relaxed wrap-break-word">{movie.overview}</p>
             )}
 
             <div className="mb-6">
-              <label className="text-sm font-medium text-white/40 mb-3 block">
-                Your Rating
-              </label>
+              <label className="text-sm font-medium text-white/40 mb-3 block">Your Rating</label>
               <RatingStars
                 rating={rating?.rating || null}
                 onRatingChange={(newRating) => {
@@ -289,7 +290,7 @@ export default function MovieDetailPage() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
-              <Card className="hover:bg-white/[0.05] transition-colors">
+              <Card className="hover:bg-white/5 transition-colors">
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="p-2 rounded-lg bg-purple-500/20 border border-purple-500/30 shrink-0">
@@ -304,7 +305,7 @@ export default function MovieDetailPage() {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="hover:bg-white/[0.05] transition-colors">
+              <Card className="hover:bg-white/5 transition-colors">
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-500/30 shrink-0">
@@ -319,7 +320,7 @@ export default function MovieDetailPage() {
                   </div>
                 </CardContent>
               </Card>
-              <Card className="hover:bg-white/[0.05] transition-colors">
+              <Card className="hover:bg-white/5 transition-colors">
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-center gap-2 sm:gap-3">
                     <div className="p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 shrink-0">
@@ -335,7 +336,7 @@ export default function MovieDetailPage() {
                 </CardContent>
               </Card>
               {movie.first_watched_at && (
-                <Card className="hover:bg-white/[0.05] transition-colors">
+                <Card className="hover:bg-white/5 transition-colors">
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex items-center gap-2 sm:gap-3">
                       <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-500/30 shrink-0">
@@ -343,14 +344,13 @@ export default function MovieDetailPage() {
                       </div>
                       <div className="min-w-0">
                         <div className="text-sm font-bold text-white">
-                          {new Date(movie.first_watched_at).toLocaleDateString(
-                            "en-US",
-                            { month: "short", day: "numeric", year: "numeric" },
-                          )}
+                          {new Date(movie.first_watched_at).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
                         </div>
-                        <div className="text-xs text-white/40">
-                          First Watched
-                        </div>
+                        <div className="text-xs text-white/40">First Watched</div>
                       </div>
                     </div>
                   </CardContent>
@@ -358,43 +358,38 @@ export default function MovieDetailPage() {
               )}
             </div>
 
-            {movie.completion_percentage > 0 &&
-              movie.completion_percentage < 100 && (
-                <div className="mb-6 p-3 sm:p-4 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-white/50">Watch Progress</span>
-                    <span className="font-medium text-white">
-                      {Math.round(movie.completion_percentage)}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-purple-500 to-purple-400 transition-all"
-                      style={{
-                        width: `${Math.min(100, movie.completion_percentage)}%`,
-                      }}
-                    />
-                  </div>
+            {movie.completion_percentage > 0 && movie.completion_percentage < 100 && (
+              <div className="mb-6 p-3 sm:p-4 rounded-xl bg-white/3 border border-white/8">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-white/50">Watch Progress</span>
+                  <span className="font-medium text-white">
+                    {Math.round(movie.completion_percentage)}%
+                  </span>
                 </div>
-              )}
+                <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                  <div
+                    className="h-full bg-linear-to-r from-purple-500 to-purple-400 transition-all"
+                    style={{
+                      width: `${Math.min(100, movie.completion_percentage)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
 
             {(movie.first_watched_at || movie.last_watched_at) && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-6 text-sm">
                 {movie.first_watched_at && (
-                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                    <span className="text-white/40 block mb-1">
-                      First Watched
-                    </span>
+                  <div className="p-3 rounded-xl bg-white/3 border border-white/8">
+                    <span className="text-white/40 block mb-1">First Watched</span>
                     <span className="text-white font-medium">
                       {new Date(movie.first_watched_at).toLocaleDateString()}
                     </span>
                   </div>
                 )}
                 {movie.last_watched_at && (
-                  <div className="p-3 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                    <span className="text-white/40 block mb-1">
-                      Last Watched
-                    </span>
+                  <div className="p-3 rounded-xl bg-white/3 border border-white/8">
+                    <span className="text-white/40 block mb-1">Last Watched</span>
                     <span className="text-white font-medium">
                       {new Date(movie.last_watched_at).toLocaleDateString()}
                     </span>
@@ -422,29 +417,29 @@ export default function MovieDetailPage() {
 
             <div className="flex flex-wrap gap-3 mt-6">
               {movie.imdb_id && (
-                  <a
-                    href={`https://www.imdb.com/title/${movie.imdb_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="outline" size="sm">
-                      IMDB
-                      <ExternalLink className="h-3 w-3 ml-2" />
-                    </Button>
-                  </a>
-                )}
-                {movie.tmdb_id && (
-                  <a
-                    href={`https://www.themoviedb.org/movie/${movie.tmdb_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button variant="outline" size="sm">
-                      TMDB
-                      <ExternalLink className="h-3 w-3 ml-2" />
-                    </Button>
-                  </a>
-                )}
+                <a
+                  href={`https://www.imdb.com/title/${movie.imdb_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline" size="sm">
+                    IMDB
+                    <ExternalLink className="h-3 w-3 ml-2" />
+                  </Button>
+                </a>
+              )}
+              {movie.tmdb_id && (
+                <a
+                  href={`https://www.themoviedb.org/movie/${movie.tmdb_id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button variant="outline" size="sm">
+                    TMDB
+                    <ExternalLink className="h-3 w-3 ml-2" />
+                  </Button>
+                </a>
+              )}
             </div>
           </div>
         </div>

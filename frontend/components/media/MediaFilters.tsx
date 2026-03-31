@@ -9,15 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Search,
-  X,
-  SlidersHorizontal,
-  Calendar,
-  Film,
-  CalendarDays,
-  Tag,
-} from "lucide-react";
+import { Search, X, SlidersHorizontal, Calendar, Film, CalendarDays, Tag } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useTags } from "@/hooks/useTags";
 import { useGenres } from "@/hooks/useGenres";
@@ -70,10 +62,7 @@ export function MediaFilters({
   const { data: tags = [] } = useTags();
   const years = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    return Array.from(
-      { length: currentYear - 1950 + 1 },
-      (_, i) => currentYear - i,
-    );
+    return Array.from({ length: currentYear - 1950 + 1 }, (_, i) => currentYear - i);
   }, []);
 
   const label = mediaType === "movies" ? "Movies" : "Shows";
@@ -117,9 +106,7 @@ export function MediaFilters({
 
         <Select
           value={status || "all"}
-          onValueChange={(value) =>
-            onStatusChange(value === "all" ? "" : value)
-          }
+          onValueChange={(value) => onStatusChange(value === "all" ? "" : value)}
         >
           <SelectTrigger className="w-full sm:w-[160px] h-11">
             <SelectValue placeholder={`All ${label}`} />
@@ -181,9 +168,7 @@ export function MediaFilters({
                 </label>
                 <Select
                   value={genre || "all"}
-                  onValueChange={(value) =>
-                    onGenreChange(value === "all" ? "" : value)
-                  }
+                  onValueChange={(value) => onGenreChange(value === "all" ? "" : value)}
                 >
                   <SelectTrigger className="w-full h-11">
                     <SelectValue placeholder="All Genres" />
@@ -208,9 +193,7 @@ export function MediaFilters({
                   <Select
                     value={yearFrom?.toString() || "all"}
                     onValueChange={(value) =>
-                      onYearFromChange(
-                        value === "all" ? undefined : parseInt(value),
-                      )
+                      onYearFromChange(value === "all" ? undefined : parseInt(value))
                     }
                   >
                     <SelectTrigger className="flex-1 h-11">
@@ -229,9 +212,7 @@ export function MediaFilters({
                   <Select
                     value={yearTo?.toString() || "all"}
                     onValueChange={(value) =>
-                      onYearToChange(
-                        value === "all" ? undefined : parseInt(value),
-                      )
+                      onYearToChange(value === "all" ? undefined : parseInt(value))
                     }
                   >
                     <SelectTrigger className="flex-1 h-11">
@@ -299,11 +280,7 @@ export function MediaFilters({
                               ? "border-purple-500/50 bg-purple-500/20 text-purple-300"
                               : "border-white/20 bg-white/[0.04] text-white/60 hover:bg-white/[0.08]"
                           }`}
-                          style={
-                            isSelected
-                              ? {}
-                              : { borderColor: `${t.color}40`, color: t.color }
-                          }
+                          style={isSelected ? {} : { borderColor: `${t.color}40`, color: t.color }}
                         >
                           {t.name}
                         </button>

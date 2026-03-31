@@ -47,15 +47,19 @@ function AppLayoutContent({ children }: AppLayoutProps) {
       <main
         id="main-content"
         className={cn(
-          "min-h-[100dvh] min-h-screen transition-all duration-300 flex flex-col overflow-x-hidden",
-          isMobile ? "pt-[calc(3.5rem+env(safe-area-inset-top,0px)+1rem)] px-4 pb-[max(1rem,env(safe-area-inset-bottom))]" : "px-0 py-0",
+          "min-h-dvh transition-all duration-300 flex flex-col overflow-x-hidden",
+          isMobile
+            ? "pt-[calc(3.5rem+env(safe-area-inset-top,0px)+1rem)] px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
+            : "px-0 py-0",
           !isMobile && (isCollapsed ? "ml-[72px]" : "ml-64"),
         )}
       >
-        <div className={cn(
-          "flex-1 min-h-0 w-full max-w-full min-w-0",
-          !isMobile && "px-6 py-6 md:px-8 md:py-8",
-        )}>
+        <div
+          className={cn(
+            "flex-1 min-h-0 w-full max-w-full min-w-0",
+            !isMobile && "px-6 py-6 md:px-8 md:py-8",
+          )}
+        >
           {children}
         </div>
       </main>
@@ -71,16 +75,15 @@ export function AppLayout({ children }: AppLayoutProps) {
   const [isChecking, setIsChecking] = useState(true);
 
   useEffect(() => {
-    setIsHydrated(true);
     const timer = setTimeout(() => {
+      setIsHydrated(true);
       setIsChecking(false);
-    }, 100);
+    }, 0);
     return () => clearTimeout(timer);
   }, []);
 
   const hasToken =
-    isAuthenticated ||
-    (typeof window !== "undefined" && !!localStorage.getItem("access_token"));
+    isAuthenticated || (typeof window !== "undefined" && !!localStorage.getItem("access_token"));
 
   useEffect(() => {
     if (!isHydrated || isChecking) return;

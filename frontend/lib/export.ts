@@ -1,6 +1,23 @@
 import { format } from "date-fns";
 import { formatRuntime } from "@/lib/utils";
 
+interface StatsOverviewForExport {
+  total_watch_time_minutes: number;
+  total_shows: number;
+  shows_watched: number;
+  shows_watching: number;
+  shows_pending: number;
+  episodes_watched: number;
+}
+
+interface TrendItemForExport {
+  snapshot_date: string;
+  total_watch_time_minutes: number;
+  shows_watched: number;
+  shows_watching: number;
+  episodes_watched: number;
+}
+
 interface YearInReviewForExport {
   year: number;
   total_watch_minutes: number;
@@ -16,7 +33,7 @@ interface YearInReviewForExport {
   }>;
 }
 
-export function exportToExcel(data: any[], filename: string) {
+export function exportToExcel(data: Record<string, string | number>[], filename: string) {
   if (!data || data.length === 0) return;
 
   const headers = Object.keys(data[0]);
@@ -52,9 +69,9 @@ export function exportToExcel(data: any[], filename: string) {
 }
 
 export function exportStatsToPDF(
-  overview: any,
-  trends: any[],
-  genres: any,
+  overview: StatsOverviewForExport | undefined,
+  trends: TrendItemForExport[],
+  genres: Record<string, number> | undefined,
   filename: string = "jellyfin-stats",
 ) {
   const printWindow = window.open("", "_blank");
@@ -68,7 +85,7 @@ export function exportStatsToPDF(
       ? trends
           .slice(-14)
           .map(
-            (item: any) => `
+            (item: TrendItemForExport) => `
         <tr>
           <td>${format(new Date(item.snapshot_date), "MMM d, yyyy")}</td>
           <td>${Math.round(item.total_watch_time_minutes / 60)}h</td>
@@ -318,14 +335,25 @@ export function exportStatsToPDF(
 }
 
 export function exportStatsToExcel(
-  overview: any,
-  trends: any[],
-  genres: any,
+  overview: StatsOverviewForExport | undefined,
+  trends: TrendItemForExport[],
+  genres: Record<string, number> | undefined,
   filename: string = `jellyfin-stats-${format(new Date(), "yyyy-MM-dd")}`,
-  ratings?: Array<{ item_type: string; item_id: number; rating: number; rated_at: string }>,
-  reviews?: Array<{ item_type: string; item_id: number; review_text: string; notes?: string; updated_at: string }>,
+  ratings?: Array<{
+    item_type: string;
+    item_id: number;
+    rating: number;
+    rated_at: string;
+  }>,
+  reviews?: Array<{
+    item_type: string;
+    item_id: number;
+    review_text: string;
+    notes?: string;
+    updated_at: string;
+  }>,
 ) {
-  const sheets: { name: string; data: any[] }[] = [];
+  const sheets: { name: string; data: Record<string, string | number>[] }[] = [];
 
   if (overview) {
     sheets.push({
@@ -347,7 +375,7 @@ export function exportStatsToExcel(
   if (trends && Array.isArray(trends)) {
     sheets.push({
       name: "Trends",
-      data: trends.map((item: any) => ({
+      data: trends.map((item: TrendItemForExport) => ({
         Date: format(new Date(item.snapshot_date), "yyyy-MM-dd"),
         "Watch Time (hours)": Math.round(item.total_watch_time_minutes / 60),
         "Shows Watched": item.shows_watched || 0,
@@ -384,7 +412,7 @@ export function exportStatsToExcel(
       data: reviews.map((r) => ({
         "Item Type": r.item_type,
         "Item ID": r.item_id,
-        "Review": r.review_text,
+        Review: r.review_text,
         Notes: r.notes ?? "",
         "Updated At": r.updated_at,
       })),
@@ -414,10 +442,7 @@ export function exportYearInReviewToPDF(
       ? Object.entries(data.top_genres)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 10)
-          .map(
-            ([g, c]) =>
-              `<tr><td>${g}</td><td>${c}</td></tr>`,
-          )
+          .map(([g, c]) => `<tr><td>${g}</td><td>${c}</td></tr>`)
           .join("")
       : "";
 
@@ -455,7 +480,7 @@ export function exportYearInReviewToPDF(
     <!DOCTYPE html>
     <html>
       <head>
-        <title>${data.year} Year in Review</title>
+        <title>${filename}</title>
         <style>
           body { font-family: -apple-system, sans-serif; padding: 40px; color: #1a1a2e; }
           h1 { color: #7c3aed; margin-bottom: 8px; }

@@ -18,11 +18,14 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
   const router = useRouter();
   const { data, isFetching } = useSearch(query);
 
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (prevOpen !== open) {
+    setPrevOpen(open);
+    if (open) setQuery("");
+  }
+
   useEffect(() => {
-    if (open) {
-      setQuery("");
-      setTimeout(() => inputRef.current?.focus(), 50);
-    }
+    if (open) setTimeout(() => inputRef.current?.focus(), 50);
   }, [open]);
 
   useEffect(() => {
@@ -52,10 +55,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
     >
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
-      <div
-        className="relative w-full max-w-xl"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="relative w-full max-w-xl" onClick={(e) => e.stopPropagation()}>
         <div className="rounded-2xl border border-white/10 bg-[#0d0d14]/95 shadow-2xl shadow-black/60 overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-3 border-b border-white/10">
             <Search className="h-4 w-4 text-white/40 shrink-0" />
@@ -81,9 +81,7 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
 
           {query.length >= 2 && (
             <div className="max-h-[420px] overflow-y-auto py-2">
-              {isFetching && !data && (
-                <p className="px-4 py-3 text-sm text-white/30">Searching…</p>
-              )}
+              {isFetching && !data && <p className="px-4 py-3 text-sm text-white/30">Searching…</p>}
 
               {data && !hasResults && (
                 <p className="px-4 py-3 text-sm text-white/30">
@@ -128,7 +126,9 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                       key={ep.id}
                       title={ep.title || `Episode ${ep.episode_number}`}
                       subtitle={`${ep.show_title} · S${ep.season_number}E${ep.episode_number}`}
-                      posterUrl={ep.show_jellyfin_id ? getShowPosterUrl(ep.show_jellyfin_id) : undefined}
+                      posterUrl={
+                        ep.show_jellyfin_id ? getShowPosterUrl(ep.show_jellyfin_id) : undefined
+                      }
                       type="show"
                       onClick={() => handleNavigate(`/shows/${ep.show_id}`)}
                     />
@@ -187,7 +187,7 @@ function ResultRow({
       onClick={onClick}
       className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-white/5 transition-colors group"
     >
-      <div className="relative w-12 h-[72px] shrink-0 rounded-lg overflow-hidden bg-white/[0.04] border border-white/[0.08]">
+      <div className="relative w-12 h-[72px] shrink-0 rounded-lg overflow-hidden bg-white/4 border border-white/8">
         <PosterImage
           src={posterUrl}
           alt={title}
@@ -202,9 +202,7 @@ function ResultRow({
         <p className="text-sm text-white/90 truncate group-hover:text-white transition-colors">
           {title}
         </p>
-        {subtitle && (
-          <p className="text-xs text-white/35 truncate">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-xs text-white/35 truncate">{subtitle}</p>}
       </div>
     </button>
   );

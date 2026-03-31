@@ -26,13 +26,7 @@ import {
   PlayCircle,
   CheckCircle2,
 } from "lucide-react";
-import {
-  format,
-  formatDistanceToNow,
-  isToday,
-  isYesterday,
-  parseISO,
-} from "date-fns";
+import { format, formatDistanceToNow, isToday, isYesterday, parseISO } from "date-fns";
 import Link from "next/link";
 import Image from "next/image";
 import { formatRuntime, resolvePosterUrl, PROGRESS_BAR_CLASS } from "@/lib/utils";
@@ -49,13 +43,7 @@ function formatDateHeader(dateStr: string): string {
   return format(date, "EEE, MMM d, yyyy");
 }
 
-function DetailSheet({
-  item,
-  onClose,
-}: {
-  item: WatchHistoryItem | null;
-  onClose: () => void;
-}) {
+function DetailSheet({ item, onClose }: { item: WatchHistoryItem | null; onClose: () => void }) {
   if (!item) return null;
 
   const detailHref =
@@ -67,10 +55,7 @@ function DetailSheet({
 
   return (
     <>
-      <div
-        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-sm min-w-0 bg-[#0d0d14] border-l border-white/[0.08] shadow-2xl flex flex-col overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
           <h2 className="text-sm font-semibold text-white">Watch Details</h2>
@@ -101,12 +86,14 @@ function DetailSheet({
                     <Film className="h-3 w-3 text-purple-400" />
                   )}
                 </div>
-                <span className="text-xs text-white/40 capitalize">{item.type === "episode" ? "Show" : "Movie"}</span>
+                <span className="text-xs text-white/40 capitalize">
+                  {item.type === "episode" ? "Show" : "Movie"}
+                </span>
               </div>
-              <h3 className="font-semibold text-white text-base leading-tight mb-1">{item.title}</h3>
-              {item.showTitle && (
-                <p className="text-sm text-white/50">{item.showTitle}</p>
-              )}
+              <h3 className="font-semibold text-white text-base leading-tight mb-1">
+                {item.title}
+              </h3>
+              {item.showTitle && <p className="text-sm text-white/50">{item.showTitle}</p>}
             </div>
           </div>
 
@@ -147,13 +134,15 @@ function DetailSheet({
             {item.status && (
               <div className="flex items-center justify-between">
                 <span className="text-xs text-white/40">Status</span>
-                <span className={`text-xs px-2 py-0.5 rounded-full border ${
-                  item.status === "watched"
-                    ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
-                    : item.status === "watching"
-                      ? "border-blue-500/30 text-blue-400 bg-blue-500/10"
-                      : "border-white/10 text-white/40 bg-white/5"
-                }`}>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded-full border ${
+                    item.status === "watched"
+                      ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
+                      : item.status === "watching"
+                        ? "border-blue-500/30 text-blue-400 bg-blue-500/10"
+                        : "border-white/10 text-white/40 bg-white/5"
+                  }`}
+                >
                   {item.status}
                 </span>
               </div>
@@ -165,7 +154,9 @@ function DetailSheet({
               <div className={PROGRESS_BAR_CLASS}>
                 <div
                   className="h-full bg-purple-500 rounded-full"
-                  style={{ width: `${Math.min(item.completionPercentage, 100)}%` }}
+                  style={{
+                    width: `${Math.min(item.completionPercentage, 100)}%`,
+                  }}
                 />
               </div>
             </div>
@@ -189,15 +180,7 @@ function DetailSheet({
   );
 }
 
-function InfoRow({
-  label,
-  value,
-  icon,
-}: {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-}) {
+function InfoRow({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-1.5 text-xs text-white/40">
@@ -217,10 +200,7 @@ const HistoryItemCard = memo(function HistoryItemCard({
   onSelect: (item: WatchHistoryItem) => void;
 }) {
   return (
-    <button
-      onClick={() => onSelect(item)}
-      className="group w-full text-left"
-    >
+    <button onClick={() => onSelect(item)} className="group w-full text-left">
       <div
         className={`rounded-2xl backdrop-blur-xl border transition-all p-5 ${
           item.removedFromLibrary
@@ -268,25 +248,19 @@ const HistoryItemCard = memo(function HistoryItemCard({
               </div>
 
               {(item.showTitle ||
-                (item.seasonNumber !== undefined &&
-                  item.episodeNumber !== undefined)) && (
+                (item.seasonNumber !== undefined && item.episodeNumber !== undefined)) && (
                 <div className="flex items-center gap-2 pl-9">
                   {item.showTitle && (
-                    <p className="text-sm text-white/50 truncate">
-                      {item.showTitle}
-                    </p>
+                    <p className="text-sm text-white/50 truncate">{item.showTitle}</p>
                   )}
-                  {item.seasonNumber !== undefined &&
-                    item.episodeNumber !== undefined && (
-                      <>
-                        {item.showTitle && (
-                          <span className="text-white/20">·</span>
-                        )}
-                        <p className="text-sm text-white/40 flex-shrink-0">
-                          S{item.seasonNumber} E{item.episodeNumber}
-                        </p>
-                      </>
-                    )}
+                  {item.seasonNumber !== undefined && item.episodeNumber !== undefined && (
+                    <>
+                      {item.showTitle && <span className="text-white/20">·</span>}
+                      <p className="text-sm text-white/40 flex-shrink-0">
+                        S{item.seasonNumber} E{item.episodeNumber}
+                      </p>
+                    </>
+                  )}
                 </div>
               )}
             </div>
@@ -322,16 +296,17 @@ type ViewMode = "list" | "calendar";
 
 export default function HistoryPage() {
   const [filter, setFilter] = useState<"all" | "episode" | "movie">("all");
-  const [timeRange, setTimeRange] = useState<
-    "all" | "today" | "week" | "month"
-  >("all");
+  const [timeRange, setTimeRange] = useState<"all" | "today" | "week" | "month">("all");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [selectedItem, setSelectedItem] = useState<WatchHistoryItem | null>(null);
-  const [calendarSelectedDate, setCalendarSelectedDate] = useState<string | null>(
-    null,
-  );
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<string | null>(null);
 
-  const { data: history, isLoading, isError, refetch } = useWatchHistory({
+  const {
+    data: history,
+    isLoading,
+    isError,
+    refetch,
+  } = useWatchHistory({
     limit: 500,
     type: filter,
   });
@@ -348,13 +323,9 @@ export default function HistoryPage() {
           case "today":
             return isToday(watchedDate);
           case "week":
-            return (
-              watchedDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-            );
+            return watchedDate >= new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
           case "month":
-            return (
-              watchedDate >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
-            );
+            return watchedDate >= new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
           default:
             return true;
         }
@@ -369,17 +340,14 @@ export default function HistoryPage() {
       if (!grouped[dateKey]) grouped[dateKey] = [];
       grouped[dateKey].push(item);
     }
-    const sortedDates = Object.keys(grouped).sort((a, b) =>
-      b.localeCompare(a),
-    );
+    const sortedDates = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
     return { grouped, sortedDates };
   }, [filteredHistory]);
 
   const calendarFilteredItems = useMemo(() => {
     if (!calendarSelectedDate) return filteredHistory;
     return filteredHistory.filter(
-      (item) =>
-        format(parseISO(item.watchedAt), "yyyy-MM-dd") === calendarSelectedDate,
+      (item) => format(parseISO(item.watchedAt), "yyyy-MM-dd") === calendarSelectedDate,
     );
   }, [filteredHistory, calendarSelectedDate]);
 
@@ -392,10 +360,7 @@ export default function HistoryPage() {
   }, []);
 
   const breadcrumbItems = useMemo(
-    () => [
-      { icon: "home" as const, href: "/dashboard" },
-      { label: "History" },
-    ],
+    () => [{ icon: "home" as const, href: "/dashboard" }, { label: "History" }],
     [],
   );
 
@@ -408,102 +373,96 @@ export default function HistoryPage() {
           description="Your viewing timeline"
           icon={<History className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
           actions={
-        <div className="flex flex-wrap gap-3 items-center">
-          <div className="flex h-11 rounded-lg border border-white/8 overflow-hidden">
-            <button
-              onClick={() => setViewMode("list")}
-              className={`flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
-                viewMode === "list"
-                  ? "bg-purple-500/20 text-purple-400"
-                  : "text-white/50 hover:text-white"
-              }`}
-              aria-pressed={viewMode === "list"}
-            >
-              <LayoutList className="h-4 w-4" />
-              List
-            </button>
-            <button
-              onClick={() => setViewMode("calendar")}
-              className={`flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
-                viewMode === "calendar"
-                  ? "bg-purple-500/20 text-purple-400"
-                  : "text-white/50 hover:text-white"
-              }`}
-              aria-pressed={viewMode === "calendar"}
-            >
-              <CalendarDays className="h-4 w-4" />
-              Calendar
-            </button>
-          </div>
-          <Select
-            value={filter}
-            onValueChange={(value: "all" | "episode" | "movie") =>
-              setFilter(value)
-            }
-          >
-            <SelectTrigger className="w-[140px] h-11">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Items</SelectItem>
-              <SelectItem value="episode">Episodes</SelectItem>
-              <SelectItem value="movie">Movies</SelectItem>
-            </SelectContent>
-          </Select>
+            <div className="flex flex-wrap gap-3 items-center">
+              <div className="flex h-11 rounded-lg border border-white/8 overflow-hidden">
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
+                    viewMode === "list"
+                      ? "bg-purple-500/20 text-purple-400"
+                      : "text-white/50 hover:text-white"
+                  }`}
+                  aria-pressed={viewMode === "list"}
+                >
+                  <LayoutList className="h-4 w-4" />
+                  List
+                </button>
+                <button
+                  onClick={() => setViewMode("calendar")}
+                  className={`flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
+                    viewMode === "calendar"
+                      ? "bg-purple-500/20 text-purple-400"
+                      : "text-white/50 hover:text-white"
+                  }`}
+                  aria-pressed={viewMode === "calendar"}
+                >
+                  <CalendarDays className="h-4 w-4" />
+                  Calendar
+                </button>
+              </div>
+              <Select
+                value={filter}
+                onValueChange={(value: "all" | "episode" | "movie") => setFilter(value)}
+              >
+                <SelectTrigger className="w-[140px] h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Items</SelectItem>
+                  <SelectItem value="episode">Episodes</SelectItem>
+                  <SelectItem value="movie">Movies</SelectItem>
+                </SelectContent>
+              </Select>
 
-          <Select
-            value={timeRange}
-            onValueChange={(value: "all" | "today" | "week" | "month") =>
-              setTimeRange(value)
-            }
-          >
-            <SelectTrigger className="w-[140px] h-11">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Time</SelectItem>
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="week">This Week</SelectItem>
-              <SelectItem value="month">This Month</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+              <Select
+                value={timeRange}
+                onValueChange={(value: "all" | "today" | "week" | "month") => setTimeRange(value)}
+              >
+                <SelectTrigger className="w-[140px] h-11">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Time</SelectItem>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="week">This Week</SelectItem>
+                  <SelectItem value="month">This Month</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           }
         />
 
         {isLoading && (
           <div className="flex items-center justify-center py-16">
-          <div className="flex items-center gap-3 text-white/40">
-            <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
-            <span>Loading watch history...</span>
+            <div className="flex items-center gap-3 text-white/40">
+              <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
+              <span>Loading watch history...</span>
             </div>
           </div>
         )}
 
         {!isLoading && isError && (
-        <div className="text-center py-16">
-          <History className="h-16 w-16 text-white/20 mx-auto mb-4" />
-          <p className="text-white/60 text-lg mb-2">Failed to load watch history</p>
-          <p className="text-sm text-white/40 mb-4">
-            Something went wrong. Please try again.
-          </p>
-          <button
-            onClick={() => refetch()}
-            className="px-4 py-2 rounded-xl bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors text-sm font-medium"
-          >
-            Retry
-          </button>
-        </div>
+          <div className="text-center py-16">
+            <History className="h-16 w-16 text-white/20 mx-auto mb-4" />
+            <p className="text-white/60 text-lg mb-2">Failed to load watch history</p>
+            <p className="text-sm text-white/40 mb-4">Something went wrong. Please try again.</p>
+            <button
+              onClick={() => refetch()}
+              className="px-4 py-2 rounded-xl bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors text-sm font-medium"
+            >
+              Retry
+            </button>
+          </div>
         )}
 
         {!isLoading && !isError && filteredHistory.length === 0 && (
-        <div className="text-center py-16">
-          <History className="h-16 w-16 text-white/20 mx-auto mb-4" />
-          <p className="text-white/60 text-lg mb-2">No watch history found</p>
-          <p className="text-sm text-white/40">
-            Try adjusting your filters or start watching some content
-          </p>
-        </div>
+          <div className="text-center py-16">
+            <History className="h-16 w-16 text-white/20 mx-auto mb-4" />
+            <p className="text-white/60 text-lg mb-2">No watch history found</p>
+            <p className="text-sm text-white/40">
+              Try adjusting your filters or start watching some content
+            </p>
+          </div>
         )}
 
         {!isLoading && filteredHistory.length > 0 && viewMode === "calendar" && (
@@ -532,11 +491,7 @@ export default function HistoryPage() {
                   </div>
                   <div className="grid gap-3">
                     {calendarFilteredItems.map((item) => (
-                      <HistoryItemCard
-                        key={item.id}
-                        item={item}
-                        onSelect={handleSelectItem}
-                      />
+                      <HistoryItemCard key={item.id} item={item} onSelect={handleSelectItem} />
                     ))}
                   </div>
                 </>
@@ -551,36 +506,32 @@ export default function HistoryPage() {
 
         {!isLoading && filteredHistory.length > 0 && viewMode === "list" && (
           <div className="space-y-8">
-          {sortedDates.map((dateKey) => {
-            const items = grouped[dateKey];
-            return (
-              <div key={dateKey} className="space-y-4">
-                <div className="flex items-center gap-4 -ml-0.5">
-                  <div className="flex items-center gap-2.5">
-                    <Calendar className="h-4 w-4 text-purple-400 opacity-70" />
-                    <h2 className="text-sm font-medium text-white/70">
-                      {formatDateHeader(dateKey)}
-                    </h2>
-                    <span className="text-white/30">·</span>
-                    <span className="text-sm text-white/40">
-                      {items.length} {items.length === 1 ? "item" : "items"}
-                    </span>
+            {sortedDates.map((dateKey) => {
+              const items = grouped[dateKey];
+              return (
+                <div key={dateKey} className="space-y-4">
+                  <div className="flex items-center gap-4 -ml-0.5">
+                    <div className="flex items-center gap-2.5">
+                      <Calendar className="h-4 w-4 text-purple-400 opacity-70" />
+                      <h2 className="text-sm font-medium text-white/70">
+                        {formatDateHeader(dateKey)}
+                      </h2>
+                      <span className="text-white/30">·</span>
+                      <span className="text-sm text-white/40">
+                        {items.length} {items.length === 1 ? "item" : "items"}
+                      </span>
+                    </div>
+                    <div className="flex-1 h-px bg-gradient-to-r from-white/[0.08] to-transparent" />
                   </div>
-                  <div className="flex-1 h-px bg-gradient-to-r from-white/[0.08] to-transparent" />
-                </div>
 
-                <div className="grid gap-3">
-                  {items.map((item) => (
-                    <HistoryItemCard
-                      key={item.id}
-                      item={item}
-                      onSelect={handleSelectItem}
-                    />
-                  ))}
+                  <div className="grid gap-3">
+                    {items.map((item) => (
+                      <HistoryItemCard key={item.id} item={item} onSelect={handleSelectItem} />
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
           </div>
         )}
 

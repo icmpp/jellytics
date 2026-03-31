@@ -50,15 +50,6 @@ export function useMediaFilters(): MediaFiltersState {
       setWatchedTo,
       setTagIds,
     }),
-    [
-      statusFilter,
-      searchFilter,
-      genreFilter,
-      yearFrom,
-      yearTo,
-      watchedFrom,
-      watchedTo,
-      tagIds,
-    ],
+    [statusFilter, searchFilter, genreFilter, yearFrom, yearTo, watchedFrom, watchedTo, tagIds],
   );
 }

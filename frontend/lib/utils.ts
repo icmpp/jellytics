@@ -19,8 +19,7 @@ export const MEDIA_POSTER_CONTAINER =
   "relative aspect-[2/3] w-full overflow-hidden rounded-2xl backdrop-blur-xl bg-white/[0.03] border border-white/[0.08]";
 
 /** Progress bar track. Child fill uses style={{ width: `${percent}%` }} and bg-gradient-to-r. */
-export const PROGRESS_BAR_CLASS =
-  "w-full bg-white/10 rounded-full h-1.5 overflow-hidden";
+export const PROGRESS_BAR_CLASS = "w-full bg-white/10 rounded-full h-1.5 overflow-hidden";
 
 /** Media card title (h3). Add group-hover:text-purple-400 for link cards. */
 export const MEDIA_CARD_TITLE_CLASS =
@@ -69,7 +68,7 @@ export function buildJellyfinItemUrl(
   serverUrl: string,
   jellyfinId: string,
   serverId?: string,
-  itemType?: "movie" | "show" | "episode"
+  itemType?: "movie" | "show" | "episode",
 ): string {
   const base = serverUrl.replace(/\/$/, "");
   const params = new URLSearchParams();
@@ -85,7 +84,7 @@ export function buildJellyfinItemUrl(
 /** Returns display text for watch status. Movies show "Watched X time(s)" when count > 0; shows use "Completed". */
 export function getWatchStatusText(
   status: "watched" | "watching" | "pending",
-  options?: { watchCount?: number; mediaType?: "movie" | "show" }
+  options?: { watchCount?: number; mediaType?: "movie" | "show" },
 ): string {
   if (status === "watched") {
     if (options?.mediaType === "movie" && (options?.watchCount ?? 0) > 0) {
@@ -117,8 +116,8 @@ export function parseGenres(genre?: string | null): string[] {
     if (Array.isArray(parsed)) return parsed;
     return [genre];
   } catch (err) {
-    console.warn("Failed to parse genre JSON, using raw string:", err)
-    return [genre]
+    console.warn("Failed to parse genre JSON, using raw string:", err);
+    return [genre];
   }
 }
 

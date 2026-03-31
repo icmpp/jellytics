@@ -1,5 +1,4 @@
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api/v1";
 
 export class APIError extends Error {
   constructor(
@@ -13,12 +12,7 @@ export class APIError extends Error {
   }
 }
 
-const TOKEN_ERROR_CODES = [
-  "TOKEN_EXPIRED",
-  "TOKEN_INVALID",
-  "UNAUTHORIZED",
-  "HTTP_401",
-];
+const TOKEN_ERROR_CODES = ["TOKEN_EXPIRED", "TOKEN_INVALID", "UNAUTHORIZED", "HTTP_401"];
 
 function handleTokenExpiration() {
   if (typeof window === "undefined") return;
@@ -27,9 +21,9 @@ function handleTokenExpiration() {
   localStorage.removeItem("refresh_token");
 
   try {
-    localStorage.removeItem("auth-storage")
+    localStorage.removeItem("auth-storage");
   } catch (err) {
-    console.warn("Failed to clear auth-storage:", err)
+    console.warn("Failed to clear auth-storage:", err);
   }
 
   window.location.href = "/login";
@@ -70,8 +64,7 @@ async function request<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -97,12 +90,7 @@ async function request<T>(
         undefined,
       );
     }
-    throw new APIError(
-      "NETWORK_ERROR",
-      "Failed to connect to API",
-      undefined,
-      undefined,
-    );
+    throw new APIError("NETWORK_ERROR", "Failed to connect to API", undefined, undefined);
   }
 
   if (!response.ok) {
@@ -118,9 +106,9 @@ async function request<T>(
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.includes("application/json")) {
       error = (await response.json().catch((err) => {
-        console.warn("Failed to parse error response body:", err)
-        return {}
-      })) as ErrorResponse
+        console.warn("Failed to parse error response body:", err);
+        return {};
+      })) as ErrorResponse;
     }
 
     const errorCode = error.error?.code || `HTTP_${response.status}`;
@@ -155,10 +143,10 @@ async function request<T>(
   if (!text) return null as T;
 
   try {
-    return JSON.parse(text) as T
+    return JSON.parse(text) as T;
   } catch (err) {
-    console.warn("Failed to parse API response:", err)
-    return null as T
+    console.warn("Failed to parse API response:", err);
+    return null as T;
   }
 }
 

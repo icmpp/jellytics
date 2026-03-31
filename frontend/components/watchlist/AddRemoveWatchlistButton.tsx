@@ -8,16 +8,11 @@ import { Bookmark, BookmarkCheck, Loader2 } from "lucide-react";
 interface AddRemoveWatchlistButtonProps {
   itemType: "show" | "movie";
   itemId: number;
-  variant?:
-    | "default"
-    | "outline"
-    | "ghost"
-    | "destructive"
-    | "secondary"
-    | "link";
+  variant?: "default" | "outline" | "ghost" | "destructive" | "secondary" | "link";
   size?: "default" | "sm" | "lg" | "icon" | "icon-sm" | "icon-lg";
   className?: string;
   showConfirmation?: boolean;
+  iconOnly?: boolean;
 }
 
 export function AddRemoveWatchlistButton({
@@ -27,6 +22,7 @@ export function AddRemoveWatchlistButton({
   size = "sm",
   className,
   showConfirmation = false,
+  iconOnly = false,
 }: AddRemoveWatchlistButtonProps) {
   const isInWatchlist = useIsInWatchlist(itemType, itemId);
   const addToWatchlist = useAddToWatchlist();
@@ -41,8 +37,10 @@ export function AddRemoveWatchlistButton({
         className={className}
         showConfirmation={showConfirmation}
       >
-        <BookmarkCheck className="h-4 w-4 text-purple-400" />
-        In Watchlist
+        <BookmarkCheck
+          className={iconOnly ? "size-6 text-purple-400" : "h-4 w-4 text-purple-400"}
+        />
+        {!iconOnly && "In Watchlist"}
       </RemoveFromWatchlistButton>
     );
   }
@@ -56,18 +54,14 @@ export function AddRemoveWatchlistButton({
         addToWatchlist.mutate({ itemType, itemId });
       }}
       disabled={addToWatchlist.isPending}
+      aria-label="Add to Watchlist"
     >
       {addToWatchlist.isPending ? (
-        <>
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Adding...
-        </>
+        <Loader2 className={iconOnly ? "size-6 animate-spin" : "h-4 w-4 animate-spin"} />
       ) : (
-        <>
-          <Bookmark className="h-4 w-4" />
-          Add to Watchlist
-        </>
+        <Bookmark className={iconOnly ? "size-6" : "h-4 w-4"} />
       )}
+      {!iconOnly && (addToWatchlist.isPending ? "Adding..." : "Add to Watchlist")}
     </Button>
   );
 }

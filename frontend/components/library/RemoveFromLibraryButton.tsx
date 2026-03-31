@@ -13,16 +13,11 @@ interface RemoveFromLibraryButtonProps {
   itemType: "show" | "movie";
   itemId: number;
   itemTitle: string;
-  variant?:
-    | "default"
-    | "outline"
-    | "ghost"
-    | "destructive"
-    | "secondary"
-    | "link";
+  variant?: "default" | "outline" | "ghost" | "destructive" | "secondary" | "link";
   size?: "default" | "sm" | "lg" | "icon" | "icon-sm" | "icon-lg";
   className?: string;
   children?: React.ReactNode;
+  iconOnly?: boolean;
 }
 
 export function RemoveFromLibraryButton({
@@ -33,6 +28,7 @@ export function RemoveFromLibraryButton({
   size = "sm",
   className,
   children,
+  iconOnly = false,
 }: RemoveFromLibraryButtonProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -69,13 +65,12 @@ export function RemoveFromLibraryButton({
     }
   };
 
-  const buttonContent =
-    children || (
-      <>
-        <Trash2 className="h-4 w-4" />
-        Remove from library
-      </>
-    );
+  const buttonContent = children || (
+    <>
+      <Trash2 className={iconOnly ? "size-6" : "h-4 w-4"} />
+      {!iconOnly && "Remove from library"}
+    </>
+  );
 
   return (
     <ConfirmPopover
@@ -84,9 +79,8 @@ export function RemoveFromLibraryButton({
       title="Remove from library?"
       description={
         <>
-          <span className="text-white/60">&quot;{itemTitle}&quot;</span> will be
-          permanently removed from your database, including watch history,
-          ratings, and reviews. This cannot be undone.
+          <span className="text-white/70">&quot;{itemTitle}&quot;</span> will be permanently
+          removed, including watch history, ratings, and reviews. This cannot be undone.
         </>
       }
       confirmLabel="Remove"
@@ -96,12 +90,14 @@ export function RemoveFromLibraryButton({
       isLoading={isLoading}
       onConfirm={handleRemove}
     >
-      <Button type="button" variant={variant} size={size} className={className}>
-        {isLoading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          buttonContent
-        )}
+      <Button
+        type="button"
+        variant={variant}
+        size={size}
+        className={className}
+        aria-label="Remove from library"
+      >
+        {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : buttonContent}
       </Button>
     </ConfirmPopover>
   );

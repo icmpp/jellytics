@@ -15,13 +15,7 @@ export const metadata: Metadata = {
   },
   description:
     "Beautiful analytics and insights for your Jellyfin media server. Track your viewing history, discover trends, and understand your media consumption.",
-  keywords: [
-    "jellyfin",
-    "analytics",
-    "media server",
-    "statistics",
-    "viewing history",
-  ],
+  keywords: ["jellyfin", "analytics", "media server", "statistics", "viewing history"],
   authors: [{ name: "Jellytics" }],
   manifest: "/site.webmanifest",
 };
@@ -41,9 +35,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${inter.className} bg-[#0a0a0b] text-white antialiased`}
-      >
+      <body className={`${inter.className} bg-[#0a0a0b] text-white antialiased`}>
         <SkipLink />
         <Providers>
           <BrowserStateSync />

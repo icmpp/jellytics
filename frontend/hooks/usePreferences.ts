@@ -27,13 +27,11 @@ export function usePreferences() {
     queryKey: ["preferences"],
     queryFn: async () => {
       try {
-        const response = await api.get<PreferencesResponse>(
-          "/settings/preferences",
-        );
+        const response = await api.get<PreferencesResponse>("/settings/preferences");
         return response.preferences || {};
       } catch (err) {
-        console.warn("Failed to fetch preferences:", err)
-        return {}
+        console.warn("Failed to fetch preferences:", err);
+        return {};
       }
     },
     staleTime: 5 * 60 * 1000,

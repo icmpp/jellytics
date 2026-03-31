@@ -4,10 +4,6 @@ export const metadata: Metadata = {
   title: "Statistics",
 };
 
-export default function StatsLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function StatsLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

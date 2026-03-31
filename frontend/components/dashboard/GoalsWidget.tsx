@@ -10,15 +10,12 @@ export function GoalsWidget() {
 
   if (isLoading || !data) return null;
 
-  const hasGoals =
-    (data.weekly_target > 0 || data.monthly_target > 0) || data.longest_streak > 0;
+  const hasGoals = data.weekly_target > 0 || data.monthly_target > 0 || data.longest_streak > 0;
 
   if (!hasGoals && data.current_streak === 0) return null;
 
   const weeklyPct =
-    data.weekly_target > 0
-      ? Math.min(100, (data.weekly_progress / data.weekly_target) * 100)
-      : 0;
+    data.weekly_target > 0 ? Math.min(100, (data.weekly_progress / data.weekly_target) * 100) : 0;
   const monthlyPct =
     data.monthly_target > 0
       ? Math.min(100, (data.monthly_progress / data.monthly_target) * 100)
@@ -75,16 +72,13 @@ export function GoalsWidget() {
           <div className="flex items-center gap-2">
             <Flame className="h-4 w-4 text-amber-400" />
             <span className="text-sm text-white/70">
-              Current streak: <strong className="text-white">{data.current_streak}</strong>{" "}
-              days
+              Current streak: <strong className="text-white">{data.current_streak}</strong> days
             </span>
           </div>
           {data.longest_streak > 0 && (
             <div className="flex items-center gap-2">
               <Trophy className="h-4 w-4 text-amber-400" />
-              <span className="text-sm text-white/50">
-                Best: {data.longest_streak} days
-              </span>
+              <span className="text-sm text-white/50">Best: {data.longest_streak} days</span>
             </div>
           )}
         </div>

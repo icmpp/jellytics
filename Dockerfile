@@ -3,6 +3,8 @@
 # ============================================
 FROM golang:1.25-alpine AS backend-builder
 
+ARG JELLYTICS_VERSION=dev
+
 WORKDIR /app
 
 RUN apk add --no-cache gcc musl-dev sqlite-dev
@@ -11,7 +13,9 @@ COPY backend/go.mod backend/go.sum ./
 RUN go mod download
 
 COPY backend/ .
-RUN CGO_ENABLED=1 GOOS=linux go build -o /app/server cmd/server/main.go
+RUN CGO_ENABLED=1 GOOS=linux go build \
+    -ldflags "-X main.Version=${JELLYTICS_VERSION}" \
+    -o /app/server cmd/server/main.go
 
 # ============================================
 # Stage 2: Build Next.js frontend
@@ -35,7 +39,7 @@ RUN npm run build
 # ============================================
 # Stage 3: Runtime image (single container)
 # ============================================
-FROM node:20-alpine
+FROM node:25-alpine
 
 WORKDIR /app
 

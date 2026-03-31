@@ -11,15 +11,15 @@
 
 ### 📺 Your Jellyfin. Now with the stats it deserves.
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/iicmp/jellytics?style=for-the-badge&logo=docker&logoColor=white&label=Docker%20Pulls&color=0db7ed)](https://hub.docker.com/r/iicmp/jellytics)
-[![Image Size](https://img.shields.io/docker/image-size/iicmp/jellytics/latest?style=for-the-badge&logo=docker&logoColor=white&color=0db7ed)](https://hub.docker.com/r/iicmp/jellytics)
+[![Docker Pulls](https://img.shields.io/docker/pulls/icmppp/jellytics?style=for-the-badge&logo=docker&logoColor=white&label=Docker%20Pulls&color=0db7ed)](https://hub.docker.com/r/icmppp/jellytics)
+[![Image Size](https://img.shields.io/docker/image-size/icmppp/jellytics/latest?style=for-the-badge&logo=docker&logoColor=white&color=0db7ed)](https://hub.docker.com/r/icmppp/jellytics)
 [![Stars](https://img.shields.io/github/stars/icmpp/jellytics?style=for-the-badge&logo=github&color=f5c518)](https://github.com/icmpp/jellytics)
 [![License](https://img.shields.io/github/license/icmpp/jellytics?style=for-the-badge&color=9b59b6)](LICENSE)
 
 **Jellytics** connects to your Jellyfin server and gives you a beautiful dashboard for everything you watch.
 Track your habits. Rate what you love. Build watchlists. See what the whole household is watching, all in one place, all self-hosted, all yours.
 
-[🐳 Docker Hub](https://hub.docker.com/r/iicmp/jellytics) · [🐛 Report a Bug](https://github.com/icmpp/jellytics/issues) · [💡 Request a Feature](https://github.com/icmpp/jellytics/issues)
+[🐳 Docker Hub](https://hub.docker.com/r/icmppp/jellytics) · [🐛 Report a Bug](https://github.com/icmpp/jellytics/issues) · [💡 Request a Feature](https://github.com/icmpp/jellytics/issues)
 
 </div>
 
@@ -41,7 +41,7 @@ Track your habits. Rate what you love. Build watchlists. See what the whole hous
 
 🏷️ **Tags:** Create your own colored labels and slap them on anything. Your library, your rules.
 
-🤖 **Recommendations:** Personalized suggestions based on what you *actually* watch, not what an algorithm thinks you should.
+🤖 **Recommendations:** Personalized suggestions based on what you _actually_ watch, not what an algorithm thinks you should.
 
 📡 **Live Sessions:** See what's playing right now across every screen in your home, in real time.
 
@@ -56,6 +56,7 @@ Track your habits. Rate what you love. Build watchlists. See what the whole hous
 ## 🚀 Getting Started
 
 You need two things:
+
 - 🐳 **Docker** + **Docker Compose v2+** on your server
 - 📺 A running **Jellyfin** server on your network
 
@@ -66,7 +67,7 @@ Drop this into a new file called `docker-compose.yml`:
 ```yaml
 services:
   jellytics:
-    image: iicmp/jellytics:latest
+    image: icmppp/jellytics:latest
     container_name: jellytics
     restart: unless-stopped
     ports:
@@ -104,7 +105,7 @@ Jellytics uses port **80** by default. Change the left number to whatever you wa
 
 ```yaml
 ports:
-  - "8096:3000"   # → now at http://your-server:8096
+  - "8096:3000" # → now at http://your-server:8096
 ```
 
 ### 🔐 Keep sessions alive across restarts
@@ -124,7 +125,7 @@ Then add it to `environment` in your compose file:
 ### 🔄 Control how often the library syncs
 
 ```yaml
-- JELLYTICS_SYNC_INTERVAL_SECONDS=300   # every 5 minutes (this is the default)
+- JELLYTICS_SYNC_INTERVAL_SECONDS=300 # every 5 minutes (this is the default)
 ```
 
 ### 🔒 Localhost-only mode
@@ -191,11 +192,13 @@ labels:
 All of your stats, reviews, ratings, and watchlists live in a Docker volume called `jellytics-data`. Back it up. You'll thank yourself later.
 
 **Back up:**
+
 ```bash
 docker cp jellytics:/app/data ./jellytics-backup
 ```
 
 **Restore:**
+
 ```bash
 docker cp ./jellytics-backup jellytics:/app/data
 docker compose restart
@@ -223,6 +226,7 @@ Your data stays exactly where it is. Migrations run automatically. ✅
 Make sure your Jellyfin URL is correct and reachable from the machine running Jellytics. Use the local IP address (e.g. `http://192.168.1.10:8096`) rather than `localhost` if they're on different machines.
 
 Check the logs for clues:
+
 ```bash
 docker compose logs -f
 ```
@@ -247,11 +251,13 @@ Change the port mapping in your compose file. See [Change the port](#-change-the
 <summary><b>🔴 Something looks wrong or data seems missing</b></summary>
 
 Try a restart first:
+
 ```bash
 docker compose restart
 ```
 
 Check the container status:
+
 ```bash
 docker compose ps
 ```

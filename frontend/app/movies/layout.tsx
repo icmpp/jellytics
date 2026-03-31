@@ -4,10 +4,6 @@ export const metadata: Metadata = {
   title: "Movies",
 };
 
-export default function MoviesLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function MoviesLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

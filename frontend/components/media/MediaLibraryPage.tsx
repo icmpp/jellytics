@@ -52,10 +52,7 @@ export function MediaLibraryPage<T>({
   renderCard,
   getItemId,
 }: MediaLibraryPageProps<T>) {
-  const breadcrumbItems = [
-    { icon: "home" as const, href: "/dashboard" },
-    { label: title },
-  ];
+  const breadcrumbItems = [{ icon: "home" as const, href: "/dashboard" }, { label: title }];
 
   return (
     <AppLayout>
@@ -103,7 +100,8 @@ export function MediaLibraryPage<T>({
               <>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                   <p className="text-sm text-white/40">
-                    {items.length} of {total} {itemLabel}{total !== 1 ? "s" : ""}
+                    {items.length} of {total} {itemLabel}
+                    {total !== 1 ? "s" : ""}
                   </p>
                   <RefetchingIndicator isFetching={isFetching} isLoading={isLoading} />
                 </div>

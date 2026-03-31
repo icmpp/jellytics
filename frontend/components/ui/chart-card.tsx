@@ -32,7 +32,7 @@ export function ChartCard({
 }: ChartCardProps) {
   return (
     <Card className={className}>
-      <CardContent>
+      <CardContent className="flex flex-col flex-1 min-h-0">
         <SectionHeader icon={icon} title={title} extra={titleExtra} />
 
         {isLoading ? (
@@ -41,16 +41,12 @@ export function ChartCard({
           </div>
         ) : isEmpty ? (
           <div className={`${minHeight} flex flex-col items-center justify-center text-center`}>
-            {emptyIcon && (
-              <div className="text-white/15 mb-3">{emptyIcon}</div>
-            )}
+            {emptyIcon && <div className="text-white/15 mb-3">{emptyIcon}</div>}
             <p className="text-sm font-medium text-white/60">{emptyMessage}</p>
-            {emptyDescription && (
-              <p className="text-xs text-white/40 mt-1">{emptyDescription}</p>
-            )}
+            {emptyDescription && <p className="text-xs text-white/40 mt-1">{emptyDescription}</p>}
           </div>
         ) : (
-          children
+          <div className="flex flex-col flex-1 min-h-0">{children}</div>
         )}
       </CardContent>
     </Card>

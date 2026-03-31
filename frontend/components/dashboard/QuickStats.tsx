@@ -31,11 +31,7 @@ function TrendIndicator({ current, previous }: TrendIndicatorProps) {
     <div
       className={`flex items-center gap-1.5 text-sm ${isPositive ? "text-emerald-400" : "text-red-400"}`}
     >
-      {isPositive ? (
-        <TrendingUp className="h-4 w-4" />
-      ) : (
-        <TrendingDown className="h-4 w-4" />
-      )}
+      {isPositive ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
       <span>{Math.abs(change).toFixed(1)}% vs last week</span>
     </div>
   );
@@ -56,50 +52,32 @@ export function QuickStats() {
     <div className="grid gap-4 md:grid-cols-3">
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-white/50">
-            This Week
-          </CardTitle>
+          <CardTitle className="text-sm font-medium text-white/50">This Week</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold text-white mb-2">
-            {formatHours(thisWeekWatchTime)}
-          </div>
-          <TrendIndicator
-            current={thisWeekWatchTime}
-            previous={lastWeekWatchTime}
-          />
+          <div className="text-3xl font-bold text-white mb-2">{formatHours(thisWeekWatchTime)}</div>
+          <TrendIndicator current={thisWeekWatchTime} previous={lastWeekWatchTime} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-white/50">
-            Episodes Watched
-          </CardTitle>
+          <CardTitle className="text-sm font-medium text-white/50">Episodes Watched</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-3xl font-bold text-white mb-2">
-            {thisWeekEpisodes}
-          </div>
-          <TrendIndicator
-            current={thisWeekEpisodes}
-            previous={lastWeekEpisodes}
-          />
+          <div className="text-3xl font-bold text-white mb-2">{thisWeekEpisodes}</div>
+          <TrendIndicator current={thisWeekEpisodes} previous={lastWeekEpisodes} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-white/50">
-            Completion Rate
-          </CardTitle>
+          <CardTitle className="text-sm font-medium text-white/50">Completion Rate</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-3xl font-bold text-white mb-2">
             {overview.total_shows > 0
-              ? Math.round(
-                  (overview.shows_watched / overview.total_shows) * 100,
-                )
+              ? Math.round((overview.shows_watched / overview.total_shows) * 100)
               : 0}
             %
           </div>

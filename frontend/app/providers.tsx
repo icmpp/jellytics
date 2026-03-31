@@ -16,8 +16,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             refetchOnMount: false, // serve from cache to avoid layout jumps on navigation
             placeholderData: (previousData: unknown) => previousData,
             retry: 1,
-            retryDelay: (attemptIndex) =>
-              Math.min(1000 * 2 ** attemptIndex, 30000),
+            retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
             networkMode: "online",
           },
           mutations: {
@@ -28,7 +27,5 @@ export function Providers({ children }: { children: React.ReactNode }) {
       }),
   );
 
-  return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-  );
+  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
 }

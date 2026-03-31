@@ -18,6 +18,7 @@ export function useKeyboardShortcuts(onSearchOpen?: () => void) {
       }
 
       if (e.key === "?" && !e.ctrlKey && !e.metaKey) {
+        // Reserved for future help modal
       }
     };
 
