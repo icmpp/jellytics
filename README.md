@@ -11,15 +11,15 @@
 
 ### 📺 Your Jellyfin. Now with the stats it deserves.
 
-[![Docker Pulls](https://img.shields.io/docker/pulls/iicmp/jellytics?style=for-the-badge&logo=docker&logoColor=white&label=Docker%20Pulls&color=0db7ed)](https://hub.docker.com/r/iicmp/jellytics)
-[![Image Size](https://img.shields.io/docker/image-size/iicmp/jellytics/latest?style=for-the-badge&logo=docker&logoColor=white&color=0db7ed)](https://hub.docker.com/r/iicmp/jellytics)
+[![Docker Pulls](https://img.shields.io/docker/pulls/icmppp/jellytics?style=for-the-badge&logo=docker&logoColor=white&label=Docker%20Pulls&color=0db7ed)](https://hub.docker.com/r/icmppp/jellytics)
+[![Image Size](https://img.shields.io/docker/image-size/icmppp/jellytics/latest?style=for-the-badge&logo=docker&logoColor=white&color=0db7ed)](https://hub.docker.com/r/icmppp/jellytics)
 [![Stars](https://img.shields.io/github/stars/icmpp/jellytics?style=for-the-badge&logo=github&color=f5c518)](https://github.com/icmpp/jellytics)
 [![License](https://img.shields.io/github/license/icmpp/jellytics?style=for-the-badge&color=9b59b6)](LICENSE)
 
 **Jellytics** connects to your Jellyfin server and gives you a beautiful dashboard for everything you watch.
 Track your habits. Rate what you love. Build watchlists. See what the whole household is watching, all in one place, all self-hosted, all yours.
 
-[🐳 Docker Hub](https://hub.docker.com/r/iicmp/jellytics) · [🐛 Report a Bug](https://github.com/icmpp/jellytics/issues) · [💡 Request a Feature](https://github.com/icmpp/jellytics/issues)
+[🐳 Docker Hub](https://hub.docker.com/r/icmppp/jellytics) · [🐛 Report a Bug](https://github.com/icmpp/jellytics/issues) · [💡 Request a Feature](https://github.com/icmpp/jellytics/issues)
 
 </div>
 
@@ -66,7 +66,7 @@ Drop this into a new file called `docker-compose.yml`:
 ```yaml
 services:
   jellytics:
-    image: iicmp/jellytics:latest
+    image: icmppp/jellytics:latest
     container_name: jellytics
     restart: unless-stopped
     ports:
