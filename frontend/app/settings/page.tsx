@@ -43,6 +43,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
+interface SyncStatus {
+  status: string;
+  last_sync_at: string | null;
+  items_synced: number;
+  items_failed: number;
+  duration_seconds: number | null;
+}
+
 interface SyncConfig {
   sync_interval_seconds: number;
   worker_pool_size: number;
@@ -86,7 +94,7 @@ export default function SettingsPage() {
   } | null>(null);
   const [serverStatus, setServerStatus] = useState<ServerStatus>("idle");
   const [showHelp, setShowHelp] = useState(false);
-  const [syncStatus, setSyncStatus] = useState<Record<string, unknown> | null>(null);
+  const [syncStatus, setSyncStatus] = useState<SyncStatus | null>(null);
   const [syncing, setSyncing] = useState(false);
   const [loadingSyncStatus, setLoadingSyncStatus] = useState(false);
 
@@ -147,7 +155,7 @@ export default function SettingsPage() {
     if (!isAuthenticated) return;
     setLoadingSyncStatus(true);
     try {
-      const status = await api.get("/sync/status");
+      const status = await api.get<SyncStatus>("/sync/status");
       setSyncStatus(status);
     } catch (err) {
       console.error("Failed to load sync status:", err);
