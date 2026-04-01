@@ -1,7 +1,7 @@
 # ============================================
 # Stage 1: Build Go backend
 # ============================================
-FROM golang:1.25-alpine AS backend-builder
+FROM golang:alpine AS backend-builder
 
 ARG JELLYTICS_VERSION=dev
 
@@ -14,13 +14,14 @@ RUN go mod download
 
 COPY backend/ .
 RUN CGO_ENABLED=1 GOOS=linux go build \
-    -ldflags "-X main.Version=${JELLYTICS_VERSION}" \
+    -trimpath \
+    -ldflags "-s -w -X main.Version=${JELLYTICS_VERSION}" \
     -o /app/server cmd/server/main.go
 
 # ============================================
 # Stage 2: Build Next.js frontend
 # ============================================
-FROM node:20-alpine AS frontend-builder
+FROM node:alpine AS frontend-builder
 
 WORKDIR /app
 
@@ -39,12 +40,19 @@ RUN npm run build
 # ============================================
 # Stage 3: Runtime image (single container)
 # ============================================
-FROM node:25-alpine
+FROM node:alpine
+
+LABEL org.opencontainers.image.title="Jellytics"
+LABEL org.opencontainers.image.description="Jellyfin analytics and usage statistics"
+LABEL org.opencontainers.image.url="https://github.com/icmpp/jellytics"
+LABEL org.opencontainers.image.source="https://github.com/icmpp/jellytics"
+LABEL org.opencontainers.image.licenses="GPL-3.0"
+LABEL org.opencontainers.image.authors="icmpp"
 
 WORKDIR /app
 
-# Install runtime deps for backend (SQLite, wget for healthcheck)
-RUN apk add --no-cache ca-certificates sqlite-libs tzdata wget
+# Install only required runtime deps for backend
+RUN apk add --no-cache ca-certificates sqlite-libs
 
 # Create data directory
 RUN mkdir -p /app/data
@@ -73,7 +81,6 @@ ENV JELLYTICS_SYNC_INTERVAL_SECONDS=60
 
 EXPOSE 3000
 
-COPY docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+COPY --chmod=755 docker-entrypoint.sh /docker-entrypoint.sh
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
