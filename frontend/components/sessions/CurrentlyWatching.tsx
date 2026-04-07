@@ -47,7 +47,7 @@ function SessionCard({ session }: SessionCardProps) {
     <div className="shrink-0 w-[85%] sm:w-[75%] lg:w-full lg:shrink snap-start rounded-2xl border border-white/8 bg-white/3 backdrop-blur-xl p-3 sm:p-4 hover:border-white/12 hover:bg-white/5 transition-all duration-300">
       <div className="flex items-stretch gap-3">
         {/* Poster */}
-        <div className="relative w-11 shrink-0 rounded-xl overflow-hidden bg-white/5 border border-white/8 self-stretch min-h-[68px]">
+        <div className="relative w-16 shrink-0 rounded-xl overflow-hidden bg-white/5 border border-white/8 self-stretch min-h-[68px]">
           <div className="absolute inset-0 flex items-center justify-center text-white/20">
             {isEpisode ? <Tv className="h-4 w-4" /> : <Film className="h-4 w-4" />}
           </div>
