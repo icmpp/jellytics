@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS episodes (
 CREATE TABLE IF NOT EXISTS watch_history (
     id                       INTEGER  PRIMARY KEY AUTOINCREMENT,
     user_id                  INTEGER  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    show_id                  INTEGER  NOT NULL REFERENCES shows(id) ON DELETE CASCADE,
+    show_id                  INTEGER  REFERENCES shows(id) ON DELETE CASCADE,
     episode_id               INTEGER  REFERENCES episodes(id) ON DELETE SET NULL,
     movie_id                 INTEGER  REFERENCES movies(id)   ON DELETE SET NULL,
     watched_at               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -510,3 +510,43 @@ ALTER TABLE movies      ADD COLUMN userdata_hash              TEXT;
 -- Normalize any pre-existing NULL flags to 0
 UPDATE movies SET deleted_from_jellyfin = 0 WHERE deleted_from_jellyfin IS NULL;
 UPDATE shows  SET deleted_from_jellyfin = 0 WHERE deleted_from_jellyfin IS NULL;
+
+-- ─── Migration: make watch_history.show_id nullable ──────────────────────────
+-- Existing databases were created with show_id NOT NULL, which silently blocks
+-- movie entries. This recreates the table with a nullable show_id each startup
+-- (idempotent via INSERT OR IGNORE on the primary key). Runtime is negligible
+-- for typical personal-library sizes.
+CREATE TABLE IF NOT EXISTS _watch_history_v2 (
+    id                       INTEGER  PRIMARY KEY AUTOINCREMENT,
+    user_id                  INTEGER  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    show_id                  INTEGER  REFERENCES shows(id) ON DELETE CASCADE,
+    episode_id               INTEGER  REFERENCES episodes(id) ON DELETE SET NULL,
+    movie_id                 INTEGER  REFERENCES movies(id)   ON DELETE SET NULL,
+    watched_at               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    duration_watched_minutes INTEGER,
+    completion_percentage    REAL,
+    device_type              TEXT,
+    source                   TEXT,
+    jellyfin_session_id      TEXT,
+    position_ticks           BIGINT,
+    runtime_ticks            BIGINT,
+    client_name              TEXT,
+    device_name              TEXT,
+    created_at               DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+INSERT OR IGNORE INTO _watch_history_v2
+    SELECT id, user_id, show_id, episode_id, movie_id, watched_at,
+           duration_watched_minutes, completion_percentage, device_type, source,
+           jellyfin_session_id, position_ticks, runtime_ticks, client_name,
+           device_name, created_at
+    FROM watch_history;
+DROP TABLE IF EXISTS watch_history;
+ALTER TABLE _watch_history_v2 RENAME TO watch_history;
+CREATE INDEX IF NOT EXISTS idx_watch_history_user_id_watched_at    ON watch_history(user_id, watched_at);
+CREATE INDEX IF NOT EXISTS idx_watch_history_show_id_watched_at    ON watch_history(show_id, watched_at);
+CREATE INDEX IF NOT EXISTS idx_watch_history_episode_id_watched_at ON watch_history(episode_id, watched_at);
+CREATE INDEX IF NOT EXISTS idx_watch_history_watched_at            ON watch_history(watched_at);
+CREATE INDEX IF NOT EXISTS idx_watch_history_movie_id              ON watch_history(movie_id);
+CREATE INDEX IF NOT EXISTS idx_watch_history_jellyfin_session_id   ON watch_history(jellyfin_session_id);
+CREATE INDEX IF NOT EXISTS idx_watch_history_dedup                 ON watch_history(user_id, show_id, episode_id, date(watched_at));
+CREATE INDEX IF NOT EXISTS idx_watch_history_created_at            ON watch_history(created_at);

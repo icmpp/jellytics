@@ -6,6 +6,7 @@ import (
 
 	"jellytics/backend/internal/api/middleware"
 	"jellytics/backend/internal/errors"
+	"jellytics/backend/internal/models"
 	"jellytics/backend/internal/services"
 
 	"github.com/go-chi/chi/v5"
@@ -28,10 +29,19 @@ func (h *SessionsHandler) GetCurrentlyWatching(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	// Always sync from Jellyfin before returning so the data reflects the live state.
+	// Errors are non-fatal: return whatever is in the DB on failure.
+	_ = h.sessionsService.SyncActiveSessions(r.Context(), userID)
+
 	sessions, err := h.sessionsService.GetCurrentlyWatching(r.Context(), userID)
 	if err != nil {
 		handleError(w, r, err)
 		return
+	}
+
+	// Ensure JSON serialises as [] not null when there are no active sessions.
+	if sessions == nil {
+		sessions = []models.ActiveSession{}
 	}
 
 	writeJSON(w, r, map[string]interface{}{

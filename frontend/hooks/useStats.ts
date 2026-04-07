@@ -192,7 +192,9 @@ export function useCurrentlyWatching() {
   return useQuery<CurrentlyWatchingResponse>({
     queryKey: ["sessions", "currently-watching"],
     queryFn: () => api.get<CurrentlyWatchingResponse>("/sessions/currently-watching"),
-    staleTime: 5 * 60 * 1000, // Data from DB, updated by scheduled sessions sync
-    gcTime: 10 * 60 * 1000,
+    staleTime: 0,
+    gcTime: 60 * 1000,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
   });
 }

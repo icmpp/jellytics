@@ -878,17 +878,23 @@ func (s *SyncService) syncMovie(ctx context.Context, userID int, item jellyfin.I
 	}
 
 	if (watched || completionPercentage > 0) && lastWatchedAt != nil {
-		_, err = tx.ExecContext(ctx,
-			`INSERT INTO watch_history (
-					user_id, show_id, movie_id, watched_at, duration_watched_minutes, completion_percentage
-				) VALUES (?, NULL, ?, ?, ?, ?)`,
-			userID, movieID, *lastWatchedAt, totalWatchTimeMinutes, completionPercentage)
-		if err != nil {
-			log.Debug().
-				Err(err).
-				Str("movie_id", item.Id).
-				Str("movie_name", item.Name).
-				Msg("Could not insert movie into watch_history (expected if schema doesn't support movies in watch_history). Movie is still tracked in movies table.")
+		var existingWH int
+		_ = tx.QueryRowContext(ctx,
+			`SELECT COUNT(*) FROM watch_history WHERE user_id = ? AND movie_id = ? AND date(watched_at) = date(?)`,
+			userID, movieID, lastWatchedAt.Format("2006-01-02")).Scan(&existingWH)
+		if existingWH == 0 {
+			_, err = tx.ExecContext(ctx,
+				`INSERT INTO watch_history (
+						user_id, show_id, movie_id, watched_at, duration_watched_minutes, completion_percentage
+					) VALUES (?, NULL, ?, ?, ?, ?)`,
+				userID, movieID, *lastWatchedAt, totalWatchTimeMinutes, completionPercentage)
+			if err != nil {
+				log.Warn().
+					Err(err).
+					Str("movie_id", item.Id).
+					Str("movie_name", item.Name).
+					Msg("Failed to insert movie into watch_history")
+			}
 		}
 	}
 
