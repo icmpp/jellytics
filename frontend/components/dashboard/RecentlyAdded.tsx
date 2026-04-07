@@ -19,6 +19,8 @@ interface RecentItem {
   year?: number;
 }
 
+const CUTOFF_MS = Date.now() - 7 * 24 * 60 * 60 * 1000;
+
 export function RecentlyAdded() {
   const { data: moviesData } = useMovies({ limit: 10 });
   const { data: showsData } = useShows({ limit: 10 });
@@ -52,9 +54,8 @@ export function RecentlyAdded() {
         });
       }
     });
-    const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
     items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    return items.filter((item) => new Date(item.createdAt).getTime() >= cutoff).slice(0, 8);
+    return items.filter((item) => new Date(item.createdAt).getTime() >= CUTOFF_MS).slice(0, 8);
   }, [moviesData?.movies, showsData?.shows]);
 
   useEffect(() => {
