@@ -3,6 +3,7 @@
 import { useGenreBreakdown } from "@/hooks/useStats";
 import { Film, Crown, Medal, Award } from "lucide-react";
 import { ChartCard } from "@/components/ui/chart-card";
+import { Skeleton } from "@/components/ui/loading-skeleton";
 
 const GENRE_COLORS = [
   {
@@ -74,7 +75,7 @@ export function TopGenres() {
     <ChartCard
       title="Top Genres"
       icon={<Film className="h-5 w-5 text-purple-400" />}
-      isLoading={isLoading}
+      isLoading={false}
       isEmpty={isEmpty}
       emptyMessage="No genre data yet"
       emptyDescription="Watch more titles to see your top genres"
@@ -87,6 +88,15 @@ export function TopGenres() {
         ) : null
       }
     >
+      {isLoading ? (
+        <div className="space-y-3">
+          <Skeleton className="h-[78px] rounded-xl" />
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-[68px] rounded-xl" />
+          ))}
+          <Skeleton className="h-[56px] rounded-xl" />
+        </div>
+      ) : (
       <div className="space-y-3">
         {topGenre && (
           <div className="relative overflow-hidden rounded-xl border border-fuchsia-400/20 bg-linear-to-br from-fuchsia-500/15 via-purple-500/10 to-transparent p-4">
@@ -201,6 +211,7 @@ export function TopGenres() {
           </div>
         )}
       </div>
+      )}
     </ChartCard>
   );
 }

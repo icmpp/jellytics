@@ -61,9 +61,12 @@ export function useSyncStatus() {
         setSyncStatus(health.last_sync);
       }
 
+      if (hasData && !hasSyncedData) {
+        invalidateAllQueries();
+      }
+
       if (initialSyncInProgress && hasData) {
         setSyncComplete();
-        invalidateAllQueries();
       }
 
       setError(null);
@@ -75,7 +78,7 @@ export function useSyncStatus() {
     } finally {
       setIsLoading(false);
     }
-  }, [initialSyncInProgress, setSyncComplete, invalidateAllQueries]);
+  }, [hasSyncedData, initialSyncInProgress, setSyncComplete, invalidateAllQueries]);
 
   const triggerSync = useCallback(async () => {
     try {

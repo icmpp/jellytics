@@ -314,7 +314,7 @@ func ValidateURL(ctx context.Context, serverURL string) error {
 		return errors.Wrap(err, errors.CodeValidationError, "Invalid server URL")
 	}
 
-	req.Header.Set("X-Emby-Authorization", authHeaderValue)
+	req.Header.Set("Authorization", authHeaderValue)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -347,7 +347,7 @@ func GetServerID(ctx context.Context, serverURL string) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, errors.CodeValidationError, "Invalid server URL")
 	}
-	req.Header.Set("X-Emby-Authorization", authHeaderValue)
+	req.Header.Set("Authorization", authHeaderValue)
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -405,7 +405,7 @@ func (c *Client) Authenticate(ctx context.Context, username, password string) (*
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("X-Emby-Authorization", authHeaderValue)
+	req.Header.Set("Authorization", authHeaderValue)
 
 	startTime := time.Now()
 	resp, err := c.httpClient.Do(req)
@@ -494,8 +494,7 @@ func (c *Client) getUserItemsPage(ctx context.Context, accessToken, userID strin
 	if err != nil {
 		return nil, errors.Wrap(err, errors.CodeInternalError, "Failed to create request")
 	}
-	req.Header.Set("X-Emby-Token", accessToken)
-	req.Header.Set("X-Emby-Authorization", fmt.Sprintf("MediaBrowser Client=\"Jellytics\", Device=\"Server\", DeviceId=\"jellytics-server\", Version=\"1.0.0\", Token=\"%s\"", accessToken))
+	req.Header.Set("Authorization", fmt.Sprintf("MediaBrowser Client=\"Jellytics\", Device=\"Server\", DeviceId=\"jellytics-server\", Version=\"1.0.0\", Token=\"%s\"", accessToken))
 
 	q := req.URL.Query()
 	q.Add("Recursive", "true")
@@ -550,8 +549,7 @@ func (c *Client) GetEpisodesForSeries(ctx context.Context, accessToken, seriesID
 		return nil, errors.Wrap(err, errors.CodeInternalError, "Failed to create request")
 	}
 
-	req.Header.Set("X-Emby-Token", accessToken)
-	req.Header.Set("X-Emby-Authorization", fmt.Sprintf("MediaBrowser Client=\"Jellytics\", Device=\"Server\", DeviceId=\"jellytics-server\", Version=\"1.0.0\", Token=\"%s\"", accessToken))
+	req.Header.Set("Authorization", fmt.Sprintf("MediaBrowser Client=\"Jellytics\", Device=\"Server\", DeviceId=\"jellytics-server\", Version=\"1.0.0\", Token=\"%s\"", accessToken))
 
 	q := req.URL.Query()
 	q.Add("Fields", "Overview,Genres,ProviderIds,ImageTags,UserData")
@@ -656,8 +654,7 @@ func (c *Client) GetSessions(ctx context.Context, accessToken string) (*Sessions
 		return nil, errors.Wrap(err, errors.CodeInternalError, "Failed to create request")
 	}
 
-	req.Header.Set("X-Emby-Token", accessToken)
-	req.Header.Set("X-Emby-Authorization", fmt.Sprintf("MediaBrowser Client=\"Jellytics\", Device=\"Server\", DeviceId=\"jellytics-server\", Version=\"1.0.0\", Token=\"%s\"", accessToken))
+	req.Header.Set("Authorization", fmt.Sprintf("MediaBrowser Client=\"Jellytics\", Device=\"Server\", DeviceId=\"jellytics-server\", Version=\"1.0.0\", Token=\"%s\"", accessToken))
 
 	q := req.URL.Query()
 	q.Add("ActiveWithinSeconds", "300") // Only get sessions active within last 5 minutes
