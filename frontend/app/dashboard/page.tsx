@@ -71,8 +71,9 @@ function DashboardHeaderActions() {
 
   return (
     <div className="flex items-center gap-2">
-      {current && current !== "dev" && (
-        isOutdated && latestUrl ? (
+      {current &&
+        current !== "dev" &&
+        (isOutdated && latestUrl ? (
           <a
             href={latestUrl}
             target="_blank"
@@ -80,16 +81,15 @@ function DashboardHeaderActions() {
             className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 border border-amber-500/25 text-amber-400 hover:bg-amber-500/20 hover:border-amber-500/40 transition-all"
             title="Update available"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />
-            v{current.replace(/^v/, "")}
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />v
+            {current.replace(/^v/, "")}
           </a>
         ) : (
           <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white/5 border border-white/8 text-white/40">
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-400/60 shrink-0" />
-            v{current.replace(/^v/, "")}
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-400/60 shrink-0" />v
+            {current.replace(/^v/, "")}
           </span>
-        )
-      )}
+        ))}
       <a
         href="https://github.com/icmpp/jellytics"
         target="_blank"
