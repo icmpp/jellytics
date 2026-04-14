@@ -290,6 +290,9 @@ func (s *SyncService) SyncUser(ctx context.Context, userID int) error {
 			Int("user_id", userID).
 			Str("server_url", serverURL).
 			Msg("Failed to fetch shows from Jellyfin")
+		if errors.IsCode(err, errors.CodeInvalidCredentials) {
+			_ = tokenService.InvalidateToken(ctx, userID)
+		}
 		s.updateSyncLog(ctx, syncLogID, "failed", 0, 0, err.Error())
 		return errors.Wrap(err, errors.CodeSyncFailed, "Failed to fetch shows from Jellyfin")
 	}

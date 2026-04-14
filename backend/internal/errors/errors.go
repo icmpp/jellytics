@@ -59,3 +59,9 @@ func Is(err, target error) bool {
 func As(err error, target interface{}) bool {
 	return errors.As(err, target)
 }
+
+// IsCode reports whether any error in err's chain is an *Error with the given code.
+func IsCode(err error, code string) bool {
+	var e *Error
+	return errors.As(err, &e) && e.Code == code
+}

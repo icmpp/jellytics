@@ -53,6 +53,10 @@ func (s *SessionsService) SyncActiveSessions(ctx context.Context, userID int) er
 
 	sessionsResp, err := jfClient.GetSessions(ctx, accessToken)
 	if err != nil {
+		if errors.IsCode(err, errors.CodeInvalidCredentials) {
+			_ = tokenService.InvalidateToken(ctx, userID)
+			return err
+		}
 		log.Warn().
 			Err(err).
 			Int("user_id", userID).

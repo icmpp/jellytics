@@ -329,7 +329,7 @@ func (h *AuthHandler) getOrCreateUser(ctx context.Context, authResp *jellyfin.Au
 			Msg("Found existing user, updating credentials")
 
 		_, err = h.db.ExecContext(ctx,
-			"UPDATE users SET jellyfin_access_token = ?, updated_at = ? WHERE id = ?",
+			"UPDATE users SET jellyfin_access_token = ?, jellyfin_token_valid = 1, updated_at = ? WHERE id = ?",
 			authResp.AccessToken, time.Now(), user.ID)
 		if err != nil {
 			log.Error().Err(err).Int("user_id", user.ID).Msg("Failed to update user credentials")

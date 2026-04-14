@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     jellyfin_user_id         TEXT     NOT NULL UNIQUE,
     jellyfin_server_url      TEXT     NOT NULL,
     jellyfin_access_token    TEXT,
+    jellyfin_token_valid     INTEGER  NOT NULL DEFAULT 1,
     jellyfin_token_expires_at DATETIME,
     jellyfin_api_key         TEXT,
     password_hash            TEXT,
@@ -489,6 +490,7 @@ END;
 -- columns are already declared in the CREATE TABLE statements above.
 
 ALTER TABLE users       ADD COLUMN jellyfin_api_key         TEXT;
+ALTER TABLE users       ADD COLUMN jellyfin_token_valid     INTEGER NOT NULL DEFAULT 1;
 ALTER TABLE shows       ADD COLUMN jellyfin_last_modified_at DATETIME;
 ALTER TABLE shows       ADD COLUMN sync_hash                 TEXT;
 ALTER TABLE shows       ADD COLUMN local_poster_path         TEXT;
