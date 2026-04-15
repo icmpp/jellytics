@@ -28,10 +28,7 @@ function Ring({ pct, label, progress, target, strokeClass, showRemaining, onClic
   const remaining = Math.max(0, target - progress);
 
   return (
-    <button
-      onClick={onClick}
-      className="group flex flex-col items-center gap-2 focus:outline-none"
-    >
+    <button onClick={onClick} className="group flex flex-col items-center gap-2 focus:outline-none">
       <div
         className="relative transition-transform duration-200 group-hover:scale-[1.04]"
         style={{ width: size, height: size }}
@@ -43,13 +40,19 @@ function Ring({ pct, label, progress, target, strokeClass, showRemaining, onClic
           style={{ transform: "rotate(-90deg)" }}
         >
           <circle
-            cx={size / 2} cy={size / 2} r={r}
-            fill="none" strokeWidth={sw}
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            strokeWidth={sw}
             className="stroke-white/8"
           />
           <circle
-            cx={size / 2} cy={size / 2} r={r}
-            fill="none" strokeWidth={sw}
+            cx={size / 2}
+            cy={size / 2}
+            r={r}
+            fill="none"
+            strokeWidth={sw}
             className={complete ? "stroke-emerald-400" : strokeClass}
             strokeDasharray={circ}
             strokeDashoffset={offset}
@@ -134,8 +137,7 @@ export function GoalsWidget() {
 
   if (!hasGoals && !hasStreak) return null;
 
-  const weeklyPct =
-    data.weekly_target > 0 ? (data.weekly_progress / data.weekly_target) * 100 : 0;
+  const weeklyPct = data.weekly_target > 0 ? (data.weekly_progress / data.weekly_target) * 100 : 0;
   const monthlyPct =
     data.monthly_target > 0 ? (data.monthly_progress / data.monthly_target) * 100 : 0;
 
@@ -181,7 +183,9 @@ export function GoalsWidget() {
 
       {/* Streak */}
       {hasStreak && (
-        <div className={`relative flex items-center justify-between gap-3 ${hasGoals ? "pt-4 border-t border-white/6" : ""}`}>
+        <div
+          className={`relative flex items-center justify-between gap-3 ${hasGoals ? "pt-4 border-t border-white/6" : ""}`}
+        >
           <div className="flex items-center gap-2 shrink-0">
             <Flame className="h-4 w-4 text-amber-400" />
             <span className="text-2xl font-bold text-white tabular-nums leading-none">
@@ -195,9 +199,7 @@ export function GoalsWidget() {
             {data.longest_streak > 0 && (
               <div className="flex items-center gap-1 text-white/25">
                 <Trophy className="h-3 w-3 text-amber-400/40" />
-                <span className="text-[10px] tabular-nums">
-                  best {data.longest_streak}d
-                </span>
+                <span className="text-[10px] tabular-nums">best {data.longest_streak}d</span>
               </div>
             )}
           </div>

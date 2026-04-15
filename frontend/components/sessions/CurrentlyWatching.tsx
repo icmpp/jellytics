@@ -73,7 +73,8 @@ function SessionCard({ session }: SessionCardProps) {
               {isEpisode && session.series_name && (
                 <p className="text-[11px] text-white/40 truncate mt-0.5">
                   {session.series_name}
-                  {session.season_number && session.episode_number &&
+                  {session.season_number &&
+                    session.episode_number &&
                     ` · S${session.season_number}E${session.episode_number}`}
                 </p>
               )}
@@ -104,7 +105,9 @@ function SessionCard({ session }: SessionCardProps) {
             </div>
             <div className="flex items-center justify-between text-[10px] text-white/35 tabular-nums">
               <span>{timePosition}</span>
-              <span>{Math.round(session.playback_percentage)}% · {timeRemaining} left</span>
+              <span>
+                {Math.round(session.playback_percentage)}% · {timeRemaining} left
+              </span>
             </div>
           </div>
 
