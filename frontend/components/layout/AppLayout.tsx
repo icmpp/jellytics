@@ -31,23 +31,13 @@ function AppLayoutContent({ children }: AppLayoutProps) {
   }, []);
 
   return (
-    <div
-      className="min-h-screen"
-      style={{
-        background: `
-          radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 80, 200, 0.12), transparent),
-          radial-gradient(ellipse 60% 40% at 90% 50%, rgba(80, 100, 200, 0.08), transparent),
-          radial-gradient(ellipse 50% 30% at 10% 80%, rgba(100, 80, 180, 0.06), transparent),
-          linear-gradient(to bottom, #0a0a0f, #0d0d14)
-        `,
-      }}
-    >
+    <div className="min-h-screen bg-app-shell">
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       <SidebarNavigation onSearchClick={() => setSearchOpen(true)} />
       <main
         id="main-content"
         className={cn(
-          "min-h-dvh transition-all duration-300 flex flex-col overflow-x-hidden",
+          "min-h-dvh transition-all duration-300 flex flex-col overflow-x-clip",
           isMobile
             ? "pt-[calc(3.5rem+env(safe-area-inset-top,0px)+1rem)] px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
             : "px-0 py-0",

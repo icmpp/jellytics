@@ -29,7 +29,7 @@ import {
 import { format, formatDistanceToNow, isToday, isYesterday, parseISO } from "date-fns";
 import Link from "next/link";
 import Image from "next/image";
-import { formatRuntime, resolvePosterUrl, PROGRESS_BAR_CLASS } from "@/lib/utils";
+import { cn, formatRuntime, resolvePosterUrl, PROGRESS_BAR_CLASS } from "@/lib/utils";
 import { HistoryCalendar } from "@/components/history/HistoryCalendar";
 
 function formatDateHeader(dateStr: string): string {
@@ -373,30 +373,40 @@ export default function HistoryPage() {
           description="Your viewing timeline"
           icon={<History className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
           actions={
-            <div className="flex flex-wrap gap-3 items-center">
-              <div className="flex h-11 rounded-lg border border-white/8 overflow-hidden">
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+              <div
+                className="grid h-11 w-full max-w-56 shrink-0 grid-cols-2 overflow-hidden rounded-xl border border-white/8 bg-white/3 shadow-none sm:w-auto sm:min-w-50 sm:max-w-none"
+                role="group"
+                aria-label="View mode"
+              >
                 <button
+                  type="button"
                   onClick={() => setViewMode("list")}
-                  className={`flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
+                  className={cn(
+                    "flex min-h-0 min-w-0 items-center justify-center gap-2 border-r border-white/10 px-3 text-sm font-medium transition-colors outline-none",
+                    "focus-visible:z-10 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:ring-purple-500/30 focus-visible:ring-inset",
                     viewMode === "list"
                       ? "bg-purple-500/20 text-purple-400"
-                      : "text-white/50 hover:text-white"
-                  }`}
+                      : "text-white/50 hover:bg-white/5 hover:text-white",
+                  )}
                   aria-pressed={viewMode === "list"}
                 >
-                  <LayoutList className="h-4 w-4" />
+                  <LayoutList className="h-4 w-4 shrink-0" />
                   List
                 </button>
                 <button
+                  type="button"
                   onClick={() => setViewMode("calendar")}
-                  className={`flex items-center gap-2 px-3 py-2 text-sm transition-colors ${
+                  className={cn(
+                    "flex min-h-0 min-w-0 items-center justify-center gap-2 px-3 text-sm font-medium transition-colors outline-none",
+                    "focus-visible:z-10 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:ring-purple-500/30 focus-visible:ring-inset",
                     viewMode === "calendar"
                       ? "bg-purple-500/20 text-purple-400"
-                      : "text-white/50 hover:text-white"
-                  }`}
+                      : "text-white/50 hover:bg-white/5 hover:text-white",
+                  )}
                   aria-pressed={viewMode === "calendar"}
                 >
-                  <CalendarDays className="h-4 w-4" />
+                  <CalendarDays className="h-4 w-4 shrink-0" />
                   Calendar
                 </button>
               </div>

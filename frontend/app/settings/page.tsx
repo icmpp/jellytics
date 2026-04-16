@@ -5,8 +5,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { api, APIError } from "@/lib/api";
 import { toast } from "@/hooks/useToast";
-import { Settings as SettingsIcon } from "lucide-react";
+import { Settings as SettingsIcon, Save, Loader2 } from "lucide-react";
 import { AppLayout, PageHeader, PageContent } from "@/components/layout";
+import { Button } from "@/components/ui/button";
 import { usePreferences, useUpdatePreferences } from "@/hooks/usePreferences";
 import { useTags, useCreateTag, useDeleteTag } from "@/hooks/useTags";
 import { useRatingsList } from "@/hooks/useRatings";
@@ -19,7 +20,6 @@ import { DisplaySettingsCard } from "@/components/settings/DisplaySettingsCard";
 import { TagsCard } from "@/components/settings/TagsCard";
 import { NotificationsCard } from "@/components/settings/NotificationsCard";
 import { DataManagementCard } from "@/components/settings/DataManagementCard";
-import { SavePreferencesCard } from "@/components/settings/SavePreferencesCard";
 import type { ServerStatus } from "@/components/settings/JellyfinServerCard";
 import type { SyncConfig, SystemSettingsData } from "@/components/settings/SystemConfigCard";
 import type { SyncStatus, UserPrefs } from "@/components/settings/types";
@@ -76,7 +76,6 @@ export default function SettingsPage() {
   const { data: preferences = {}, isLoading: loadingPreferences } = usePreferences();
   const updatePreferences = useUpdatePreferences();
   const [prefs, setPrefs] = useState<UserPrefs>(DEFAULT_PREFS);
-  const [preferencesSuccess, setPreferencesSuccess] = useState("");
 
   // Tags
   const { data: tags = [] } = useTags();
@@ -315,13 +314,16 @@ export default function SettingsPage() {
   const handleSavePreferences = async () => {
     try {
       await updatePreferences.mutateAsync(prefs);
-      setPreferencesSuccess("Preferences saved successfully!");
       setError("");
       setServerSettingsSuccess("");
+      toast.success({
+        title: "Preferences saved",
+        description: "Your preferences have been updated successfully.",
+      });
     } catch (err) {
-      console.warn("Failed to save preferences:", err);
-      setError("Failed to save preferences");
-      setPreferencesSuccess("");
+      const msg = err instanceof APIError ? err.message : "Failed to save preferences";
+      setError(msg);
+      toast.error({ title: "Save failed", description: msg });
     }
   };
 
@@ -338,6 +340,24 @@ export default function SettingsPage() {
           title="Settings"
           description="Manage your Jellyfin server connection and preferences"
           icon={<SettingsIcon className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
+          actions={
+            <Button
+              onClick={handleSavePreferences}
+              disabled={updatePreferences.isPending || loadingPreferences}
+            >
+              {updatePreferences.isPending ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4" />
+                  Save
+                </>
+              )}
+            </Button>
+          }
         />
 
         <section className="grid gap-6 lg:grid-cols-2">
@@ -393,21 +413,13 @@ export default function SettingsPage() {
           onSave={handleSaveSystemSettings}
         />
 
-        <section className="grid gap-6 lg:grid-cols-2">
-          <DataManagementCard
-            prefs={prefs}
-            serverURL={serverURL}
-            syncStatus={syncStatus}
-            ratings={ratings}
-            reviews={reviews}
-          />
-          <SavePreferencesCard
-            preferencesSuccess={preferencesSuccess}
-            isPending={updatePreferences.isPending}
-            isLoading={loadingPreferences}
-            onSave={handleSavePreferences}
-          />
-        </section>
+        <DataManagementCard
+          prefs={prefs}
+          serverURL={serverURL}
+          syncStatus={syncStatus}
+          ratings={ratings}
+          reviews={reviews}
+        />
       </PageContent>
     </AppLayout>
   );

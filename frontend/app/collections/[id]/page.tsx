@@ -106,7 +106,7 @@ export default function CollectionDetailPage() {
               }}
             >
               <PopoverTrigger asChild>
-                <Button variant="outline" size="sm">
+                <Button variant="outline">
                   <Pencil className="h-3 w-3 mr-2" />
                   Edit
                 </Button>

@@ -71,7 +71,7 @@ export default function ShowsPage() {
     <MediaLibraryPage
       mediaType="shows"
       title="Shows"
-      description="Browse and track your TV show collection"
+      description="Your TV show library"
       itemLabel="show"
       filters={filters}
       isLoading={isLoading}

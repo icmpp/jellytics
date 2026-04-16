@@ -278,345 +278,349 @@ export default function ShowDetailPage() {
 
   return (
     <AppLayout>
-      <div className="flex justify-start mb-4 md:mb-6">
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] md:top-0 z-10 -mx-4 px-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 pt-2 pb-3 bg-app-shell border-b border-white/6">
         <Breadcrumb items={breadcrumbItems} />
       </div>
 
-      {show.removed_from_library && (
-        <div className="mb-4 md:mb-6 flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm">
-          <Archive className="h-4 w-4 shrink-0" />
-          <span>Removed from library. Viewing preserved data.</span>
-        </div>
-      )}
-
-      <div className="grid gap-6 md:gap-8 lg:grid-cols-[280px_1fr] min-w-0 w-full">
-        <div className="shrink-0 w-full max-w-[180px] sm:max-w-[200px] mx-auto lg:max-w-none lg:mx-0">
-          <div className={MEDIA_POSTER_CONTAINER}>
-            {show.jellyfin_id && !posterError ? (
-              <Image
-                src={getShowPosterUrl(show.jellyfin_id)}
-                alt={show.title}
-                fill
-                className="object-contain"
-                sizes="280px"
-                loading="eager"
-                priority
-                onError={() => setPosterError(true)}
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <Tv className="h-16 w-16 text-white/20" />
-              </div>
-            )}
+      <div className="mt-4 md:mt-8 space-y-4 md:space-y-6">
+        {show.removed_from_library && (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm">
+            <Archive className="h-4 w-4 shrink-0" />
+            <span>Removed from library. Viewing preserved data.</span>
           </div>
-        </div>
+        )}
 
-        <div className="space-y-6 min-w-0 w-full max-w-full">
-          <div className="min-w-0">
-            <div className="flex flex-wrap items-start gap-3 sm:gap-4 mb-4">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 wrap-break-word">
-                  {show.title}
-                </h1>
-                <div className="flex flex-wrap items-center gap-3 text-white/50">
-                  {show.year && (
-                    <div className="flex items-center gap-1.5">
-                      <Calendar className="h-4 w-4" />
-                      <span>{show.year}</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-1.5">
-                    {show.status === "watched" ? (
-                      <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                    ) : show.status === "watching" ? (
-                      <PlayCircle className="h-4 w-4 text-blue-400" />
-                    ) : (
-                      <Tv className="h-4 w-4" />
+        <div className="grid gap-6 md:gap-8 lg:grid-cols-[280px_1fr] min-w-0 w-full">
+          <div className="shrink-0 w-full max-w-[180px] sm:max-w-[200px] mx-auto lg:max-w-none lg:mx-0">
+            <div className={MEDIA_POSTER_CONTAINER}>
+              {show.jellyfin_id && !posterError ? (
+                <Image
+                  src={getShowPosterUrl(show.jellyfin_id)}
+                  alt={show.title}
+                  fill
+                  className="object-contain"
+                  sizes="280px"
+                  loading="eager"
+                  priority
+                  onError={() => setPosterError(true)}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center">
+                  <Tv className="h-16 w-16 text-white/20" />
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-6 min-w-0 w-full max-w-full">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-start gap-3 sm:gap-4 mb-4">
+                <div className="flex-1 min-w-0">
+                  <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 wrap-break-word">
+                    {show.title}
+                  </h1>
+                  <div className="flex flex-wrap items-center gap-3 text-white/50">
+                    {show.year && (
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-4 w-4" />
+                        <span>{show.year}</span>
+                      </div>
                     )}
-                    <span>{watchStatusText}</span>
+                    <div className="flex items-center gap-1.5">
+                      {show.status === "watched" ? (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                      ) : show.status === "watching" ? (
+                        <PlayCircle className="h-4 w-4 text-blue-400" />
+                      ) : (
+                        <Tv className="h-4 w-4" />
+                      )}
+                      <span>{watchStatusText}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {settings?.jellyfin_server_url && show.jellyfin_id && (
-                  <a
-                    href={buildJellyfinItemUrl(
-                      settings.jellyfin_server_url,
-                      show.jellyfin_id,
-                      settings.jellyfin_server_id,
-                      "show",
-                    )}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      aria-label={
-                        show.status === "watching" || (show.watched_episodes ?? 0) > 0
-                          ? "Resume in Jellyfin"
-                          : "Play in Jellyfin"
-                      }
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {settings?.jellyfin_server_url && show.jellyfin_id && (
+                    <a
+                      href={buildJellyfinItemUrl(
+                        settings.jellyfin_server_url,
+                        show.jellyfin_id,
+                        settings.jellyfin_server_id,
+                        "show",
+                      )}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      <PlayCircle className="size-6" />
-                    </Button>
-                  </a>
-                )}
-                {!show.removed_from_library && (
-                  <>
-                    <AddRemoveWatchlistButton
-                      itemType="show"
-                      itemId={showId}
-                      variant="outline"
-                      size="icon"
-                      iconOnly
-                    />
-                    <AddToCollectionButton
-                      itemType="show"
-                      itemId={showId}
-                      variant="outline"
-                      size="icon"
-                      iconOnly
-                    />
-                    <AddTagButton
-                      itemType="show"
-                      itemId={showId}
-                      variant="outline"
-                      size="icon"
-                      iconOnly
-                    />
-                    <RemoveFromLibraryButton
-                      itemType="show"
-                      itemId={showId}
-                      itemTitle={show.title}
-                      variant="outline"
-                      size="icon"
-                      iconOnly
-                      className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/30"
-                    />
-                  </>
-                )}
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        aria-label={
+                          show.status === "watching" || (show.watched_episodes ?? 0) > 0
+                            ? "Resume in Jellyfin"
+                            : "Play in Jellyfin"
+                        }
+                      >
+                        <PlayCircle className="size-6" />
+                      </Button>
+                    </a>
+                  )}
+                  {!show.removed_from_library && (
+                    <>
+                      <AddRemoveWatchlistButton
+                        itemType="show"
+                        itemId={showId}
+                        variant="outline"
+                        size="icon"
+                        iconOnly
+                      />
+                      <AddToCollectionButton
+                        itemType="show"
+                        itemId={showId}
+                        variant="outline"
+                        size="icon"
+                        iconOnly
+                      />
+                      <AddTagButton
+                        itemType="show"
+                        itemId={showId}
+                        variant="outline"
+                        size="icon"
+                        iconOnly
+                      />
+                      <RemoveFromLibraryButton
+                        itemType="show"
+                        itemId={showId}
+                        itemTitle={show.title}
+                        variant="outline"
+                        size="icon"
+                        iconOnly
+                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/30"
+                      />
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
 
-            {(genres.length > 0 || itemTags.length > 0) && (
-              <div className="flex flex-wrap gap-2 mb-6">
-                {itemTags.map((tag) => (
-                  <TagBadge
-                    key={tag.id}
-                    name={tag.name}
-                    color={tag.color}
-                    onRemove={() =>
-                      removeTag.mutate({
-                        tagId: tag.id,
+              {(genres.length > 0 || itemTags.length > 0) && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {itemTags.map((tag) => (
+                    <TagBadge
+                      key={tag.id}
+                      name={tag.name}
+                      color={tag.color}
+                      onRemove={() =>
+                        removeTag.mutate({
+                          tagId: tag.id,
+                          itemType: "show",
+                          itemId: showId,
+                        })
+                      }
+                    />
+                  ))}
+                  {genres.map((genre) => (
+                    <span
+                      key={genre}
+                      className="px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                    >
+                      {genre}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              {show.overview && (
+                <p className="text-white/60 mb-6 leading-relaxed wrap-break-word">
+                  {show.overview}
+                </p>
+              )}
+
+              <div className="mb-6">
+                <label className="text-sm font-medium text-white/40 mb-3 block">Your Rating</label>
+                <RatingStars
+                  rating={rating?.rating || null}
+                  onRatingChange={(newRating) => {
+                    if (rating && rating.rating === newRating) {
+                      deleteRating.mutate({ itemType: "show", itemId: showId });
+                    } else {
+                      setRating.mutate({
                         itemType: "show",
                         itemId: showId,
-                      })
+                        rating: newRating,
+                      });
                     }
-                  />
-                ))}
-                {genres.map((genre) => (
-                  <span
-                    key={genre}
-                    className="px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                  >
-                    {genre}
-                  </span>
-                ))}
+                  }}
+                  interactive
+                  showValue
+                />
               </div>
-            )}
 
-            {show.overview && (
-              <p className="text-white/60 mb-6 leading-relaxed wrap-break-word">{show.overview}</p>
-            )}
-
-            <div className="mb-6">
-              <label className="text-sm font-medium text-white/40 mb-3 block">Your Rating</label>
-              <RatingStars
-                rating={rating?.rating || null}
-                onRatingChange={(newRating) => {
-                  if (rating && rating.rating === newRating) {
-                    deleteRating.mutate({ itemType: "show", itemId: showId });
-                  } else {
-                    setRating.mutate({
-                      itemType: "show",
-                      itemId: showId,
-                      rating: newRating,
-                    });
-                  }
-                }}
-                interactive
-                showValue
-              />
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
-              <Card className="hover:bg-white/5 transition-colors">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-2 rounded-lg bg-purple-500/20 border border-purple-500/30 shrink-0">
-                      <Eye className="h-4 w-4 text-purple-400" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-lg sm:text-xl font-bold text-white">
-                        {show.watched_episodes}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
+                <Card className="hover:bg-white/5 transition-colors">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="p-2 rounded-lg bg-purple-500/20 border border-purple-500/30 shrink-0">
+                        <Eye className="h-4 w-4 text-purple-400" />
                       </div>
-                      <div className="text-xs text-white/40">Watched</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="hover:bg-white/5 transition-colors">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-500/30 shrink-0">
-                      <FilmIcon className="h-4 w-4 text-blue-400" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-lg sm:text-xl font-bold text-white">
-                        {show.total_episodes || 0}
+                      <div className="min-w-0">
+                        <div className="text-lg sm:text-xl font-bold text-white">
+                          {show.watched_episodes}
+                        </div>
+                        <div className="text-xs text-white/40">Watched</div>
                       </div>
-                      <div className="text-xs text-white/40">Total</div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="hover:bg-white/5 transition-colors">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 shrink-0">
-                      <Percent className="h-4 w-4 text-emerald-400" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-lg sm:text-xl font-bold text-white">{progress}%</div>
-                      <div className="text-xs text-white/40">Complete</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card className="hover:bg-white/5 transition-colors">
-                <CardContent className="p-3 sm:p-4">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-500/30 shrink-0">
-                      <Clock className="h-4 w-4 text-amber-400" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-lg sm:text-xl font-bold text-white">
-                        {Math.round(show.total_watch_time_minutes / 60)}
+                  </CardContent>
+                </Card>
+                <Card className="hover:bg-white/5 transition-colors">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-500/30 shrink-0">
+                        <FilmIcon className="h-4 w-4 text-blue-400" />
                       </div>
-                      <div className="text-xs text-white/40">Hours</div>
+                      <div className="min-w-0">
+                        <div className="text-lg sm:text-xl font-bold text-white">
+                          {show.total_episodes || 0}
+                        </div>
+                        <div className="text-xs text-white/40">Total</div>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+                  </CardContent>
+                </Card>
+                <Card className="hover:bg-white/5 transition-colors">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 shrink-0">
+                        <Percent className="h-4 w-4 text-emerald-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-lg sm:text-xl font-bold text-white">{progress}%</div>
+                        <div className="text-xs text-white/40">Complete</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="hover:bg-white/5 transition-colors">
+                  <CardContent className="p-3 sm:p-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-500/30 shrink-0">
+                        <Clock className="h-4 w-4 text-amber-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-lg sm:text-xl font-bold text-white">
+                          {Math.round(show.total_watch_time_minutes / 60)}
+                        </div>
+                        <div className="text-xs text-white/40">Hours</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
 
-            {(show.total_episodes && show.total_episodes > 0) ||
-            show.first_watched_at ||
-            show.last_watched_at ? (
-              <div className="mb-6 p-3 sm:p-4 rounded-xl bg-white/3 border border-white/8">
-                <div className="flex flex-wrap items-center justify-between gap-2 text-sm mb-2">
-                  <span className="text-white/50">
-                    {show.last_watched_at ? (
-                      <>Last watched {new Date(show.last_watched_at).toLocaleDateString()}</>
-                    ) : show.first_watched_at ? (
-                      <>First watched {new Date(show.first_watched_at).toLocaleDateString()}</>
-                    ) : (
-                      "Episode Progress"
-                    )}
-                  </span>
-                  {show.total_episodes && show.total_episodes > 0 && (
-                    <span className="font-medium text-white shrink-0">
-                      {show.watched_episodes}/{show.total_episodes} · {progress}%
+              {(show.total_episodes && show.total_episodes > 0) ||
+              show.first_watched_at ||
+              show.last_watched_at ? (
+                <div className="mb-6 p-3 sm:p-4 rounded-xl bg-white/3 border border-white/8">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm mb-2">
+                    <span className="text-white/50">
+                      {show.last_watched_at ? (
+                        <>Last watched {new Date(show.last_watched_at).toLocaleDateString()}</>
+                      ) : show.first_watched_at ? (
+                        <>First watched {new Date(show.first_watched_at).toLocaleDateString()}</>
+                      ) : (
+                        "Episode Progress"
+                      )}
                     </span>
+                    {show.total_episodes && show.total_episodes > 0 && (
+                      <span className="font-medium text-white shrink-0">
+                        {show.watched_episodes}/{show.total_episodes} · {progress}%
+                      </span>
+                    )}
+                  </div>
+                  {show.total_episodes && show.total_episodes > 0 && (
+                    <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-full bg-linear-to-r from-purple-500 to-purple-400 transition-all"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
                   )}
                 </div>
-                {show.total_episodes && show.total_episodes > 0 && (
-                  <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="h-full bg-linear-to-r from-purple-500 to-purple-400 transition-all"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                )}
-              </div>
-            ) : null}
+              ) : null}
 
-            <ReviewEditor
-              review={review || null}
-              onSave={(reviewText, notes) => {
-                createOrUpdateReview.mutate({
-                  itemType: "show",
-                  itemId: showId,
-                  reviewText,
-                  notes,
-                });
-              }}
-              onDelete={() => {
-                deleteReview.mutate({ itemType: "show", itemId: showId });
-              }}
-              isLoading={createOrUpdateReview.isPending}
-              isDeleting={deleteReview.isPending}
-            />
+              <ReviewEditor
+                review={review || null}
+                onSave={(reviewText, notes) => {
+                  createOrUpdateReview.mutate({
+                    itemType: "show",
+                    itemId: showId,
+                    reviewText,
+                    notes,
+                  });
+                }}
+                onDelete={() => {
+                  deleteReview.mutate({ itemType: "show", itemId: showId });
+                }}
+                isLoading={createOrUpdateReview.isPending}
+                isDeleting={deleteReview.isPending}
+              />
 
-            <div className="mt-6 space-y-4">
-              {epList.length > 0 ? (
-                <>
-                  {nextEpisode && show.status !== "watched" && (
-                    <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                      <div className="p-2 rounded-lg bg-blue-500/20">
-                        <PlayCircle className="h-5 w-5 text-blue-400" />
+              <div className="mt-6 space-y-4">
+                {epList.length > 0 ? (
+                  <>
+                    {nextEpisode && show.status !== "watched" && (
+                      <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
+                        <div className="p-2 rounded-lg bg-blue-500/20">
+                          <PlayCircle className="h-5 w-5 text-blue-400" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs text-blue-400/70 mb-0.5">Next to watch</p>
+                          <p className="text-sm font-medium text-white truncate">
+                            S{nextEpisode.season_number}E{nextEpisode.episode_number}
+                            {nextEpisode.title ? ` — ${nextEpisode.title}` : ""}
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-blue-400/70 mb-0.5">Next to watch</p>
-                        <p className="text-sm font-medium text-white truncate">
-                          S{nextEpisode.season_number}E{nextEpisode.episode_number}
-                          {nextEpisode.title ? ` — ${nextEpisode.title}` : ""}
-                        </p>
-                      </div>
-                    </div>
-                  )}
+                    )}
 
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-white flex items-center gap-2">
+                          <Tv className="h-5 w-5 text-purple-400" />
+                          Episodes ({epList.length})
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-4">
+                        {seasons.map((seasonNum) => (
+                          <SeasonSection
+                            key={seasonNum}
+                            seasonNumber={seasonNum}
+                            episodes={seasonMap.get(seasonNum)!}
+                            defaultOpen={
+                              nextEpisode
+                                ? nextEpisode.season_number === seasonNum
+                                : seasonNum === seasons[seasons.length - 1]
+                            }
+                            jellyfinServerUrl={settings?.jellyfin_server_url}
+                            jellyfinServerId={settings?.jellyfin_server_id}
+                          />
+                        ))}
+                      </CardContent>
+                    </Card>
+                  </>
+                ) : (
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2">
                         <Tv className="h-5 w-5 text-purple-400" />
-                        Episodes ({epList.length})
+                        Episodes
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      {seasons.map((seasonNum) => (
-                        <SeasonSection
-                          key={seasonNum}
-                          seasonNumber={seasonNum}
-                          episodes={seasonMap.get(seasonNum)!}
-                          defaultOpen={
-                            nextEpisode
-                              ? nextEpisode.season_number === seasonNum
-                              : seasonNum === seasons[seasons.length - 1]
-                          }
-                          jellyfinServerUrl={settings?.jellyfin_server_url}
-                          jellyfinServerId={settings?.jellyfin_server_id}
-                        />
-                      ))}
+                    <CardContent>
+                      <p className="text-sm text-white/50 text-center py-6">
+                        No episodes synced yet. Run a sync to import episode data from Jellyfin.
+                      </p>
                     </CardContent>
                   </Card>
-                </>
-              ) : (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
-                      <Tv className="h-5 w-5 text-purple-400" />
-                      Episodes
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-white/50 text-center py-6">
-                      No episodes synced yet. Run a sync to import episode data from Jellyfin.
-                    </p>
-                  </CardContent>
-                </Card>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>

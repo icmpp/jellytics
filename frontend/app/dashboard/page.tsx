@@ -156,6 +156,7 @@ export default function DashboardPage() {
           title="Dashboard"
           description="Your Jellytics overview - viewing statistics and activity"
           actions={<DashboardHeaderActions />}
+          sticky={false}
         />
         <UpdateBanner />
         <InitialSyncBanner />

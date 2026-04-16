@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment } from "react";
-import { AppLayout, PageHeader, PageContent } from "@/components/layout";
+import { AppLayout, PageHeader } from "@/components/layout";
 import { MediaFilters } from "./MediaFilters";
 import { MediaEmptyState } from "./MediaEmptyState";
 import { MediaGridSkeleton } from "@/components/ui/media-grid-skeleton";
@@ -56,28 +56,34 @@ export function MediaLibraryPage<T>({
 
   return (
     <AppLayout>
-      <PageContent>
-        <PageHeader breadcrumb={breadcrumbItems} title={title} description={description} />
-        <MediaFilters
-          mediaType={mediaType}
-          status={filters.statusFilter}
-          search={filters.searchFilter}
-          genre={filters.genreFilter}
-          yearFrom={filters.yearFrom}
-          yearTo={filters.yearTo}
-          watchedFrom={filters.watchedFrom}
-          watchedTo={filters.watchedTo}
-          tagIds={filters.tagIds}
-          onStatusChange={filters.setStatusFilter}
-          onSearchChange={filters.setSearchFilter}
-          onGenreChange={filters.setGenreFilter}
-          onYearFromChange={filters.setYearFrom}
-          onYearToChange={filters.setYearTo}
-          onWatchedFromChange={filters.setWatchedFrom}
-          onWatchedToChange={filters.setWatchedTo}
-          onTagIdsChange={filters.setTagIds}
-        />
+      {/* Unified sticky banner: title + filters */}
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] md:top-0 z-10 -mx-4 px-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 pb-5 bg-app-shell border-b border-white/6">
+        <PageHeader breadcrumb={breadcrumbItems} title={title} description={description} sticky={false} />
+        <div className="mt-4">
+          <MediaFilters
+            mediaType={mediaType}
+            status={filters.statusFilter}
+            search={filters.searchFilter}
+            genre={filters.genreFilter}
+            yearFrom={filters.yearFrom}
+            yearTo={filters.yearTo}
+            watchedFrom={filters.watchedFrom}
+            watchedTo={filters.watchedTo}
+            tagIds={filters.tagIds}
+            onStatusChange={filters.setStatusFilter}
+            onSearchChange={filters.setSearchFilter}
+            onGenreChange={filters.setGenreFilter}
+            onYearFromChange={filters.setYearFrom}
+            onYearToChange={filters.setYearTo}
+            onWatchedFromChange={filters.setWatchedFrom}
+            onWatchedToChange={filters.setWatchedTo}
+            onTagIdsChange={filters.setTagIds}
+          />
+        </div>
+      </div>
 
+      {/* Scrollable content */}
+      <div className="space-y-6 mt-6 md:mt-8">
         {isLoading && <MediaGridSkeleton />}
 
         {error && (
@@ -130,7 +136,7 @@ export function MediaLibraryPage<T>({
             )}
           </>
         )}
-      </PageContent>
+      </div>
     </AppLayout>
   );
 }

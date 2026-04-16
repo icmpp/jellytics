@@ -54,7 +54,7 @@ export default function CollectionsPage() {
   const actions = (
     <Popover open={createOpen} onOpenChange={setCreateOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline">
           <FolderPlus className="h-4 w-4 mr-2" />
           New collection
         </Button>

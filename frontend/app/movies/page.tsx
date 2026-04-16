@@ -71,7 +71,7 @@ export default function MoviesPage() {
     <MediaLibraryPage
       mediaType="movies"
       title="Movies"
-      description="Browse and track your movie collection"
+      description="Your movie library"
       itemLabel="movie"
       filters={filters}
       isLoading={isLoading}
