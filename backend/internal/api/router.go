@@ -16,7 +16,7 @@ import (
 	"github.com/rs/cors"
 )
 
-func NewRouterWithServices(db *sql.DB, cfg *config.Config, syncScheduler *services.SyncScheduler) *chi.Mux {
+func NewRouterWithServices(db *sql.DB, cfg *config.Config, syncScheduler *services.SyncScheduler, version string) *chi.Mux {
 	r := chi.NewRouter()
 
 	r.Use(middleware.RequestID)
@@ -42,6 +42,7 @@ func NewRouterWithServices(db *sql.DB, cfg *config.Config, syncScheduler *servic
 
 	r.Get("/health", handlers.HealthHandler)
 	r.Handle("/metrics", handlers.MetricsHandler())
+	r.Get("/api/v1/version", handlers.VersionHandler(version))
 
 	authHandler := handlers.NewAuthHandler(db, cfg, jellyfin.PooledClientProvider{})
 

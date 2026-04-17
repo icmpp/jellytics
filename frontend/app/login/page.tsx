@@ -83,60 +83,54 @@ export default function LoginPage() {
     checkOnboardingStatus();
   }, []);
 
-  const checkServerURL = useCallback(
-    async (url: string, signal?: AbortSignal) => {
-      if (!url || url.length < 10) {
-        setServerStatus("idle");
-        return;
-      }
+  const checkServerURL = useCallback(async (url: string, signal?: AbortSignal) => {
+    if (!url || url.length < 10) {
+      setServerStatus("idle");
+      return;
+    }
 
-      try {
-        new URL(url)
-      } catch (err) {
-        console.warn("Invalid server URL:", err)
-        setServerStatus("invalid")
-        return
-      }
+    try {
+      new URL(url);
+    } catch (err) {
+      console.warn("Invalid server URL:", err);
+      setServerStatus("invalid");
+      return;
+    }
 
-      setServerStatus("checking");
+    setServerStatus("checking");
 
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
-        const combinedSignal =
-          signal && signal.aborted
-            ? signal
-            : signal
-              ? AbortSignal.any?.([controller.signal, signal]) ?? controller.signal
-              : controller.signal;
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const combinedSignal =
+        signal && signal.aborted
+          ? signal
+          : signal
+            ? (AbortSignal.any?.([controller.signal, signal]) ?? controller.signal)
+            : controller.signal;
 
-        const response = await fetch(
-          `${url.replace(/\/$/, "")}/System/Info/Public`,
-          {
-            method: "GET",
-            headers: { Accept: "application/json" },
-            signal: combinedSignal,
-          },
-        );
+      const response = await fetch(`${url.replace(/\/$/, "")}/System/Info/Public`, {
+        method: "GET",
+        headers: { Accept: "application/json" },
+        signal: combinedSignal,
+      });
 
-        clearTimeout(timeoutId);
-        if (signal?.aborted) return;
+      clearTimeout(timeoutId);
+      if (signal?.aborted) return;
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.ServerName || data.Version) {
-            setServerStatus("valid");
-            return;
-          }
+      if (response.ok) {
+        const data = await response.json();
+        if (data.ServerName || data.Version) {
+          setServerStatus("valid");
+          return;
         }
-        setServerStatus("invalid");
-      } catch (err) {
-        if (err instanceof Error && err.name === "AbortError") return;
-        setServerStatus("invalid");
       }
-    },
-    [],
-  );
+      setServerStatus("invalid");
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") return;
+      setServerStatus("invalid");
+    }
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -217,8 +211,7 @@ export default function LoginPage() {
       if (response.initial_sync_started) {
         toast.success({
           title: "Welcome!",
-          description:
-            "Syncing your Jellyfin library. This may take a moment...",
+          description: "Syncing your Jellyfin library. This may take a moment...",
         });
       } else {
         toast.success({
@@ -230,15 +223,9 @@ export default function LoginPage() {
       let errorMessage = "An unexpected error occurred";
 
       if (err instanceof APIError) {
-        if (
-          err.message.includes("401") ||
-          err.message.toLowerCase().includes("unauthorized")
-        ) {
+        if (err.message.includes("401") || err.message.toLowerCase().includes("unauthorized")) {
           errorMessage = "Invalid username or password";
-        } else if (
-          err.message.includes("network") ||
-          err.message.includes("connect")
-        ) {
+        } else if (err.message.includes("network") || err.message.includes("connect")) {
           errorMessage = "Could not connect to server";
         } else {
           errorMessage = err.message;
@@ -273,19 +260,14 @@ export default function LoginPage() {
               {isFirstTime ? "Get Started" : "Welcome Back"}
             </h2>
             <p className="text-sm text-white/50">
-              {isFirstTime
-                ? "Connect your Jellyfin server to begin"
-                : "Sign in to your account"}
+              {isFirstTime ? "Connect your Jellyfin server to begin" : "Sign in to your account"}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {isFirstTime && (
               <div className="space-y-2">
-                <label
-                  htmlFor="server_url"
-                  className="block text-sm font-medium text-white/70"
-                >
+                <label htmlFor="server_url" className="block text-sm font-medium text-white/70">
                   Server URL
                 </label>
                 <div className="relative">
@@ -315,10 +297,7 @@ export default function LoginPage() {
             )}
 
             <div className="space-y-2">
-              <label
-                htmlFor="username"
-                className="block text-sm font-medium text-white/70"
-              >
+              <label htmlFor="username" className="block text-sm font-medium text-white/70">
                 Username
               </label>
               <div className="relative">
@@ -340,10 +319,7 @@ export default function LoginPage() {
             </div>
 
             <div className="space-y-2">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-white/70"
-              >
+              <label htmlFor="password" className="block text-sm font-medium text-white/70">
                 Password
               </label>
               <div className="relative">
@@ -366,11 +342,7 @@ export default function LoginPage() {
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors p-1"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
-                  ) : (
-                    <Eye className="h-5 w-5" />
-                  )}
+                  {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
               </div>
             </div>

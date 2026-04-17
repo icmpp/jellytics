@@ -19,6 +19,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Set via -ldflags at build time. Falls back to "dev" for local development.
+var Version = "dev"
+
 func main() {
 	ctx := context.Background()
 	cfg, err := config.Load()
@@ -51,7 +54,7 @@ func main() {
 
 	go syncScheduler.Start(ctx)
 
-	router := api.NewRouterWithServices(db, cfg, syncScheduler)
+	router := api.NewRouterWithServices(db, cfg, syncScheduler, Version)
 
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.Server.Port),

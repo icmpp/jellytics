@@ -30,8 +30,8 @@ export function useReview(itemType: "show" | "movie", itemId: number) {
       try {
         return await api.get<Review>(`/reviews/${itemType}/${itemId}`);
       } catch (err) {
-        console.warn("Failed to fetch review:", err)
-        return null
+        console.warn("Failed to fetch review:", err);
+        return null;
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -65,11 +65,7 @@ export function useCreateOrUpdateReview() {
       await queryClient.cancelQueries({
         queryKey: ["review", itemType, itemId],
       });
-      const previousReview = queryClient.getQueryData<Review>([
-        "review",
-        itemType,
-        itemId,
-      ]);
+      const previousReview = queryClient.getQueryData<Review>(["review", itemType, itemId]);
 
       const optimisticReview: Review = {
         id: previousReview?.id ?? Date.now(),
@@ -86,10 +82,7 @@ export function useCreateOrUpdateReview() {
       return { previousReview };
     },
     onSuccess: (data, variables) => {
-      queryClient.setQueryData(
-        ["review", variables.itemType, variables.itemId],
-        data,
-      );
+      queryClient.setQueryData(["review", variables.itemType, variables.itemId], data);
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
       toast.success({
         title: "Review saved",
@@ -116,33 +109,20 @@ export function useDeleteReview() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      itemType,
-      itemId,
-    }: {
-      itemType: "show" | "movie";
-      itemId: number;
-    }) => {
+    mutationFn: async ({ itemType, itemId }: { itemType: "show" | "movie"; itemId: number }) => {
       return api.delete(`/reviews/${itemType}/${itemId}`);
     },
     onMutate: async ({ itemType, itemId }) => {
       await queryClient.cancelQueries({
         queryKey: ["review", itemType, itemId],
       });
-      const previousReview = queryClient.getQueryData<Review>([
-        "review",
-        itemType,
-        itemId,
-      ]);
+      const previousReview = queryClient.getQueryData<Review>(["review", itemType, itemId]);
       queryClient.setQueryData(["review", itemType, itemId], null);
 
       return { previousReview };
     },
     onSuccess: (_, variables) => {
-      queryClient.setQueryData(
-        ["review", variables.itemType, variables.itemId],
-        null,
-      );
+      queryClient.setQueryData(["review", variables.itemType, variables.itemId], null);
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
       toast.success({
         title: "Review deleted",

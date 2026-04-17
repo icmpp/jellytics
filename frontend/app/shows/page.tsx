@@ -37,15 +37,8 @@ export default function ShowsPage() {
     ],
   );
 
-  const {
-    data,
-    isLoading,
-    isFetching,
-    error,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = useShowsInfinite(showFilters, pageSize);
+  const { data, isLoading, isFetching, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useShowsInfinite(showFilters, pageSize);
 
   const shows = useMemo(() => data?.pages.flatMap((p) => p.shows) ?? [], [data]);
   const total = data?.pages[0]?.total ?? 0;
@@ -78,7 +71,7 @@ export default function ShowsPage() {
     <MediaLibraryPage
       mediaType="shows"
       title="Shows"
-      description="Browse and track your TV show collection"
+      description="Your TV show library"
       itemLabel="show"
       filters={filters}
       isLoading={isLoading}

@@ -122,25 +122,24 @@ export interface WatchPatterns {
 export function useWatchPatterns(days = 90) {
   return useQuery<WatchPatterns>({
     queryKey: ["stats", "watch-patterns", days],
-    queryFn: () =>
-      api.get<WatchPatterns>(`/stats/watch-patterns?days=${days}`),
+    queryFn: () => api.get<WatchPatterns>(`/stats/watch-patterns?days=${days}`),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });
 }
 
 export interface WeeklySummary {
-	this_week: { watch_time_minutes: number; episodes_watched: number };
-	last_week: { watch_time_minutes: number; episodes_watched: number };
+  this_week: { watch_time_minutes: number; episodes_watched: number };
+  last_week: { watch_time_minutes: number; episodes_watched: number };
 }
 
 export function useWeeklySummary() {
-	return useQuery<WeeklySummary>({
-		queryKey: ["stats", "weekly-summary"],
-		queryFn: () => api.get<WeeklySummary>("/stats/weekly-summary"),
-		staleTime: 2 * 60 * 1000,
-		gcTime: 5 * 60 * 1000,
-	});
+  return useQuery<WeeklySummary>({
+    queryKey: ["stats", "weekly-summary"],
+    queryFn: () => api.get<WeeklySummary>("/stats/weekly-summary"),
+    staleTime: 2 * 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+  });
 }
 
 export function useGoals() {
@@ -192,9 +191,10 @@ interface CurrentlyWatchingResponse {
 export function useCurrentlyWatching() {
   return useQuery<CurrentlyWatchingResponse>({
     queryKey: ["sessions", "currently-watching"],
-    queryFn: () =>
-      api.get<CurrentlyWatchingResponse>("/sessions/currently-watching"),
-    staleTime: 5 * 60 * 1000, // Data from DB, updated by scheduled sessions sync
-    gcTime: 10 * 60 * 1000,
+    queryFn: () => api.get<CurrentlyWatchingResponse>("/sessions/currently-watching"),
+    staleTime: 0,
+    gcTime: 60 * 1000,
+    refetchInterval: 30 * 1000,
+    refetchIntervalInBackground: false,
   });
 }

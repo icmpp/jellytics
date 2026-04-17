@@ -6,7 +6,7 @@ import { useMediaFilters } from "@/hooks/useMediaFilters";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useSyncStatus } from "@/hooks/useSyncStatus";
 import { MovieCard } from "@/components/movies/MovieCard";
-import { MediaFilters, MediaEmptyState, MediaLibraryPage } from "@/components/media";
+import { MediaLibraryPage } from "@/components/media";
 
 export default function MoviesPage() {
   const filters = useMediaFilters();
@@ -37,15 +37,8 @@ export default function MoviesPage() {
     ],
   );
 
-  const {
-    data,
-    isLoading,
-    isFetching,
-    error,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = useMoviesInfinite(movieFilters, pageSize);
+  const { data, isLoading, isFetching, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useMoviesInfinite(movieFilters, pageSize);
 
   const movies = useMemo(() => data?.pages.flatMap((p) => p.movies) ?? [], [data]);
   const total = data?.pages[0]?.total ?? 0;
@@ -78,7 +71,7 @@ export default function MoviesPage() {
     <MediaLibraryPage
       mediaType="movies"
       title="Movies"
-      description="Browse and track your movie collection"
+      description="Your movie library"
       itemLabel="movie"
       filters={filters}
       isLoading={isLoading}

@@ -44,7 +44,10 @@ const WatchlistCard = memo(function WatchlistCard({
   return (
     <Link
       href={href}
-      className={cn(MEDIA_CARD_BASE, "block min-w-0 h-full flex flex-col group relative cursor-pointer")}
+      className={cn(
+        MEDIA_CARD_BASE,
+        "block min-w-0 h-full flex flex-col group relative cursor-pointer",
+      )}
     >
       <div
         className="absolute top-2 right-2 z-10"
@@ -68,11 +71,7 @@ const WatchlistCard = memo(function WatchlistCard({
         <PosterImage
           src={
             item.jellyfin_id
-              ? getImageUrl(
-                  isShow ? "shows" : "movies",
-                  item.jellyfin_id,
-                  "poster",
-                )
+              ? getImageUrl(isShow ? "shows" : "movies", item.jellyfin_id, "poster")
               : undefined
           }
           alt={item.title}
@@ -103,20 +102,39 @@ const WatchlistCard = memo(function WatchlistCard({
   );
 });
 
-const EmptyWatchlist = memo(function EmptyWatchlist({ typeFilter }: { typeFilter: "all" | "show" | "movie" }) {
+const EmptyWatchlist = memo(function EmptyWatchlist({
+  typeFilter,
+}: {
+  typeFilter: "all" | "show" | "movie";
+}) {
   const { data: moviesData } = useMovies({ limit: 4 });
   const { data: showsData } = useShows({ limit: 4 });
 
   const shown = useMemo(() => {
-    const teasers: { id: number; title: string; type: "movie" | "show"; src: string }[] = [];
+    const teasers: {
+      id: number;
+      title: string;
+      type: "movie" | "show";
+      src: string;
+    }[] = [];
     if (typeFilter !== "show") {
       moviesData?.movies?.slice(0, 3).forEach((m) => {
-        teasers.push({ id: m.id, title: m.title, type: "movie", src: getMoviePosterUrl(m.jellyfin_id) });
+        teasers.push({
+          id: m.id,
+          title: m.title,
+          type: "movie",
+          src: getMoviePosterUrl(m.jellyfin_id),
+        });
       });
     }
     if (typeFilter !== "movie") {
       showsData?.shows?.slice(0, 3).forEach((s) => {
-        teasers.push({ id: s.id, title: s.title, type: "show", src: getShowPosterUrl(s.jellyfin_id) });
+        teasers.push({
+          id: s.id,
+          title: s.title,
+          type: "show",
+          src: getShowPosterUrl(s.jellyfin_id),
+        });
       });
     }
     return teasers.slice(0, 4);
@@ -189,19 +207,13 @@ export default function WatchlistPage() {
   }, [data?.items, filter, sortOrder]);
 
   const breadcrumbItems = useMemo(
-    () => [
-      { icon: "home" as const, href: "/dashboard" },
-      { label: "Watchlist" },
-    ],
+    () => [{ icon: "home" as const, href: "/dashboard" }, { label: "Watchlist" }],
     [],
   );
 
   const actions = (
     <div className="flex flex-wrap gap-2">
-      <Select
-        value={filter}
-        onValueChange={(value: "all" | "show" | "movie") => setFilter(value)}
-      >
+      <Select value={filter} onValueChange={(value: "all" | "show" | "movie") => setFilter(value)}>
         <SelectTrigger className="w-[130px] h-11">
           <SelectValue />
         </SelectTrigger>
@@ -211,10 +223,7 @@ export default function WatchlistPage() {
           <SelectItem value="movie">Movies</SelectItem>
         </SelectContent>
       </Select>
-      <Select
-        value={sortOrder}
-        onValueChange={(value: SortOrder) => setSortOrder(value)}
-      >
+      <Select value={sortOrder} onValueChange={(value: SortOrder) => setSortOrder(value)}>
         <SelectTrigger className="w-[150px] h-11">
           <SelectValue />
         </SelectTrigger>
@@ -248,9 +257,7 @@ export default function WatchlistPage() {
       emptyContent={<EmptyWatchlist typeFilter={filter} />}
       countLabel={`${filteredItems.length} ${filteredItems.length === 1 ? "item" : "items"} in watchlist`}
       items={filteredItems}
-      renderCard={(item, index) => (
-        <WatchlistCard item={item} index={index} />
-      )}
+      renderCard={(item, index) => <WatchlistCard item={item} index={index} />}
       getItemKey={(item) => String(item.id)}
     />
   );

@@ -31,9 +31,7 @@
 
     /* Media card grid: consistent layout across Movies, Shows, Watchlist, Archive */
     --media-card-title-lines: 2;
-    --media-card-title-min-height: calc(
-      1em * var(--media-card-title-lines) * 1.25
-    );
+    --media-card-title-min-height: calc(1em * var(--media-card-title-lines) * 1.25);
   }
 }
 
@@ -44,13 +42,13 @@
 
   html {
     overscroll-behavior: none;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   body {
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
-    overflow-x: hidden;
+    overflow-x: clip;
     font-feature-settings:
       "rlig" 1,
       "calt" 1;
@@ -119,19 +117,13 @@
 
 * {
   transition-property:
-    color, background-color, border-color, text-decoration-color, fill, stroke,
-    box-shadow;
+    color, background-color, border-color, text-decoration-color, fill, stroke, box-shadow;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 200ms;
 }
 
 [data-content] {
   transition: opacity 200ms ease-in-out;
-}
-
-.grid,
-.flex {
-  contain: layout;
 }
 
 @keyframes pulse {
@@ -259,20 +251,27 @@ input[type="date"]::-moz-focus-inner {
   display: none;
 }
 
-.scroll-snap-x {
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
-.scroll-snap-x > * {
-  scroll-snap-align: start;
-}
-
 /**
  * Media card title: reserves space for N lines so card heights align in grid.
  * Use on titles inside media cards (MovieCard, ShowCard, WatchlistCard, ArchiveCard).
  */
 .media-card-title {
   min-height: var(--media-card-title-min-height);
+}
+
+@layer utilities {
+  /**
+   * Authenticated shell: matches AppLayout gradient. Fixed attachment keeps the same
+   * treatment under sticky headers while content scrolls.
+   */
+  .bg-app-shell {
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 80, 200, 0.12), transparent),
+      radial-gradient(ellipse 60% 40% at 90% 50%, rgba(80, 100, 200, 0.08), transparent),
+      radial-gradient(ellipse 50% 30% at 10% 80%, rgba(100, 80, 180, 0.06), transparent),
+      linear-gradient(to bottom, #0a0a0f, #0d0d14);
+    background-attachment: fixed;
+  }
 }
 
 @media (pointer: coarse) {

@@ -9,9 +9,7 @@ export function useBrowserState() {
     typeof navigator !== "undefined" ? navigator.onLine : true,
   );
   const [isVisible, setIsVisible] = useState(
-    typeof document !== "undefined"
-      ? document.visibilityState === "visible"
-      : true,
+    typeof document !== "undefined" ? document.visibilityState === "visible" : true,
   );
 
   useEffect(() => {

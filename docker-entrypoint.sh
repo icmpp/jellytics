@@ -13,7 +13,7 @@ cleanup() {
 trap cleanup TERM INT
 
 # Wait for backend to be ready
-until wget -q -O /dev/null http://127.0.0.1:8080/health 2>/dev/null; do
+until node -e "require('http').get('http://127.0.0.1:8080/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1));"; do
   sleep 1
 done
 

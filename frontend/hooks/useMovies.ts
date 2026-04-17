@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 export interface Movie {
@@ -49,26 +44,21 @@ interface UseMoviesFilters {
   offset?: number;
 }
 
-export function useMovies(
-  filters?: UseMoviesFilters,
-  options?: { enabled?: boolean },
-) {
+export function useMovies(filters?: UseMoviesFilters, options?: { enabled?: boolean }) {
   const params = new URLSearchParams();
   if (filters?.status) params.append("status", filters.status);
   if (filters?.search) params.append("search", filters.search);
   if (filters?.genre) params.append("genre", filters.genre);
-  if (filters?.yearFrom)
-    params.append("year_from", filters.yearFrom.toString());
+  if (filters?.yearFrom) params.append("year_from", filters.yearFrom.toString());
   if (filters?.yearTo) params.append("year_to", filters.yearTo.toString());
   if (filters?.watchedFrom) params.append("watched_from", filters.watchedFrom);
   if (filters?.watchedTo) params.append("watched_to", filters.watchedTo);
-  if (filters?.tags?.length)
-    params.append("tags", filters.tags.join(","));
+  if (filters?.tags?.length) params.append("tags", filters.tags.join(","));
   if (filters?.limit !== undefined && filters?.limit !== null) {
-    params.append("limit", filters.limit.toString())
+    params.append("limit", filters.limit.toString());
   }
   if (filters?.offset !== undefined && filters?.offset !== null) {
-    params.append("offset", filters.offset.toString())
+    params.append("offset", filters.offset.toString());
   }
 
   return useQuery<MoviesResponse>({
@@ -95,14 +85,11 @@ export function useMoviesInfinite(
       if (filters?.status) params.append("status", filters.status);
       if (filters?.search) params.append("search", filters.search);
       if (filters?.genre) params.append("genre", filters.genre);
-      if (filters?.yearFrom)
-        params.append("year_from", filters.yearFrom.toString());
+      if (filters?.yearFrom) params.append("year_from", filters.yearFrom.toString());
       if (filters?.yearTo) params.append("year_to", filters.yearTo.toString());
-      if (filters?.watchedFrom)
-        params.append("watched_from", filters.watchedFrom);
+      if (filters?.watchedFrom) params.append("watched_from", filters.watchedFrom);
       if (filters?.watchedTo) params.append("watched_to", filters.watchedTo);
-      if (filters?.tags?.length)
-        params.append("tags", filters.tags.join(","));
+      if (filters?.tags?.length) params.append("tags", filters.tags.join(","));
       params.append("limit", pageSize.toString());
       params.append("offset", pageParam.toString());
       return api.get<MoviesResponse>(`/movies?${params.toString()}`);
@@ -132,8 +119,7 @@ export function useMovie(id: number) {
 export function useDeleteMovie() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (movieId: number) =>
-      api.delete(`/movies/${movieId}`),
+    mutationFn: (movieId: number) => api.delete(`/movies/${movieId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["movies"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
@@ -148,8 +134,7 @@ export function useDeleteMovie() {
 export function useRestoreMovie() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (movieId: number) =>
-      api.post(`/movies/${movieId}/restore`),
+    mutationFn: (movieId: number) => api.post(`/movies/${movieId}/restore`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["movies"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });

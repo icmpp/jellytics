@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import {
   format,
   parseISO,
@@ -33,11 +33,7 @@ interface HistoryCalendarProps {
 
 const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-export function HistoryCalendar({
-  items,
-  selectedDate,
-  onSelectDate,
-}: HistoryCalendarProps) {
+export function HistoryCalendar({ items, selectedDate, onSelectDate }: HistoryCalendarProps) {
   const activityByDate = useMemo(() => {
     const map: Record<string, DayActivity> = {};
     for (const item of items) {
@@ -58,11 +54,11 @@ export function HistoryCalendar({
     return new Date();
   });
 
-  useEffect(() => {
-    if (selectedDate) {
-      setViewDate(parseISO(selectedDate));
-    }
-  }, [selectedDate]);
+  const [prevSelectedDate, setPrevSelectedDate] = useState(selectedDate);
+  if (prevSelectedDate !== selectedDate) {
+    setPrevSelectedDate(selectedDate);
+    if (selectedDate) setViewDate(parseISO(selectedDate));
+  }
 
   const calendarDays = useMemo(() => {
     const start = startOfWeek(startOfMonth(viewDate));
@@ -77,21 +73,19 @@ export function HistoryCalendar({
   }, [viewDate]);
 
   return (
-    <div className="rounded-2xl backdrop-blur-xl bg-white/[0.03] border border-white/[0.08] overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.08]">
+    <div className="rounded-2xl backdrop-blur-xl bg-white/3 border border-white/8 overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-white/8">
         <button
           onClick={() => setViewDate(subMonths(viewDate, 1))}
-          className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+          className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/6 transition-colors"
           aria-label="Previous month"
         >
           <ChevronLeft className="h-5 w-5" />
         </button>
-        <h2 className="text-sm font-semibold text-white">
-          {format(viewDate, "MMMM yyyy")}
-        </h2>
+        <h2 className="text-sm font-semibold text-white">{format(viewDate, "MMMM yyyy")}</h2>
         <button
           onClick={() => setViewDate(addMonths(viewDate, 1))}
-          className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/[0.06] transition-colors"
+          className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/6 transition-colors"
           aria-label="Next month"
         >
           <ChevronRight className="h-5 w-5" />
@@ -101,10 +95,7 @@ export function HistoryCalendar({
       <div className="p-4">
         <div className="grid grid-cols-7 gap-1 mb-2">
           {WEEKDAY_LABELS.map((label) => (
-            <div
-              key={label}
-              className="text-center text-xs text-white/40 font-medium py-1"
-            >
+            <div key={label} className="text-center text-xs text-white/40 font-medium py-1">
               {label}
             </div>
           ))}
@@ -114,8 +105,7 @@ export function HistoryCalendar({
             const dateKey = format(day, "yyyy-MM-dd");
             const activity = activityByDate[dateKey];
             const hasActivity = !!activity && activity.count > 0;
-            const isSelected =
-              selectedDate && isSameDay(day, parseISO(selectedDate));
+            const isSelected = selectedDate && isSameDay(day, parseISO(selectedDate));
             const isCurrentMonth = isSameMonth(day, viewDate);
             const isTodayDate = isToday(day);
 
@@ -123,23 +113,15 @@ export function HistoryCalendar({
               <button
                 key={dateKey}
                 type="button"
-                onClick={() =>
-                  onSelectDate(
-                    hasActivity
-                      ? isSelected
-                        ? null
-                        : dateKey
-                      : null,
-                  )
-                }
+                onClick={() => onSelectDate(hasActivity ? (isSelected ? null : dateKey) : null)}
                 className={`relative h-10 rounded-lg text-sm transition-colors flex flex-col items-center justify-center ${
                   !isCurrentMonth
                     ? "text-white/20"
                     : isSelected
                       ? "bg-purple-500/30 text-purple-300 ring-1 ring-purple-400/50"
                       : hasActivity
-                        ? "bg-white/[0.08] text-white hover:bg-white/[0.12]"
-                        : "text-white/50 hover:bg-white/[0.04]"
+                        ? "bg-white/8 text-white hover:bg-white/12"
+                        : "text-white/50 hover:bg-white/4"
                 }`}
                 aria-label={`${format(day, "PPP")}${hasActivity ? `, ${activity.count} items` : ""}`}
               >
@@ -159,7 +141,7 @@ export function HistoryCalendar({
           })}
         </div>
         {selectedDate && activityByDate[selectedDate] && (
-          <div className="mt-4 pt-4 border-t border-white/[0.08]">
+          <div className="mt-4 pt-4 border-t border-white/8">
             <p className="text-xs text-white/40">
               {activityByDate[selectedDate].count} item
               {activityByDate[selectedDate].count !== 1 ? "s" : ""} ·{" "}

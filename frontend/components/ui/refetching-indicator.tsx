@@ -5,10 +5,7 @@ interface RefetchingIndicatorProps {
   isLoading: boolean;
 }
 
-export function RefetchingIndicator({
-  isFetching,
-  isLoading,
-}: RefetchingIndicatorProps) {
+export function RefetchingIndicator({ isFetching, isLoading }: RefetchingIndicatorProps) {
   if (!isFetching || isLoading) return null;
 
   return (

@@ -4,10 +4,6 @@ export const metadata: Metadata = {
   title: "Watchlist",
 };
 
-export default function WatchlistLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function WatchlistLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

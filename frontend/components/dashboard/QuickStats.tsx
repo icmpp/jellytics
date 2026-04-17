@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useStatsOverview, useWeeklySummary } from "@/hooks/useStats";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
@@ -17,9 +16,9 @@ interface TrendIndicatorProps {
 function TrendIndicator({ current, previous }: TrendIndicatorProps) {
   if (previous === 0) {
     return (
-      <div className="flex items-center gap-1.5 text-sm text-white/40">
-        <Minus className="h-4 w-4" />
-        <span>Not enough history yet</span>
+      <div className="flex items-center gap-1 text-[10px] sm:text-xs font-medium text-white/30">
+        <Minus className="h-3 w-3 shrink-0" />
+        <span>No prior data</span>
       </div>
     );
   }
@@ -29,14 +28,39 @@ function TrendIndicator({ current, previous }: TrendIndicatorProps) {
 
   return (
     <div
-      className={`flex items-center gap-1.5 text-sm ${isPositive ? "text-emerald-400" : "text-red-400"}`}
+      className={`flex items-center gap-1 text-[10px] sm:text-xs font-semibold ${isPositive ? "text-emerald-400" : "text-red-400"}`}
     >
       {isPositive ? (
-        <TrendingUp className="h-4 w-4" />
+        <TrendingUp className="h-3 w-3 shrink-0" />
       ) : (
-        <TrendingDown className="h-4 w-4" />
+        <TrendingDown className="h-3 w-3 shrink-0" />
       )}
-      <span>{Math.abs(change).toFixed(1)}% vs last week</span>
+      <span>
+        {isPositive ? "+" : ""}
+        {Math.abs(change).toFixed(1)}% vs last week
+      </span>
+    </div>
+  );
+}
+
+interface QuickStatCardProps {
+  label: string;
+  value: string | number;
+  trend?: React.ReactNode;
+  sub?: React.ReactNode;
+}
+
+function QuickStatCard({ label, value, trend, sub }: QuickStatCardProps) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 backdrop-blur-xl p-4 sm:p-5 flex flex-col gap-2 hover:border-white/12 hover:bg-white/5 transition-all duration-300">
+      <p className="text-[10px] sm:text-xs font-medium text-white/40 uppercase tracking-widest">
+        {label}
+      </p>
+      <p className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight leading-none">
+        {value}
+      </p>
+      {trend && <div className="pt-0.5">{trend}</div>}
+      {sub && <div className="pt-0.5">{sub}</div>}
     </div>
   );
 }
@@ -52,62 +76,32 @@ export function QuickStats() {
 
   if (!overview) return null;
 
+  const completionRate =
+    overview.total_shows > 0
+      ? Math.round((overview.shows_watched / overview.total_shows) * 100)
+      : 0;
+
   return (
-    <div className="grid gap-4 md:grid-cols-3">
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-white/50">
-            This Week
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-white mb-2">
-            {formatHours(thisWeekWatchTime)}
-          </div>
-          <TrendIndicator
-            current={thisWeekWatchTime}
-            previous={lastWeekWatchTime}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-white/50">
-            Episodes Watched
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-white mb-2">
-            {thisWeekEpisodes}
-          </div>
-          <TrendIndicator
-            current={thisWeekEpisodes}
-            previous={lastWeekEpisodes}
-          />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium text-white/50">
-            Completion Rate
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-3xl font-bold text-white mb-2">
-            {overview.total_shows > 0
-              ? Math.round(
-                  (overview.shows_watched / overview.total_shows) * 100,
-                )
-              : 0}
-            %
-          </div>
-          <p className="text-sm text-white/40">
+    <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
+      <QuickStatCard
+        label="This Week"
+        value={formatHours(thisWeekWatchTime)}
+        trend={<TrendIndicator current={thisWeekWatchTime} previous={lastWeekWatchTime} />}
+      />
+      <QuickStatCard
+        label="Episodes Watched"
+        value={thisWeekEpisodes}
+        trend={<TrendIndicator current={thisWeekEpisodes} previous={lastWeekEpisodes} />}
+      />
+      <QuickStatCard
+        label="Completion Rate"
+        value={`${completionRate}%`}
+        sub={
+          <p className="text-[10px] sm:text-xs text-white/30 font-medium">
             {overview.shows_watched} of {overview.total_shows} shows
           </p>
-        </CardContent>
-      </Card>
+        }
+      />
     </div>
   );
 }

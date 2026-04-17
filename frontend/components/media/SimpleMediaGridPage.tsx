@@ -64,8 +64,7 @@ export function SimpleMediaGridPage<T>({
           actions={actions}
         />
 
-        {isLoading &&
-          (skeletonContent ?? <MediaGridSkeleton count={skeletonCount} />)}
+        {isLoading && (skeletonContent ?? <MediaGridSkeleton count={skeletonCount} />)}
 
         {!isLoading && isError && errorContent}
 

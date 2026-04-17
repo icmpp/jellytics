@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ConfirmPopover } from "@/components/ui/confirm-popover";
-import { MessageSquare, X, Save, Edit2, Loader2, Trash2 } from "lucide-react";
+import { MessageSquare, Save, Edit2, Loader2, Trash2 } from "lucide-react";
 import { Review } from "@/hooks/useReviews";
 
 interface ReviewEditorProps {
@@ -29,13 +29,15 @@ export function ReviewEditor({
   const [isEditing, setIsEditing] = useState(!review);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
-  useEffect(() => {
+  const [prevReview, setPrevReview] = useState(review);
+  if (prevReview !== review) {
+    setPrevReview(review);
     if (review) {
       setReviewText(review.review_text || "");
       setNotes(review.notes || "");
       setIsEditing(false);
     }
-  }, [review]);
+  }
 
   const handleSave = () => {
     onSave(reviewText, notes);
@@ -88,12 +90,13 @@ export function ReviewEditor({
                 }}
               >
                 <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/30"
+                  variant="ghost"
+                  size="icon-sm"
+                  className="text-white/40 hover:text-red-400 hover:bg-red-500/10"
                   disabled={isLoading || isDeleting}
+                  aria-label="Delete review"
                 >
-                  <X className="h-4 w-4" />
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </ConfirmPopover>
             </div>
@@ -109,13 +112,9 @@ export function ReviewEditor({
             </div>
           )}
           {review.notes && (
-            <div className="pt-4 border-t border-white/[0.08]">
-              <Label className="text-white/40 text-sm mb-2 block">
-                Private Notes
-              </Label>
-              <p className="text-white/60 text-sm whitespace-pre-wrap">
-                {review.notes}
-              </p>
+            <div className="pt-4 border-t border-white/8">
+              <Label className="text-white/40 text-sm mb-2 block">Private Notes</Label>
+              <p className="text-white/60 text-sm whitespace-pre-wrap">{review.notes}</p>
             </div>
           )}
         </CardContent>
@@ -158,16 +157,11 @@ export function ReviewEditor({
             className="min-h-[100px]"
             rows={4}
           />
-          <p className="text-xs text-white/30">
-            Notes are private and only visible to you
-          </p>
+          <p className="text-xs text-white/30">Notes are private and only visible to you</p>
         </div>
 
         <div className="flex gap-3 pt-2">
-          <Button
-            onClick={handleSave}
-            disabled={isLoading || !reviewText.trim()}
-          >
+          <Button onClick={handleSave} disabled={isLoading || !reviewText.trim()}>
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -181,11 +175,7 @@ export function ReviewEditor({
             )}
           </Button>
           {review && (
-            <Button
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isLoading}
-            >
+            <Button variant="outline" onClick={handleCancel} disabled={isLoading}>
               Cancel
             </Button>
           )}

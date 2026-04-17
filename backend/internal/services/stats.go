@@ -296,7 +296,6 @@ func (s *StatsService) GetPeriodSummary(ctx context.Context, userID int, period 
 	}
 
 	summary := &models.PeriodSummary{Period: period}
-	var genreJSON string
 	var wg sync.WaitGroup
 
 	wg.Add(1)
@@ -324,7 +323,7 @@ func (s *StatsService) GetPeriodSummary(ctx context.Context, userID int, period 
 	go func() {
 		defer wg.Done()
 		s.db.QueryRowContext(ctx,
-			`SELECT COUNT(*) FROM shows WHERE user_id = ? AND created_at >= `+dateFilter, userID,
+			`SELECT COUNT(*) FROM shows WHERE user_id = ? AND first_watched_at >= `+dateFilter+` AND first_watched_at IS NOT NULL`, userID,
 		).Scan(&summary.ShowsStarted)
 	}()
 
@@ -340,29 +339,41 @@ func (s *StatsService) GetPeriodSummary(ctx context.Context, userID int, period 
 	go func() {
 		defer wg.Done()
 		s.db.QueryRowContext(ctx,
-			`SELECT COUNT(*) FROM movies WHERE user_id = ? AND status = 'watched' AND updated_at >= `+dateFilter, userID,
+			`SELECT COUNT(*) FROM movies WHERE user_id = ? AND status = 'watched' AND last_watched_at >= `+dateFilter+` AND last_watched_at IS NOT NULL`, userID,
 		).Scan(&summary.MoviesWatched)
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		genreRow := s.db.QueryRowContext(ctx, `
-			SELECT genre FROM (
-				SELECT genre FROM shows WHERE user_id = ? AND genre IS NOT NULL AND updated_at >= `+dateFilter+`
-				UNION ALL
-				SELECT genre FROM movies WHERE user_id = ? AND genre IS NOT NULL AND updated_at >= `+dateFilter+`
-			) LIMIT 1`, userID, userID)
-		genreRow.Scan(&genreJSON)
 	}()
 
 	wg.Wait()
 
-	if len(genreJSON) > 2 {
-		var genres []string
-		if json.Unmarshal([]byte(genreJSON), &genres) == nil && len(genres) > 0 {
-			summary.TopGenre = genres[0]
+	// Compute top genre by counting every genre entry across watched shows/movies in the period.
+	genreRows, err := s.db.QueryContext(ctx, `
+		SELECT genre FROM shows WHERE user_id = ? AND genre IS NOT NULL AND last_watched_at >= `+dateFilter+`
+		UNION ALL
+		SELECT genre FROM movies WHERE user_id = ? AND genre IS NOT NULL AND last_watched_at >= `+dateFilter,
+		userID, userID)
+	if err == nil {
+		defer genreRows.Close()
+		genreCount := make(map[string]int)
+		for genreRows.Next() {
+			var gJSON string
+			if genreRows.Scan(&gJSON) == nil {
+				var genres []string
+				if json.Unmarshal([]byte(gJSON), &genres) == nil {
+					for _, g := range genres {
+						genreCount[g]++
+					}
+				}
+			}
 		}
+		var topGenre string
+		var maxCount int
+		for g, c := range genreCount {
+			if c > maxCount {
+				maxCount = c
+				topGenre = g
+			}
+		}
+		summary.TopGenre = topGenre
 	}
 
 	return summary, nil
@@ -506,6 +517,42 @@ func (s *StatsService) GetYearInReview(ctx context.Context, userID int, year int
 		}
 		if err := monthRows.Err(); err != nil {
 			log.Warn().Err(err).Msg("Error iterating month-by-month for year in review")
+		}
+	}
+
+	// Overlay per-month movie counts — movies table is the source of truth since movie
+	// watch sessions may not be in watch_history on older databases.
+	movieMonthRows, mmErr := s.db.QueryContext(ctx, `
+		SELECT strftime('%Y-%m', last_watched_at) as month, COUNT(*)
+		FROM movies
+		WHERE user_id = ? AND status = 'watched'
+		  AND date(last_watched_at) >= ? AND date(last_watched_at) <= ?
+		GROUP BY strftime('%Y-%m', last_watched_at)
+		ORDER BY month`, userID, startStr, endStr)
+	if mmErr != nil {
+		log.Warn().Err(mmErr).Int("user_id", userID).Msg("Failed to query per-month movies for year in review")
+	} else {
+		defer movieMonthRows.Close()
+		monthIndex := make(map[string]int, len(result.MonthByMonth))
+		for i, ms := range result.MonthByMonth {
+			monthIndex[ms.Month] = i
+		}
+		for movieMonthRows.Next() {
+			var month string
+			var count int
+			if movieMonthRows.Scan(&month, &count) == nil {
+				if idx, ok := monthIndex[month]; ok {
+					result.MonthByMonth[idx].MoviesWatched = count
+				} else {
+					result.MonthByMonth = append(result.MonthByMonth, models.MonthSummary{
+						Month:         month,
+						MoviesWatched: count,
+					})
+				}
+			}
+		}
+		if err := movieMonthRows.Err(); err != nil {
+			log.Warn().Err(err).Msg("Error iterating per-month movies for year in review")
 		}
 	}
 

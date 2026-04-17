@@ -38,13 +38,7 @@ export const useAuth = create<AuthState>()(
       isAuthenticated: false,
       isNewUser: false,
       initialSyncInProgress: false,
-      login: (
-        user,
-        accessToken,
-        refreshToken,
-        isNewUser = false,
-        initialSyncStarted = false,
-      ) => {
+      login: (user, accessToken, refreshToken, isNewUser = false, initialSyncStarted = false) => {
         if (typeof window !== "undefined") {
           localStorage.setItem("access_token", accessToken);
           if (refreshToken) {
@@ -64,7 +58,7 @@ export const useAuth = create<AuthState>()(
         try {
           await api.post("/auth/logout");
         } catch (err) {
-          console.warn("Logout API call failed:", err)
+          console.warn("Logout API call failed:", err);
         }
         if (typeof window !== "undefined") {
           localStorage.removeItem("access_token");
@@ -72,7 +66,7 @@ export const useAuth = create<AuthState>()(
           try {
             localStorage.removeItem("auth-storage");
           } catch (err) {
-            console.warn("Failed to clear auth-storage:", err)
+            console.warn("Failed to clear auth-storage:", err);
           }
         }
         set({

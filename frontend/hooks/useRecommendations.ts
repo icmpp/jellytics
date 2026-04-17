@@ -20,8 +20,7 @@ interface RecommendationsResponse {
 export function useRecommendations(limit = 12) {
   return useQuery<RecommendationsResponse>({
     queryKey: ["recommendations", limit],
-    queryFn: () =>
-      api.get<RecommendationsResponse>(`/recommendations?limit=${limit}`),
+    queryFn: () => api.get<RecommendationsResponse>(`/recommendations?limit=${limit}`),
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   });

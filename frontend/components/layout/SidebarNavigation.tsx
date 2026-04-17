@@ -21,7 +21,7 @@ import {
   FolderPlus,
 } from "lucide-react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useSidebar } from "./SidebarContext";
@@ -56,9 +56,11 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
+    if (mobileOpen) setMobileOpen(false);
+  }
 
   const handleLogout = async () => {
     await logout();
@@ -67,17 +69,23 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
 
   return (
     <>
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 min-h-14 pt-[env(safe-area-inset-top)] backdrop-blur-xl bg-white/[0.02] border-b border-white/[0.06] flex items-center justify-between px-3 sm:px-4 gap-2" style={{ minHeight: "calc(3.5rem + env(safe-area-inset-top, 0px))" }}>
+      <div
+        className="md:hidden fixed top-0 left-0 right-0 z-50 min-h-14 pt-[env(safe-area-inset-top)] backdrop-blur-xl bg-white/2 border-b border-white/6 flex items-center justify-between px-3 sm:px-4 gap-2"
+        style={{ minHeight: "calc(3.5rem + env(safe-area-inset-top, 0px))" }}
+      >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <JellyticsLogo size={30} />
-          <span className="font-semibold tracking-tight text-[15px]"><span className="text-white">Jelly</span><span className="text-white/40">tics</span></span>
+          <span className="font-semibold tracking-tight text-[15px]">
+            <span className="text-white">Jelly</span>
+            <span className="text-white/40">tics</span>
+          </span>
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <NotificationBell />
           {onSearchClick && (
             <button
               onClick={onSearchClick}
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.05] border border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.08] transition-all tap-target"
+              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/8 text-white/70 hover:text-white hover:bg-white/8 transition-all tap-target"
               aria-label="Search"
             >
               <Search className="h-5 w-5" />
@@ -85,14 +93,10 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
           )}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/[0.05] border border-white/[0.08] text-white/70 hover:text-white hover:bg-white/[0.08] transition-all tap-target"
+            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/8 text-white/70 hover:text-white hover:bg-white/8 transition-all tap-target"
             aria-label="Open menu"
           >
-            {mobileOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
@@ -106,7 +110,7 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
 
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-screen backdrop-blur-xl bg-white/[0.02] border-r border-white/[0.06] flex flex-col transition-all duration-300",
+          "fixed top-0 left-0 z-50 h-screen backdrop-blur-xl bg-white/2 border-r border-white/6 flex flex-col transition-all duration-300",
           isCollapsed ? "w-[72px]" : "w-64",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}
@@ -138,31 +142,21 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
               const Icon = item.icon;
               const isActive =
                 pathname === item.href ||
-                (item.href !== "/dashboard" &&
-                  pathname?.startsWith(item.href + "/"));
+                (item.href !== "/dashboard" && pathname?.startsWith(item.href + "/"));
 
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                >
+                <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)}>
                   <div
                     className={cn(
                       "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
                       isActive
                         ? "bg-purple-500/20 text-white border border-purple-500/30 shadow-lg shadow-purple-500/10"
-                        : "text-white/50 hover:text-white hover:bg-white/[0.05] border border-transparent",
+                        : "text-white/50 hover:text-white hover:bg-white/5 border border-transparent",
                       isCollapsed && "justify-center px-0",
                     )}
                     title={isCollapsed ? item.label : undefined}
                   >
-                    <Icon
-                      className={cn(
-                        "h-5 w-5 shrink-0",
-                        isActive && "text-purple-400",
-                      )}
-                    />
+                    <Icon className={cn("h-5 w-5 shrink-0", isActive && "text-purple-400")} />
                     {!isCollapsed && <span>{item.label}</span>}
                   </div>
                 </Link>
@@ -171,13 +165,11 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
           </div>
         </nav>
 
-        <div className="p-3 space-y-2 border-t border-white/[0.06]">
+        <div className="p-3 space-y-2 border-t border-white/6">
           {!isCollapsed && user && (
-            <div className="px-3 py-2 rounded-xl bg-white/[0.03] border border-white/[0.06]">
+            <div className="px-3 py-2 rounded-xl bg-white/3 border border-white/6">
               <p className="text-xs text-white/40 mb-0.5">Signed in as</p>
-              <p className="text-sm font-medium text-white truncate">
-                {user.username}
-              </p>
+              <p className="text-sm font-medium text-white truncate">{user.username}</p>
             </div>
           )}
 

@@ -9,7 +9,6 @@ import {
   cn,
   MEDIA_CARD_BASE,
   PROGRESS_BAR_CLASS,
-  MEDIA_CARD_TITLE_CLASS,
 } from "@/lib/utils";
 import { PosterImage } from "@/components/ui/poster-image";
 
@@ -21,7 +20,9 @@ export const ShowCard = memo(function ShowCard({ show }: ShowCardProps) {
   const progress = show.total_episodes
     ? Math.round((show.watched_episodes / show.total_episodes) * 100)
     : 0;
-  const watchStatusText = getWatchStatusText(show.status, { mediaType: "show" });
+  const watchStatusText = getWatchStatusText(show.status, {
+    mediaType: "show",
+  });
 
   return (
     <Link
@@ -30,11 +31,9 @@ export const ShowCard = memo(function ShowCard({ show }: ShowCardProps) {
       className="block min-w-0 h-full"
     >
       <div className={cn(MEDIA_CARD_BASE, "group h-full flex flex-col cursor-pointer")}>
-        <div className="relative aspect-[2/3] w-full overflow-hidden shrink-0">
+        <div className="relative aspect-2/3 w-full overflow-hidden shrink-0">
           <PosterImage
-            src={
-              show.jellyfin_id ? getShowPosterUrl(show.jellyfin_id) : undefined
-            }
+            src={show.jellyfin_id ? getShowPosterUrl(show.jellyfin_id) : undefined}
             alt={`Poster for ${show.title}`}
             type="show"
             hoverScale
@@ -54,7 +53,7 @@ export const ShowCard = memo(function ShowCard({ show }: ShowCardProps) {
               </div>
               <div className={PROGRESS_BAR_CLASS}>
                 <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-purple-400 transition-all duration-500"
+                  className="h-full bg-linear-to-r from-purple-500 to-purple-400 transition-all duration-500"
                   style={{ width: `${progress}%` }}
                 />
               </div>

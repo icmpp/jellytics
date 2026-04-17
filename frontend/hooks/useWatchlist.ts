@@ -27,8 +27,8 @@ export function useWatchlist() {
       try {
         return await api.get<WatchlistResponse>("/watchlist");
       } catch (err) {
-        console.warn("Failed to fetch watchlist:", err)
-        return { items: [], total: 0 }
+        console.warn("Failed to fetch watchlist:", err);
+        return { items: [], total: 0 };
       }
     },
     staleTime: 2 * 60 * 1000,
@@ -40,13 +40,7 @@ export function useAddToWatchlist() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      itemType,
-      itemId,
-    }: {
-      itemType: "show" | "movie";
-      itemId: number;
-    }) => {
+    mutationFn: async ({ itemType, itemId }: { itemType: "show" | "movie"; itemId: number }) => {
       return api.post<WatchlistItem>("/watchlist", {
         item_type: itemType,
         item_id: itemId,
@@ -54,9 +48,7 @@ export function useAddToWatchlist() {
     },
     onMutate: async ({ itemType, itemId }) => {
       await queryClient.cancelQueries({ queryKey: ["watchlist"] });
-      const previousWatchlist = queryClient.getQueryData<WatchlistResponse>([
-        "watchlist",
-      ]);
+      const previousWatchlist = queryClient.getQueryData<WatchlistResponse>(["watchlist"]);
 
       const tempId = -Date.now(); // negative temp ID to replace on success
       const optimisticItem: WatchlistItem = {
@@ -79,13 +71,9 @@ export function useAddToWatchlist() {
     },
     onSuccess: (data, _variables, context) => {
       const { tempId } = context ?? {};
-      const currentWatchlist = queryClient.getQueryData<WatchlistResponse>([
-        "watchlist",
-      ]);
+      const currentWatchlist = queryClient.getQueryData<WatchlistResponse>(["watchlist"]);
       if (currentWatchlist && typeof tempId === "number") {
-        const items = currentWatchlist.items.map((item) =>
-          item.id === tempId ? data : item,
-        );
+        const items = currentWatchlist.items.map((item) => (item.id === tempId ? data : item));
         queryClient.setQueryData<WatchlistResponse>(["watchlist"], {
           items,
           total: items.length,
@@ -101,10 +89,7 @@ export function useAddToWatchlist() {
     },
     onError: (error, variables, context) => {
       if (context?.previousWatchlist) {
-        queryClient.setQueryData<WatchlistResponse>(
-          ["watchlist"],
-          context.previousWatchlist,
-        );
+        queryClient.setQueryData<WatchlistResponse>(["watchlist"], context.previousWatchlist);
       }
       console.error("Failed to add to watchlist:", error);
       toast.error({
@@ -119,21 +104,15 @@ export function useRemoveFromWatchlist() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (
-      itemId: number | { itemType: "show" | "movie"; itemId: number },
-    ) => {
+    mutationFn: async (itemId: number | { itemType: "show" | "movie"; itemId: number }) => {
       let watchlistItemId: number;
 
       if (typeof itemId === "number") {
         watchlistItemId = itemId;
       } else {
-        const watchlistData = queryClient.getQueryData<WatchlistResponse>([
-          "watchlist",
-        ]);
+        const watchlistData = queryClient.getQueryData<WatchlistResponse>(["watchlist"]);
         const watchlistItem = watchlistData?.items.find(
-          (item) =>
-            item.item_type === itemId.itemType &&
-            item.item_id === itemId.itemId,
+          (item) => item.item_type === itemId.itemType && item.item_id === itemId.itemId,
         );
 
         if (watchlistItem) {
@@ -147,22 +126,16 @@ export function useRemoveFromWatchlist() {
     },
     onMutate: async (variables) => {
       await queryClient.cancelQueries({ queryKey: ["watchlist"] });
-      const previousWatchlist = queryClient.getQueryData<WatchlistResponse>([
-        "watchlist",
-      ]);
+      const previousWatchlist = queryClient.getQueryData<WatchlistResponse>(["watchlist"]);
 
       let itemTitle = "Item";
       let itemToRemove: WatchlistItem | undefined;
 
       if (typeof variables === "number") {
-        itemToRemove = previousWatchlist?.items.find(
-          (item) => item.id === variables,
-        );
+        itemToRemove = previousWatchlist?.items.find((item) => item.id === variables);
       } else {
         itemToRemove = previousWatchlist?.items.find(
-          (item) =>
-            item.item_type === variables.itemType &&
-            item.item_id === variables.itemId,
+          (item) => item.item_type === variables.itemType && item.item_id === variables.itemId,
         );
       }
 
@@ -174,10 +147,7 @@ export function useRemoveFromWatchlist() {
             items: previousWatchlist.items.filter((item) =>
               typeof variables === "number"
                 ? item.id !== variables
-                : !(
-                    item.item_type === variables.itemType &&
-                    item.item_id === variables.itemId
-                  ),
+                : !(item.item_type === variables.itemType && item.item_id === variables.itemId),
             ),
             total: previousWatchlist.total - 1,
           });
@@ -196,10 +166,7 @@ export function useRemoveFromWatchlist() {
     },
     onError: (error, variables, context) => {
       if (context?.previousWatchlist) {
-        queryClient.setQueryData<WatchlistResponse>(
-          ["watchlist"],
-          context.previousWatchlist,
-        );
+        queryClient.setQueryData<WatchlistResponse>(["watchlist"], context.previousWatchlist);
       }
       console.error("Failed to remove from watchlist:", error);
       toast.error({
@@ -212,13 +179,10 @@ export function useRemoveFromWatchlist() {
 
 export function useIsInWatchlist(itemType: "show" | "movie", itemId: number) {
   const { data } = useWatchlist();
-  const items = data?.items ?? [];
 
   return useMemo(
     () =>
-      items.some(
-        (item) => item.item_type === itemType && item.item_id === itemId,
-      ),
-    [items, itemType, itemId],
+      (data?.items ?? []).some((item) => item.item_type === itemType && item.item_id === itemId),
+    [data?.items, itemType, itemId],
   );
 }

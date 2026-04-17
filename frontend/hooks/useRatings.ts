@@ -28,8 +28,8 @@ export function useRating(itemType: "show" | "movie", itemId: number) {
       try {
         return await api.get<Rating>(`/ratings/${itemType}/${itemId}`);
       } catch (err) {
-        console.warn("Failed to fetch rating:", err)
-        return null
+        console.warn("Failed to fetch rating:", err);
+        return null;
       }
     },
     staleTime: 5 * 60 * 1000,
@@ -60,11 +60,7 @@ export function useSetRating() {
       await queryClient.cancelQueries({
         queryKey: ["rating", itemType, itemId],
       });
-      const previousRating = queryClient.getQueryData<Rating>([
-        "rating",
-        itemType,
-        itemId,
-      ]);
+      const previousRating = queryClient.getQueryData<Rating>(["rating", itemType, itemId]);
 
       const optimisticRating: Rating = {
         id: previousRating?.id ?? Date.now(),
@@ -79,10 +75,7 @@ export function useSetRating() {
       return { previousRating };
     },
     onSuccess: (data, variables) => {
-      queryClient.setQueryData(
-        ["rating", variables.itemType, variables.itemId],
-        data,
-      );
+      queryClient.setQueryData(["rating", variables.itemType, variables.itemId], data);
       queryClient.invalidateQueries({ queryKey: ["ratings"] });
       toast.success({
         title: "Rating saved",
@@ -109,33 +102,20 @@ export function useDeleteRating() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      itemType,
-      itemId,
-    }: {
-      itemType: "show" | "movie";
-      itemId: number;
-    }) => {
+    mutationFn: async ({ itemType, itemId }: { itemType: "show" | "movie"; itemId: number }) => {
       return api.delete(`/ratings/${itemType}/${itemId}`);
     },
     onMutate: async ({ itemType, itemId }) => {
       await queryClient.cancelQueries({
         queryKey: ["rating", itemType, itemId],
       });
-      const previousRating = queryClient.getQueryData<Rating>([
-        "rating",
-        itemType,
-        itemId,
-      ]);
+      const previousRating = queryClient.getQueryData<Rating>(["rating", itemType, itemId]);
       queryClient.setQueryData(["rating", itemType, itemId], null);
 
       return { previousRating };
     },
     onSuccess: (_, variables) => {
-      queryClient.setQueryData(
-        ["rating", variables.itemType, variables.itemId],
-        null,
-      );
+      queryClient.setQueryData(["rating", variables.itemType, variables.itemId], null);
       queryClient.invalidateQueries({ queryKey: ["ratings"] });
       toast.success({
         title: "Rating removed",

@@ -12,8 +12,7 @@ export default function Home() {
     const timer = setTimeout(() => {
       const hasToken =
         isAuthenticated ||
-        (typeof window !== "undefined" &&
-          !!localStorage.getItem("access_token"));
+        (typeof window !== "undefined" && !!localStorage.getItem("access_token"));
       if (hasToken) {
         router.replace("/dashboard");
       } else {

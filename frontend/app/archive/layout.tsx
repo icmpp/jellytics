@@ -5,10 +5,6 @@ export const metadata: Metadata = {
   description: "Movies and shows you've removed from your library",
 };
 
-export default function ArchiveLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function ArchiveLayout({ children }: { children: React.ReactNode }) {
   return children;
 }

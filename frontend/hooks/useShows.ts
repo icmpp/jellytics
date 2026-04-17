@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useInfiniteQuery,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
 export interface Show {
@@ -44,26 +39,21 @@ interface UseShowsFilters {
   offset?: number;
 }
 
-export function useShows(
-  filters?: UseShowsFilters,
-  options?: { enabled?: boolean },
-) {
+export function useShows(filters?: UseShowsFilters, options?: { enabled?: boolean }) {
   const params = new URLSearchParams();
   if (filters?.status) params.append("status", filters.status);
   if (filters?.search) params.append("search", filters.search);
   if (filters?.genre) params.append("genre", filters.genre);
-  if (filters?.yearFrom)
-    params.append("year_from", filters.yearFrom.toString());
+  if (filters?.yearFrom) params.append("year_from", filters.yearFrom.toString());
   if (filters?.yearTo) params.append("year_to", filters.yearTo.toString());
   if (filters?.watchedFrom) params.append("watched_from", filters.watchedFrom);
   if (filters?.watchedTo) params.append("watched_to", filters.watchedTo);
-  if (filters?.tags?.length)
-    params.append("tags", filters.tags.join(","));
+  if (filters?.tags?.length) params.append("tags", filters.tags.join(","));
   if (filters?.limit !== undefined && filters?.limit !== null) {
-    params.append("limit", filters.limit.toString())
+    params.append("limit", filters.limit.toString());
   }
   if (filters?.offset !== undefined && filters?.offset !== null) {
-    params.append("offset", filters.offset.toString())
+    params.append("offset", filters.offset.toString());
   }
 
   return useQuery<ShowsResponse>({
@@ -90,14 +80,11 @@ export function useShowsInfinite(
       if (filters?.status) params.append("status", filters.status);
       if (filters?.search) params.append("search", filters.search);
       if (filters?.genre) params.append("genre", filters.genre);
-      if (filters?.yearFrom)
-        params.append("year_from", filters.yearFrom.toString());
+      if (filters?.yearFrom) params.append("year_from", filters.yearFrom.toString());
       if (filters?.yearTo) params.append("year_to", filters.yearTo.toString());
-      if (filters?.watchedFrom)
-        params.append("watched_from", filters.watchedFrom);
+      if (filters?.watchedFrom) params.append("watched_from", filters.watchedFrom);
       if (filters?.watchedTo) params.append("watched_to", filters.watchedTo);
-      if (filters?.tags?.length)
-        params.append("tags", filters.tags.join(","));
+      if (filters?.tags?.length) params.append("tags", filters.tags.join(","));
       params.append("limit", pageSize.toString());
       params.append("offset", pageParam.toString());
       return api.get<ShowsResponse>(`/shows?${params.toString()}`);
@@ -147,8 +134,7 @@ export function useShow(id: number) {
 export function useDeleteShow() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (showId: number) =>
-      api.delete(`/shows/${showId}`),
+    mutationFn: (showId: number) => api.delete(`/shows/${showId}`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shows"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
@@ -163,8 +149,7 @@ export function useDeleteShow() {
 export function useRestoreShow() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (showId: number) =>
-      api.post(`/shows/${showId}/restore`),
+    mutationFn: (showId: number) => api.post(`/shows/${showId}/restore`),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["shows"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });

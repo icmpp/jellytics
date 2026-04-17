@@ -13,14 +13,12 @@ type ToasterToast = ToastProps & {
   action?: ToastActionElement;
 };
 
-const actionTypes = {
-  ADD_TOAST: "ADD_TOAST",
-  UPDATE_TOAST: "UPDATE_TOAST",
-  DISMISS_TOAST: "DISMISS_TOAST",
-  REMOVE_TOAST: "REMOVE_TOAST",
-} as const;
-
-type ActionType = typeof actionTypes;
+type ActionType = {
+  readonly ADD_TOAST: "ADD_TOAST";
+  readonly UPDATE_TOAST: "UPDATE_TOAST";
+  readonly DISMISS_TOAST: "DISMISS_TOAST";
+  readonly REMOVE_TOAST: "REMOVE_TOAST";
+};
 
 let count = 0;
 
@@ -80,9 +78,7 @@ export const reducer = (state: State, action: Action): State => {
     case "UPDATE_TOAST":
       return {
         ...state,
-        toasts: state.toasts.map((t) =>
-          t.id === action.toast.id ? { ...t, ...action.toast } : t,
-        ),
+        toasts: state.toasts.map((t) => (t.id === action.toast.id ? { ...t, ...action.toast } : t)),
       };
 
     case "DISMISS_TOAST": {
@@ -172,14 +168,10 @@ type ToastFn = typeof baseToast & {
 };
 
 const toast = Object.assign(baseToast, {
-  success: (props: Omit<Toast, "variant">) =>
-    baseToast({ ...props, variant: "success" }),
-  error: (props: Omit<Toast, "variant">) =>
-    baseToast({ ...props, variant: "destructive" }),
-  info: (props: Omit<Toast, "variant">) =>
-    baseToast({ ...props, variant: "info" }),
-  warning: (props: Omit<Toast, "variant">) =>
-    baseToast({ ...props, variant: "warning" }),
+  success: (props: Omit<Toast, "variant">) => baseToast({ ...props, variant: "success" }),
+  error: (props: Omit<Toast, "variant">) => baseToast({ ...props, variant: "destructive" }),
+  info: (props: Omit<Toast, "variant">) => baseToast({ ...props, variant: "info" }),
+  warning: (props: Omit<Toast, "variant">) => baseToast({ ...props, variant: "warning" }),
 }) as ToastFn;
 
 function useToast() {
