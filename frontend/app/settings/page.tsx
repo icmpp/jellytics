@@ -217,7 +217,6 @@ export default function SettingsPage() {
     setLoading(true);
     setError("");
     setServerSettingsSuccess("");
-    setPreferencesSuccess("");
     setTestResult(null);
     try {
       await api.put<Settings>("/settings", { jellyfin_server_url: serverURL });
@@ -272,7 +271,6 @@ export default function SettingsPage() {
     setSyncing(true);
     setError("");
     setServerSettingsSuccess("");
-    setPreferencesSuccess("");
     try {
       await api.post("/sync");
       queryClient.invalidateQueries({ queryKey: ["stats"] });
