@@ -31,7 +31,7 @@ function AppLayoutContent({ children }: AppLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-app-shell">
+    <div className="min-h-screen bg-[#0d0d14]">
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       <SidebarNavigation onSearchClick={() => setSearchOpen(true)} />
       <main
@@ -47,7 +47,7 @@ function AppLayoutContent({ children }: AppLayoutProps) {
         <div
           className={cn(
             "flex-1 min-h-0 w-full max-w-full min-w-0",
-            !isMobile && "px-6 py-6 md:px-8 md:py-8",
+            !isMobile && "px-6 pb-6 md:px-8 md:pb-8",
           )}
         >
           {children}

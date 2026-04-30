@@ -70,7 +70,7 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
   return (
     <>
       <div
-        className="md:hidden fixed top-0 left-0 right-0 z-50 min-h-14 pt-[env(safe-area-inset-top)] backdrop-blur-xl bg-white/2 border-b border-white/6 flex items-center justify-between px-3 sm:px-4 gap-2"
+        className="md:hidden fixed top-0 left-0 right-0 z-50 min-h-14 pt-[env(safe-area-inset-top)] bg-[#0d0d14] border-b border-white/6 flex items-center justify-between px-3 sm:px-4 gap-2"
         style={{ minHeight: "calc(3.5rem + env(safe-area-inset-top, 0px))" }}
       >
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -110,7 +110,7 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
 
       <aside
         className={cn(
-          "fixed top-0 left-0 z-50 h-screen backdrop-blur-xl bg-white/2 border-r border-white/6 flex flex-col transition-all duration-300",
+          "fixed top-0 left-0 z-50 h-screen bg-[#0d0d14] border-r border-white/6 flex flex-col transition-all duration-300",
           isCollapsed ? "w-[72px]" : "w-64",
           mobileOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
         )}

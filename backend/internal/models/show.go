@@ -24,6 +24,16 @@ type Show struct {
 	CreatedAt             time.Time  `json:"created_at" db:"created_at"`
 	UpdatedAt             time.Time  `json:"updated_at" db:"updated_at"`
 	RemovedFromLibrary    bool       `json:"removed_from_library"`
+	UpNext                *UpNext    `json:"up_next,omitempty"`
+}
+
+// UpNext describes the next unwatched episode for a show, populated on list
+// responses for shows that are currently being watched.
+type UpNext struct {
+	EpisodeID     int    `json:"episode_id"`
+	SeasonNumber  int    `json:"season_number"`
+	EpisodeNumber int    `json:"episode_number"`
+	Title         string `json:"title,omitempty"`
 }
 
 type Episode struct {

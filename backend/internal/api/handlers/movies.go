@@ -39,20 +39,7 @@ func (h *MoviesHandler) ListMovies(w http.ResponseWriter, r *http.Request) {
 	}
 
 	limit, offset := parsePagination(r)
-	tagIDs := parseTagIDs(r.URL.Query().Get("tags"))
-	filter := repository.MovieListFilter{
-		Status:      r.URL.Query().Get("status"),
-		Search:      r.URL.Query().Get("search"),
-		Genre:       r.URL.Query().Get("genre"),
-		YearFrom:    r.URL.Query().Get("year_from"),
-		YearTo:      r.URL.Query().Get("year_to"),
-		WatchedFrom: r.URL.Query().Get("watched_from"),
-		WatchedTo:   r.URL.Query().Get("watched_to"),
-		TagIDs:      tagIDs,
-		UserID:      userID,
-		Limit:       limit,
-		Offset:      offset,
-	}
+	filter := movieFilterFromRequest(r, userID, limit, offset)
 
 	movies, total, err := h.movieService.List(r.Context(), userID, filter)
 	if err != nil {
@@ -64,6 +51,43 @@ func (h *MoviesHandler) ListMovies(w http.ResponseWriter, r *http.Request) {
 		"movies": movies,
 		"total":  total,
 	})
+}
+
+// GetMoviesStatusCounts returns per-status counts for the current user,
+// respecting all query filters except `status` so each bucket is comparable.
+func (h *MoviesHandler) GetMoviesStatusCounts(w http.ResponseWriter, r *http.Request) {
+	userID := middleware.GetUserID(r)
+	if userID == 0 {
+		handleError(w, r, errors.New(errors.CodeUnauthorized, "Unauthorized"))
+		return
+	}
+
+	filter := movieFilterFromRequest(r, userID, 0, 0)
+
+	counts, err := h.movieService.StatusCounts(r.Context(), userID, filter)
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+
+	writeJSON(w, r, counts)
+}
+
+func movieFilterFromRequest(r *http.Request, userID, limit, offset int) repository.MovieListFilter {
+	return repository.MovieListFilter{
+		Status:      r.URL.Query().Get("status"),
+		Search:      r.URL.Query().Get("search"),
+		Genre:       r.URL.Query().Get("genre"),
+		YearFrom:    r.URL.Query().Get("year_from"),
+		YearTo:      r.URL.Query().Get("year_to"),
+		WatchedFrom: r.URL.Query().Get("watched_from"),
+		WatchedTo:   r.URL.Query().Get("watched_to"),
+		TagIDs:      parseTagIDs(r.URL.Query().Get("tags")),
+		Sort:        r.URL.Query().Get("sort"),
+		UserID:      userID,
+		Limit:       limit,
+		Offset:      offset,
+	}
 }
 
 func (h *MoviesHandler) GetMovie(w http.ResponseWriter, r *http.Request) {
@@ -133,6 +157,7 @@ func (h *MoviesHandler) RestoreMovie(w http.ResponseWriter, r *http.Request) {
 
 func (h *MoviesHandler) RegisterRoutes(r chi.Router) {
 	r.Get("/", h.ListMovies)
+	r.Get("/status-counts", h.GetMoviesStatusCounts)
 	r.Get("/{id}", h.GetMovie)
 	r.Delete("/{id}", h.DeleteMovie)
 	r.Post("/{id}/restore", h.RestoreMovie)

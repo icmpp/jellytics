@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, type MouseEvent } from "react";
 import {
   useCollections,
   useCreateCollection,
@@ -8,16 +8,15 @@ import {
   type Collection,
 } from "@/hooks/useCollections";
 import { SimpleMediaGridPage } from "@/components/media";
-import { CollectionsGridSkeleton } from "@/components/ui/collections-grid-skeleton";
 import { Button } from "@/components/ui/button";
-import { FolderPlus, Trash2, Loader2 } from "lucide-react";
+import { FolderOpen, FolderPlus, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ConfirmPopover } from "@/components/ui/confirm-popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn, MEDIA_CARD_BASE, COLLECTIONS_GRID_CLASS, MEDIA_CARD_TITLE_CLASS } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 export default function CollectionsPage() {
   const { data: collections = [], isLoading, isError, refetch } = useCollections();
@@ -29,9 +28,7 @@ export default function CollectionsPage() {
   const createNameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (createOpen) {
-      createNameInputRef.current?.focus();
-    }
+    if (createOpen) createNameInputRef.current?.focus();
   }, [createOpen]);
 
   const handleCreate = (e?: React.FormEvent) => {
@@ -115,7 +112,6 @@ export default function CollectionsPage() {
       actions={actions}
       isLoading={isLoading}
       isError={isError}
-      skeletonContent={<CollectionsGridSkeleton count={6} />}
       errorContent={
         <div className="flex flex-col items-center py-24 text-center">
           <FolderPlus className="h-16 w-16 text-white/20 mx-auto mb-4" />
@@ -186,7 +182,6 @@ export default function CollectionsPage() {
           </div>
         </div>
       }
-      countLabel={`${collections.length} ${collections.length === 1 ? "collection" : "collections"}`}
       items={collections}
       renderCard={(c) => (
         <CollectionCard
@@ -196,7 +191,6 @@ export default function CollectionsPage() {
         />
       )}
       getItemKey={(c) => String(c.id)}
-      gridClass={COLLECTIONS_GRID_CLASS}
     />
   );
 }
@@ -206,73 +200,133 @@ function CollectionCard({
   onDelete,
   isDeleting,
 }: {
-  collection: {
-    id: number;
-    name: string;
-    description?: string;
-    itemCount: number;
-  };
+  collection: Collection;
   onDelete: () => void;
   isDeleting: boolean;
 }) {
   const [confirmOpen, setConfirmOpen] = useState(false);
 
+  const stop = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   return (
     <Link
       href={`/collections/${collection.id}`}
-      className={cn(MEDIA_CARD_BASE, "block group")}
       aria-label={`Open collection: ${collection.name}`}
+      className="block min-w-0 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
-      <div className="p-4 flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <h3
-            className={cn(MEDIA_CARD_TITLE_CLASS, "group-hover:text-purple-400 transition-colors")}
-          >
-            {collection.name}
-          </h3>
-          <p className="text-sm text-white/40 mt-0.5">
-            {collection.itemCount} {collection.itemCount === 1 ? "item" : "items"}
-          </p>
-          {collection.description && (
-            <p className="text-sm text-white/50 mt-1 line-clamp-2">{collection.description}</p>
-          )}
-        </div>
-        <div
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
-          <ConfirmPopover
-            open={confirmOpen}
-            onOpenChange={setConfirmOpen}
-            title="Delete collection?"
-            description={
-              <>
-                <span className="text-white/70">&quot;{collection.name}&quot;</span> and all its
-                items will be permanently removed.
-              </>
-            }
-            confirmLabel="Delete"
-            cancelLabel="Cancel"
-            confirmIcon={Trash2}
-            variant="destructive"
-            isLoading={isDeleting}
-            onConfirm={() => {
-              onDelete();
-              setConfirmOpen(false);
-            }}
-          >
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              className="p-2 rounded-lg text-white/40 hover:text-red-400 hover:bg-red-500/10"
-              aria-label="Delete collection"
+      <div
+        className={cn(
+          "card-border group relative rounded-2xl p-[2px]",
+          "shadow-[0_4px_16px_-4px_rgba(0,0,0,0.5),0_1px_4px_-1px_rgba(0,0,0,0.35)]",
+        )}
+      >
+        <div className="relative isolate aspect-2/3 w-full cursor-pointer overflow-hidden rounded-[calc(1rem-2px)]">
+          {/* Gradient "poster" background */}
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-linear-to-br from-violet-950 via-purple-950 to-fuchsia-950"
+          />
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-linear-to-br from-violet-500/15 via-purple-500/10 to-fuchsia-500/15"
+          />
+
+          {/* Bottom gradient for text legibility */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent"
+          />
+
+          {/* Centered folder icon */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center pb-20">
+            <div
+              className={cn(
+                "flex h-14 w-14 items-center justify-center rounded-2xl",
+                "bg-white/8 ring-1 ring-white/10",
+              )}
             >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </ConfirmPopover>
+              <FolderOpen className="h-7 w-7 text-white/50 transition-colors duration-200 group-hover:text-primary/70" />
+            </div>
+          </div>
+
+          {/* Item count — top left */}
+          <span
+            className={cn(
+              "absolute left-2 top-2 z-10",
+              "flex items-center gap-1 rounded-full px-2 py-0.5",
+              "bg-black/55 ring-1 ring-white/15 backdrop-blur-md",
+              "text-[10px] font-semibold tabular-nums text-white/70",
+            )}
+          >
+            {collection.itemCount}
+            <span className="font-normal text-white/40">
+              {collection.itemCount === 1 ? "item" : "items"}
+            </span>
+          </span>
+
+          {/* Delete button — top right, revealed on hover */}
+          <div
+            className="absolute right-2 top-2 z-10 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+            onClick={stop}
+          >
+            <ConfirmPopover
+              open={confirmOpen}
+              onOpenChange={setConfirmOpen}
+              title="Delete collection?"
+              description={
+                <>
+                  <span className="text-white/70">&quot;{collection.name}&quot;</span> and all its
+                  items will be permanently removed.
+                </>
+              }
+              confirmLabel="Delete"
+              cancelLabel="Cancel"
+              confirmIcon={Trash2}
+              variant="destructive"
+              isLoading={isDeleting}
+              onConfirm={() => {
+                onDelete();
+                setConfirmOpen(false);
+              }}
+            >
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className={cn(
+                  "h-7 w-7 rounded-full backdrop-blur-md",
+                  "bg-black/55 ring-1 ring-white/15 text-white/60",
+                  "hover:bg-red-500/30 hover:text-red-300 hover:ring-red-500/40",
+                  "transition-all duration-150",
+                )}
+                aria-label="Delete collection"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </Button>
+            </ConfirmPopover>
+          </div>
+
+          {/* Bottom info */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1 px-3 pb-3 pt-10">
+            <h3
+              className={cn(
+                "line-clamp-2 text-[0.8125rem] font-semibold leading-snug tracking-tight text-white",
+                "transition-colors duration-200 group-hover:text-primary/90",
+              )}
+            >
+              {collection.name}
+            </h3>
+            {collection.description ? (
+              <p className="line-clamp-2 text-[10px] font-medium leading-snug tracking-wide text-white/45">
+                {collection.description}
+              </p>
+            ) : (
+              <p className="text-[10px] font-medium tracking-wide text-white/30">No description</p>
+            )}
+          </div>
         </div>
       </div>
     </Link>

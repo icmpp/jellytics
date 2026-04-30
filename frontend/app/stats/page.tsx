@@ -178,70 +178,69 @@ export default function StatsPage() {
 
   return (
     <AppLayout>
+      <PageHeader
+        breadcrumb={breadcrumbItems}
+        title="Statistics"
+        description="Detailed analytics and insights"
+        icon={<BarChart3 className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
+        actions={
+          <Popover open={exportOpen} onOpenChange={setExportOpen}>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Download className="h-4 w-4" />
+                Export
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="end"
+              side="bottom"
+              className="w-[min(18rem,calc(100vw-2rem))] p-2"
+            >
+              <div className="space-y-1">
+                <p className="px-3 py-2 text-xs font-medium text-white/40 uppercase tracking-wider">
+                  Export Format
+                </p>
+                <ExportButton
+                  label="JSON"
+                  description="Full data export"
+                  icon={<FileJson className="h-4 w-4 text-amber-400" />}
+                  iconBg="bg-amber-500/20 group-hover:bg-amber-500/30"
+                  onClick={exportJSON}
+                  loading={exporting === "json"}
+                />
+                <ExportButton
+                  label="CSV"
+                  description="Spreadsheet compatible"
+                  icon={<FileText className="h-4 w-4 text-emerald-400" />}
+                  iconBg="bg-emerald-500/20 group-hover:bg-emerald-500/30"
+                  onClick={exportCSV}
+                  loading={exporting === "csv"}
+                  disabled={!trends}
+                />
+                <ExportButton
+                  label="Excel"
+                  description="Multi-sheet workbook"
+                  icon={<FileSpreadsheet className="h-4 w-4 text-green-400" />}
+                  iconBg="bg-green-500/20 group-hover:bg-green-500/30"
+                  onClick={exportExcel}
+                  loading={exporting === "excel"}
+                  disabled={!overview || !trends || !genres}
+                />
+                <ExportButton
+                  label="PDF"
+                  description="Print-ready report"
+                  icon={<FileText className="h-4 w-4 text-red-400" />}
+                  iconBg="bg-red-500/20 group-hover:bg-red-500/30"
+                  onClick={exportPDF}
+                  loading={exporting === "pdf"}
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
+        }
+      />
       <PageContent>
-        <PageHeader
-          breadcrumb={breadcrumbItems}
-          title="Statistics"
-          description="Detailed analytics and insights"
-          icon={<BarChart3 className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
-          actions={
-            <Popover open={exportOpen} onOpenChange={setExportOpen}>
-              <PopoverTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <Download className="h-4 w-4" />
-                  Export
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent
-                align="end"
-                side="bottom"
-                className="w-[min(18rem,calc(100vw-2rem))] p-2"
-              >
-                <div className="space-y-1">
-                  <p className="px-3 py-2 text-xs font-medium text-white/40 uppercase tracking-wider">
-                    Export Format
-                  </p>
-                  <ExportButton
-                    label="JSON"
-                    description="Full data export"
-                    icon={<FileJson className="h-4 w-4 text-amber-400" />}
-                    iconBg="bg-amber-500/20 group-hover:bg-amber-500/30"
-                    onClick={exportJSON}
-                    loading={exporting === "json"}
-                  />
-                  <ExportButton
-                    label="CSV"
-                    description="Spreadsheet compatible"
-                    icon={<FileText className="h-4 w-4 text-emerald-400" />}
-                    iconBg="bg-emerald-500/20 group-hover:bg-emerald-500/30"
-                    onClick={exportCSV}
-                    loading={exporting === "csv"}
-                    disabled={!trends}
-                  />
-                  <ExportButton
-                    label="Excel"
-                    description="Multi-sheet workbook"
-                    icon={<FileSpreadsheet className="h-4 w-4 text-green-400" />}
-                    iconBg="bg-green-500/20 group-hover:bg-green-500/30"
-                    onClick={exportExcel}
-                    loading={exporting === "excel"}
-                    disabled={!overview || !trends || !genres}
-                  />
-                  <ExportButton
-                    label="PDF"
-                    description="Print-ready report"
-                    icon={<FileText className="h-4 w-4 text-red-400" />}
-                    iconBg="bg-red-500/20 group-hover:bg-red-500/30"
-                    onClick={exportPDF}
-                    loading={exporting === "pdf"}
-                  />
-                </div>
-              </PopoverContent>
-            </Popover>
-          }
-        />
-
         <div id="stats-content" className="space-y-6">
           <OverviewCards />
           <TrendsChart />

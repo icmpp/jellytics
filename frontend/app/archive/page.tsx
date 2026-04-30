@@ -37,13 +37,12 @@ const ArchiveCard = memo(function ArchiveCard({ item }: { item: ArchiveItem }) {
   return (
     <div className={cn(MEDIA_CARD_BASE, "group min-w-0 h-full flex flex-col")}>
       <Link href={href} className="min-w-0 flex-1 min-h-0 flex flex-col cursor-pointer">
-        <div className="relative aspect-[2/3] w-full overflow-hidden shrink-0">
+        <div className="relative isolate aspect-2/3 w-full overflow-hidden shrink-0">
           <PosterImage
             src={posterUrl}
             alt={item.title}
             type={isShow ? "show" : "movie"}
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-            hoverScale
             iconSize="h-12 w-12"
             showLabel={false}
           />
@@ -52,12 +51,8 @@ const ArchiveCard = memo(function ArchiveCard({ item }: { item: ArchiveItem }) {
             <span className="text-xs font-medium text-amber-300">Removed</span>
           </div>
         </div>
-        <div className="p-4 flex-1 min-h-0 flex flex-col">
-          <h3
-            className={cn(MEDIA_CARD_TITLE_CLASS, "group-hover:text-purple-400 transition-colors")}
-          >
-            {item.title}
-          </h3>
+        <div className="flex min-h-0 flex-1 flex-col gap-1.5 p-4">
+          <h3 className={MEDIA_CARD_TITLE_CLASS}>{item.title}</h3>
           <div className="flex items-center gap-2 text-xs text-white/50">
             {item.year && <span>{item.year}</span>}
             {(item.totalWatchTimeMinutes ?? 0) > 0 && (
@@ -196,7 +191,6 @@ export default function ArchivePage() {
       }
       isEmpty={filteredItems.length === 0}
       emptyContent={<EmptyArchive typeFilter={typeFilter} />}
-      countLabel={`${filteredItems.length} ${filteredItems.length === 1 ? "item" : "items"} in archive`}
       items={filteredItems}
       renderCard={(item) => <ArchiveCard item={item} />}
       getItemKey={(item) => `${item.type}-${item.id}`}

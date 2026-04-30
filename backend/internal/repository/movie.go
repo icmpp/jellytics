@@ -22,8 +22,43 @@ type MovieListFilter struct {
 	WatchedTo   string
 	TagIDs      []int
 	UserID      int // used for tag filter subquery
+	Sort        string
 	Limit       int
 	Offset      int
+}
+
+// movieSortClauses maps whitelisted sort keys to ORDER BY fragments.
+// Any unknown/empty key falls back to the default (recently watched first).
+var movieSortClauses = map[string]string{
+	"title_asc":          "title COLLATE NOCASE ASC, id ASC",
+	"title_desc":         "title COLLATE NOCASE DESC, id DESC",
+	"year_asc":           "year IS NULL, year ASC, title COLLATE NOCASE ASC",
+	"year_desc":          "year IS NULL, year DESC, title COLLATE NOCASE ASC",
+	"added_asc":          "created_at ASC, id ASC",
+	"added_desc":         "created_at DESC, id DESC",
+	"last_watched_asc":   "last_watched_at IS NULL, last_watched_at ASC, created_at ASC",
+	"last_watched_desc":  "last_watched_at IS NULL, last_watched_at DESC, created_at DESC",
+	"runtime_asc":        "runtime_minutes IS NULL, runtime_minutes ASC, title COLLATE NOCASE ASC",
+	"runtime_desc":       "runtime_minutes IS NULL, runtime_minutes DESC, title COLLATE NOCASE ASC",
+	"progress_desc":      "completion_percentage DESC, last_watched_at DESC",
+	"progress_asc":       "completion_percentage ASC, last_watched_at DESC",
+}
+
+const defaultMovieSort = "last_watched_at IS NULL, last_watched_at DESC, created_at DESC"
+
+func movieOrderBy(sort string) string {
+	if clause, ok := movieSortClauses[sort]; ok {
+		return clause
+	}
+	return defaultMovieSort
+}
+
+// StatusCounts summarises how many items fall in each watch status bucket.
+type StatusCounts struct {
+	All      int `json:"all"`
+	Watched  int `json:"watched"`
+	Watching int `json:"watching"`
+	Pending  int `json:"pending"`
 }
 
 // MovieStore defines data access for movies.
@@ -34,6 +69,7 @@ type MovieStore interface {
 	SoftDelete(ctx context.Context, id, userID int) error
 	Restore(ctx context.Context, id, userID int) error
 	RemoveFromWatchlist(ctx context.Context, userID, itemID int) error
+	StatusCounts(ctx context.Context, userID int, filter MovieListFilter) (StatusCounts, error)
 }
 
 // SQLMovieStore implements MovieStore with SQLite.
@@ -64,7 +100,7 @@ func (s *SQLMovieStore) List(ctx context.Context, userID int, filter MovieListFi
 		       total_watch_time_minutes, completion_percentage,
 		       first_watched_at, last_watched_at, created_at
 		FROM movies ` + baseWhere + buildFilterClause(filter, false) + `
-		ORDER BY last_watched_at DESC, created_at DESC LIMIT ? OFFSET ?`
+		ORDER BY ` + movieOrderBy(filter.Sort) + ` LIMIT ? OFFSET ?`
 	args = append(args, filter.Limit, filter.Offset)
 
 	rows, err := s.db.QueryContext(ctx, query, args...)
@@ -160,6 +196,52 @@ func (s *SQLMovieStore) RemoveFromWatchlist(ctx context.Context, userID, itemID 
 		`DELETE FROM watchlist WHERE user_id = ? AND item_type = 'movie' AND item_id = ?`,
 		userID, itemID)
 	return err // Best-effort; soft delete is the critical operation
+}
+
+// StatusCounts returns movie counts per status bucket, honoring all filters
+// in `filter` *except* `Status` itself (so counts reflect what each segment
+// would yield if selected).
+func (s *SQLMovieStore) StatusCounts(ctx context.Context, userID int, filter MovieListFilter) (StatusCounts, error) {
+	countFilter := filter
+	countFilter.Status = ""
+	countFilter.Limit = 0
+	countFilter.Offset = 0
+
+	args := []interface{}{userID}
+	dummyCountArgs := []interface{}{userID}
+	buildFilters(&args, &dummyCountArgs, countFilter, false)
+
+	query := `SELECT status, COUNT(*) FROM movies WHERE user_id = ? AND deleted_at IS NULL` +
+		buildFilterClause(countFilter, false) +
+		` GROUP BY status`
+
+	rows, err := s.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return StatusCounts{}, errors.Wrap(err, errors.CodeDatabaseError, "Failed to count movies by status")
+	}
+	defer rows.Close()
+
+	var counts StatusCounts
+	for rows.Next() {
+		var status string
+		var n int
+		if err := rows.Scan(&status, &n); err != nil {
+			return StatusCounts{}, errors.Wrap(err, errors.CodeDatabaseError, "Failed to scan status count")
+		}
+		switch status {
+		case "watched":
+			counts.Watched = n
+		case "watching":
+			counts.Watching = n
+		case "pending":
+			counts.Pending = n
+		}
+		counts.All += n
+	}
+	if err := rows.Err(); err != nil {
+		return StatusCounts{}, errors.Wrap(err, errors.CodeDatabaseError, "Failed to iterate status counts")
+	}
+	return counts, nil
 }
 
 func buildFilters(args, countArgs *[]interface{}, filter MovieListFilter, forShows bool) {

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { SectionHeader } from "@/components/layout";
 import { useCurrentlyWatching } from "@/hooks/useStats";
@@ -51,14 +52,7 @@ function SessionCard({ session }: SessionCardProps) {
           <div className="absolute inset-0 flex items-center justify-center text-white/20">
             {isEpisode ? <Tv className="h-4 w-4" /> : <Film className="h-4 w-4" />}
           </div>
-          <img
-            src={posterUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
-          />
+          {posterUrl && <Image src={posterUrl} alt="" fill className="object-cover" sizes="64px" />}
           {/* Bottom gradient overlay */}
           <div className="absolute inset-x-0 bottom-0 h-6 bg-linear-to-t from-black/40 to-transparent" />
         </div>

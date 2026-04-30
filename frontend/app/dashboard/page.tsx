@@ -151,13 +151,12 @@ function InitialSyncBanner() {
 export default function DashboardPage() {
   return (
     <AppLayout>
+      <PageHeader
+        title="Dashboard"
+        description="Your Jellytics overview - viewing statistics and activity"
+        actions={<DashboardHeaderActions />}
+      />
       <PageContent>
-        <PageHeader
-          title="Dashboard"
-          description="Your Jellytics overview - viewing statistics and activity"
-          actions={<DashboardHeaderActions />}
-          sticky={false}
-        />
         <UpdateBanner />
         <InitialSyncBanner />
 

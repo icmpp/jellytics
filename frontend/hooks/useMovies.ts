@@ -40,6 +40,7 @@ interface UseMoviesFilters {
   watchedFrom?: string;
   watchedTo?: string;
   tags?: number[];
+  sort?: string;
   limit?: number;
   offset?: number;
 }
@@ -54,6 +55,7 @@ export function useMovies(filters?: UseMoviesFilters, options?: { enabled?: bool
   if (filters?.watchedFrom) params.append("watched_from", filters.watchedFrom);
   if (filters?.watchedTo) params.append("watched_to", filters.watchedTo);
   if (filters?.tags?.length) params.append("tags", filters.tags.join(","));
+  if (filters?.sort) params.append("sort", filters.sort);
   if (filters?.limit !== undefined && filters?.limit !== null) {
     params.append("limit", filters.limit.toString());
   }
@@ -90,13 +92,14 @@ export function useMoviesInfinite(
       if (filters?.watchedFrom) params.append("watched_from", filters.watchedFrom);
       if (filters?.watchedTo) params.append("watched_to", filters.watchedTo);
       if (filters?.tags?.length) params.append("tags", filters.tags.join(","));
+      if (filters?.sort) params.append("sort", filters.sort);
       params.append("limit", pageSize.toString());
       params.append("offset", pageParam.toString());
       return api.get<MoviesResponse>(`/movies?${params.toString()}`);
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
-      const loaded = allPages.reduce((acc, p) => acc + p.movies.length, 0);
+      const loaded = allPages.reduce((acc, p) => acc + (p.movies?.length ?? 0), 0);
       if (loaded >= lastPage.total) return undefined;
       return loaded;
     },

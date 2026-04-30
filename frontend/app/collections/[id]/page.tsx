@@ -46,8 +46,8 @@ export default function CollectionDetailPage() {
   if (isLoading || !collection) {
     return (
       <AppLayout>
+        <PageHeader breadcrumb={breadcrumbItems} title="" />
         <PageContent>
-          <PageHeader breadcrumb={breadcrumbItems} title="" />
           <div className={MEDIA_GRID_CLASS}>
             {Array.from({ length: 6 }).map((_, i) => (
               <Skeleton key={i} className="aspect-2/3 w-full" />
@@ -85,79 +85,78 @@ export default function CollectionDetailPage() {
 
   return (
     <AppLayout>
-      <PageContent>
-        <PageHeader
-          breadcrumb={breadcrumbItems}
-          title={collection.name}
-          description={
-            collection.description
-              ? `${collection.description} · ${collection.itemCount} ${collection.itemCount === 1 ? "item" : "items"}`
-              : `${collection.itemCount} ${collection.itemCount === 1 ? "item" : "items"}`
-          }
-          actions={
-            <Popover
-              open={editOpen}
-              onOpenChange={(o) => {
-                setEditOpen(o);
-                if (o) {
-                  setEditName(collection.name);
-                  setEditDesc(collection.description || "");
-                }
-              }}
-            >
-              <PopoverTrigger asChild>
-                <Button variant="outline">
-                  <Pencil className="h-3 w-3 mr-2" />
-                  Edit
+      <PageHeader
+        breadcrumb={breadcrumbItems}
+        title={collection.name}
+        description={
+          collection.description
+            ? `${collection.description} · ${collection.itemCount} ${collection.itemCount === 1 ? "item" : "items"}`
+            : `${collection.itemCount} ${collection.itemCount === 1 ? "item" : "items"}`
+        }
+        actions={
+          <Popover
+            open={editOpen}
+            onOpenChange={(o) => {
+              setEditOpen(o);
+              if (o) {
+                setEditName(collection.name);
+                setEditDesc(collection.description || "");
+              }
+            }}
+          >
+            <PopoverTrigger asChild>
+              <Button variant="outline">
+                <Pencil className="h-3 w-3 mr-2" />
+                Edit
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent align="end" className="w-[min(20rem,calc(100vw-2rem))]">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleUpdate();
+                }}
+                className="space-y-4"
+                aria-label="Edit collection"
+              >
+                <div>
+                  <Label htmlFor="edit-name">Name</Label>
+                  <Input
+                    ref={editNameInputRef}
+                    id="edit-name"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Collection name"
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="edit-desc">Description (optional)</Label>
+                  <Textarea
+                    id="edit-desc"
+                    value={editDesc}
+                    onChange={(e) => setEditDesc(e.target.value)}
+                    placeholder="Description"
+                    rows={2}
+                    className="mt-1.5"
+                  />
+                </div>
+                <Button type="submit" disabled={!editName.trim() || updateCollection.isPending}>
+                  {updateCollection.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Saving…
+                    </>
+                  ) : (
+                    "Save"
+                  )}
                 </Button>
-              </PopoverTrigger>
-              <PopoverContent align="end" className="w-[min(20rem,calc(100vw-2rem))]">
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    handleUpdate();
-                  }}
-                  className="space-y-4"
-                  aria-label="Edit collection"
-                >
-                  <div>
-                    <Label htmlFor="edit-name">Name</Label>
-                    <Input
-                      ref={editNameInputRef}
-                      id="edit-name"
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      placeholder="Collection name"
-                      className="mt-1.5"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="edit-desc">Description (optional)</Label>
-                    <Textarea
-                      id="edit-desc"
-                      value={editDesc}
-                      onChange={(e) => setEditDesc(e.target.value)}
-                      placeholder="Description"
-                      rows={2}
-                      className="mt-1.5"
-                    />
-                  </div>
-                  <Button type="submit" disabled={!editName.trim() || updateCollection.isPending}>
-                    {updateCollection.isPending ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Saving…
-                      </>
-                    ) : (
-                      "Save"
-                    )}
-                  </Button>
-                </form>
-              </PopoverContent>
-            </Popover>
-          }
-        />
-
+              </form>
+            </PopoverContent>
+          </Popover>
+        }
+      />
+      <PageContent>
         {collection.items.length === 0 ? (
           <div className="flex flex-col items-center py-24 gap-4">
             <FolderPlus className="h-12 w-12 text-white/20" />
@@ -232,7 +231,6 @@ function CollectionItemCard({
           alt={item.title || ""}
           type={item.itemType === "show" ? "show" : "movie"}
           sizes="(max-width: 640px) 50vw, 20vw"
-          hoverScale
           iconSize="h-10 w-10"
           showLabel={false}
         />

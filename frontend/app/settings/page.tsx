@@ -332,32 +332,31 @@ export default function SettingsPage() {
 
   return (
     <AppLayout>
+      <PageHeader
+        breadcrumb={breadcrumbItems}
+        title="Settings"
+        description="Manage your Jellyfin server connection and preferences"
+        icon={<SettingsIcon className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
+        actions={
+          <Button
+            onClick={handleSavePreferences}
+            disabled={updatePreferences.isPending || loadingPreferences}
+          >
+            {updatePreferences.isPending ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              <>
+                <Save className="h-4 w-4" />
+                Save
+              </>
+            )}
+          </Button>
+        }
+      />
       <PageContent>
-        <PageHeader
-          breadcrumb={breadcrumbItems}
-          title="Settings"
-          description="Manage your Jellyfin server connection and preferences"
-          icon={<SettingsIcon className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
-          actions={
-            <Button
-              onClick={handleSavePreferences}
-              disabled={updatePreferences.isPending || loadingPreferences}
-            >
-              {updatePreferences.isPending ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="h-4 w-4" />
-                  Save
-                </>
-              )}
-            </Button>
-          }
-        />
-
         <section className="grid gap-6 lg:grid-cols-2">
           <JellyfinServerCard
             serverURL={serverURL}

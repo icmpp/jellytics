@@ -3,7 +3,6 @@
 import { Fragment } from "react";
 import { AppLayout, PageHeader, PageContent } from "@/components/layout";
 import { MediaGridSkeleton } from "@/components/ui/media-grid-skeleton";
-import { RefetchingIndicator } from "@/components/ui/refetching-indicator";
 import { MEDIA_GRID_CLASS } from "@/lib/utils";
 import type { BreadcrumbItem } from "@/components/navigation";
 
@@ -19,7 +18,6 @@ interface SimpleMediaGridPageProps<T> {
   errorContent?: React.ReactNode;
   isEmpty: boolean;
   emptyContent: React.ReactNode;
-  countLabel: string;
   items: T[];
   renderCard: (item: T, index?: number) => React.ReactNode;
   getItemKey: (item: T) => string;
@@ -41,11 +39,9 @@ export function SimpleMediaGridPage<T>({
   actions,
   isLoading,
   isError = false,
-  isFetching = false,
   errorContent,
   isEmpty,
   emptyContent,
-  countLabel,
   items,
   renderCard,
   getItemKey,
@@ -55,15 +51,14 @@ export function SimpleMediaGridPage<T>({
 }: SimpleMediaGridPageProps<T>) {
   return (
     <AppLayout>
+      <PageHeader
+        breadcrumb={breadcrumb}
+        title={title}
+        description={description}
+        icon={icon}
+        actions={actions}
+      />
       <PageContent>
-        <PageHeader
-          breadcrumb={breadcrumb}
-          title={title}
-          description={description}
-          icon={icon}
-          actions={actions}
-        />
-
         {isLoading && (skeletonContent ?? <MediaGridSkeleton count={skeletonCount} />)}
 
         {!isLoading && isError && errorContent}
@@ -71,17 +66,11 @@ export function SimpleMediaGridPage<T>({
         {!isLoading && !isError && isEmpty && emptyContent}
 
         {!isLoading && !isError && !isEmpty && (
-          <>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 mb-4 border-b border-white/[0.06]">
-              <p className="text-sm text-white/40">{countLabel}</p>
-              <RefetchingIndicator isFetching={isFetching} isLoading={isLoading} />
-            </div>
-            <div className={gridClass}>
-              {items.map((item, index) => (
-                <Fragment key={getItemKey(item)}>{renderCard(item, index)}</Fragment>
-              ))}
-            </div>
-          </>
+          <div className={gridClass}>
+            {items.map((item, index) => (
+              <Fragment key={getItemKey(item)}>{renderCard(item, index)}</Fragment>
+            ))}
+          </div>
         )}
       </PageContent>
     </AppLayout>

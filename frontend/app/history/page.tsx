@@ -366,82 +366,81 @@ export default function HistoryPage() {
 
   return (
     <AppLayout>
-      <PageContent>
-        <PageHeader
-          breadcrumb={breadcrumbItems}
-          title="Watch History"
-          description="Your viewing timeline"
-          icon={<History className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
-          actions={
-            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-              <div
-                className="grid h-11 w-full max-w-56 shrink-0 grid-cols-2 overflow-hidden rounded-xl border border-white/8 bg-white/3 shadow-none sm:w-auto sm:min-w-50 sm:max-w-none"
-                role="group"
-                aria-label="View mode"
+      <PageHeader
+        breadcrumb={breadcrumbItems}
+        title="Watch History"
+        description="Your viewing timeline"
+        icon={<History className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
+        actions={
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+            <div
+              className="grid h-11 w-full max-w-56 shrink-0 grid-cols-2 overflow-hidden rounded-xl border border-white/8 bg-white/3 shadow-none sm:w-auto sm:min-w-50 sm:max-w-none"
+              role="group"
+              aria-label="View mode"
+            >
+              <button
+                type="button"
+                onClick={() => setViewMode("list")}
+                className={cn(
+                  "flex min-h-0 min-w-0 items-center justify-center gap-2 border-r border-white/10 px-3 text-sm font-medium transition-colors outline-none",
+                  "focus-visible:z-10 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:ring-purple-500/30 focus-visible:ring-inset",
+                  viewMode === "list"
+                    ? "bg-purple-500/20 text-purple-400"
+                    : "text-white/50 hover:bg-white/5 hover:text-white",
+                )}
+                aria-pressed={viewMode === "list"}
               >
-                <button
-                  type="button"
-                  onClick={() => setViewMode("list")}
-                  className={cn(
-                    "flex min-h-0 min-w-0 items-center justify-center gap-2 border-r border-white/10 px-3 text-sm font-medium transition-colors outline-none",
-                    "focus-visible:z-10 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:ring-purple-500/30 focus-visible:ring-inset",
-                    viewMode === "list"
-                      ? "bg-purple-500/20 text-purple-400"
-                      : "text-white/50 hover:bg-white/5 hover:text-white",
-                  )}
-                  aria-pressed={viewMode === "list"}
-                >
-                  <LayoutList className="h-4 w-4 shrink-0" />
-                  List
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("calendar")}
-                  className={cn(
-                    "flex min-h-0 min-w-0 items-center justify-center gap-2 px-3 text-sm font-medium transition-colors outline-none",
-                    "focus-visible:z-10 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:ring-purple-500/30 focus-visible:ring-inset",
-                    viewMode === "calendar"
-                      ? "bg-purple-500/20 text-purple-400"
-                      : "text-white/50 hover:bg-white/5 hover:text-white",
-                  )}
-                  aria-pressed={viewMode === "calendar"}
-                >
-                  <CalendarDays className="h-4 w-4 shrink-0" />
-                  Calendar
-                </button>
-              </div>
-              <Select
-                value={filter}
-                onValueChange={(value: "all" | "episode" | "movie") => setFilter(value)}
+                <LayoutList className="h-4 w-4 shrink-0" />
+                List
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("calendar")}
+                className={cn(
+                  "flex min-h-0 min-w-0 items-center justify-center gap-2 px-3 text-sm font-medium transition-colors outline-none",
+                  "focus-visible:z-10 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:ring-purple-500/30 focus-visible:ring-inset",
+                  viewMode === "calendar"
+                    ? "bg-purple-500/20 text-purple-400"
+                    : "text-white/50 hover:bg-white/5 hover:text-white",
+                )}
+                aria-pressed={viewMode === "calendar"}
               >
-                <SelectTrigger className="w-[140px] h-11">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Items</SelectItem>
-                  <SelectItem value="episode">Episodes</SelectItem>
-                  <SelectItem value="movie">Movies</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={timeRange}
-                onValueChange={(value: "all" | "today" | "week" | "month") => setTimeRange(value)}
-              >
-                <SelectTrigger className="w-[140px] h-11">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="today">Today</SelectItem>
-                  <SelectItem value="week">This Week</SelectItem>
-                  <SelectItem value="month">This Month</SelectItem>
-                </SelectContent>
-              </Select>
+                <CalendarDays className="h-4 w-4 shrink-0" />
+                Calendar
+              </button>
             </div>
-          }
-        />
+            <Select
+              value={filter}
+              onValueChange={(value: "all" | "episode" | "movie") => setFilter(value)}
+            >
+              <SelectTrigger className="w-[140px] h-11">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Items</SelectItem>
+                <SelectItem value="episode">Episodes</SelectItem>
+                <SelectItem value="movie">Movies</SelectItem>
+              </SelectContent>
+            </Select>
 
+            <Select
+              value={timeRange}
+              onValueChange={(value: "all" | "today" | "week" | "month") => setTimeRange(value)}
+            >
+              <SelectTrigger className="w-[140px] h-11">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="week">This Week</SelectItem>
+                <SelectItem value="month">This Month</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        }
+      />
+      <PageContent>
         {isLoading && (
           <div className="flex items-center justify-center py-16">
             <div className="flex items-center gap-3 text-white/40">
