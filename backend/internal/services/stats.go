@@ -83,12 +83,16 @@ func (s *StatsService) GetOverview(ctx context.Context, userID int) (*models.Sta
 		log.Warn().Err(moviesErr).Msg("Failed to get movies stats (non-critical)")
 	}
 
-	stats.ShowsWatched = showsWatched + moviesWatched
-	stats.ShowsWatching = showsWatching + moviesWatching
-	stats.ShowsPending = showsPending + moviesPending
+	stats.ShowsWatched = showsWatched
+	stats.ShowsWatching = showsWatching
+	stats.ShowsPending = showsPending
+	stats.MoviesWatched = moviesWatched
+	stats.MoviesWatching = moviesWatching
+	stats.MoviesPending = moviesPending
 	stats.TotalWatchTimeMinutes = showsWatchTime + moviesWatchTime
 	stats.EpisodesWatched = episodesWatched
-	stats.TotalShows = totalShows + totalMovies
+	stats.TotalShows = totalShows
+	stats.TotalMovies = totalMovies
 
 	return &stats, nil
 }
@@ -331,7 +335,7 @@ func (s *StatsService) GetPeriodSummary(ctx context.Context, userID int, period 
 	go func() {
 		defer wg.Done()
 		s.db.QueryRowContext(ctx,
-			`SELECT COUNT(*) FROM shows WHERE user_id = ? AND status = 'watched' AND updated_at >= `+dateFilter, userID,
+			`SELECT COUNT(*) FROM shows WHERE user_id = ? AND status = 'watched' AND last_watched_at >= `+dateFilter+` AND last_watched_at IS NOT NULL`, userID,
 		).Scan(&summary.ShowsCompleted)
 	}()
 
@@ -688,22 +692,24 @@ func (s *StatsService) GetWeeklySummary(ctx context.Context, userID int) (*model
 	_ = s.db.QueryRowContext(ctx, `
 		SELECT
 			COALESCE(SUM(duration_watched_minutes), 0),
-			COUNT(CASE WHEN episode_id IS NOT NULL THEN 1 END)
+			COUNT(CASE WHEN episode_id IS NOT NULL THEN 1 END),
+			COUNT(DISTINCT CASE WHEN movie_id IS NOT NULL THEN movie_id END)
 		FROM watch_history
 		WHERE user_id = ? AND date(watched_at) >= date('now', '-6 days')
 		  AND duration_watched_minutes IS NOT NULL`,
-		userID).Scan(&result.ThisWeek.WatchTimeMinutes, &result.ThisWeek.EpisodesWatched)
+		userID).Scan(&result.ThisWeek.WatchTimeMinutes, &result.ThisWeek.EpisodesWatched, &result.ThisWeek.MoviesWatched)
 
 	// Last week: 7-14 days ago
 	_ = s.db.QueryRowContext(ctx, `
 		SELECT
 			COALESCE(SUM(duration_watched_minutes), 0),
-			COUNT(CASE WHEN episode_id IS NOT NULL THEN 1 END)
+			COUNT(CASE WHEN episode_id IS NOT NULL THEN 1 END),
+			COUNT(DISTINCT CASE WHEN movie_id IS NOT NULL THEN movie_id END)
 		FROM watch_history
 		WHERE user_id = ? AND date(watched_at) >= date('now', '-13 days')
 		  AND date(watched_at) < date('now', '-6 days')
 		  AND duration_watched_minutes IS NOT NULL`,
-		userID).Scan(&result.LastWeek.WatchTimeMinutes, &result.LastWeek.EpisodesWatched)
+		userID).Scan(&result.LastWeek.WatchTimeMinutes, &result.LastWeek.EpisodesWatched, &result.LastWeek.MoviesWatched)
 
 	return result, nil
 }
@@ -758,15 +764,23 @@ func (s *StatsService) CreateSnapshot(ctx context.Context, userID int) error {
 		return err
 	}
 
+	var avgSessionMinutes sql.NullFloat64
+	_ = s.db.QueryRowContext(ctx,
+		`SELECT AVG(duration_watched_minutes) FROM watch_history
+		 WHERE user_id = ? AND duration_watched_minutes IS NOT NULL AND duration_watched_minutes > 0`,
+		userID).Scan(&avgSessionMinutes)
+
 	genreJSON, _ := json.Marshal(genreBreakdown)
 	today := time.Now().Format("2006-01-02")
 
+	// Snapshot stores combined shows+movies counts for backward-compatible trends queries.
 	query := `
-		INSERT INTO stats_snapshots 
+		INSERT INTO stats_snapshots
 		(user_id, total_watch_time_minutes, shows_watched, shows_watching, shows_pending,
-		 episodes_watched, genres_watched, longest_watch_streak_days, snapshot_date, snapshot_type)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'daily')
-		ON CONFLICT(user_id, snapshot_date, snapshot_type) 
+		 episodes_watched, genres_watched, longest_watch_streak_days,
+		 average_session_duration_minutes, snapshot_date, snapshot_type)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'daily')
+		ON CONFLICT(user_id, snapshot_date, snapshot_type)
 		DO UPDATE SET
 			total_watch_time_minutes = excluded.total_watch_time_minutes,
 			shows_watched = excluded.shows_watched,
@@ -774,13 +788,22 @@ func (s *StatsService) CreateSnapshot(ctx context.Context, userID int) error {
 			shows_pending = excluded.shows_pending,
 			episodes_watched = excluded.episodes_watched,
 			genres_watched = excluded.genres_watched,
-			longest_watch_streak_days = excluded.longest_watch_streak_days
+			longest_watch_streak_days = excluded.longest_watch_streak_days,
+			average_session_duration_minutes = excluded.average_session_duration_minutes
 	`
 
 	_, err = s.db.ExecContext(ctx, query,
-		userID, overview.TotalWatchTimeMinutes, overview.ShowsWatched,
-		overview.ShowsWatching, overview.ShowsPending, overview.EpisodesWatched,
-		string(genreJSON), streak, today)
+		userID,
+		overview.TotalWatchTimeMinutes,
+		overview.ShowsWatched+overview.MoviesWatched,
+		overview.ShowsWatching+overview.MoviesWatching,
+		overview.ShowsPending+overview.MoviesPending,
+		overview.EpisodesWatched,
+		string(genreJSON),
+		streak,
+		avgSessionMinutes,
+		today,
+	)
 
 	if err != nil {
 		return errors.Wrap(err, errors.CodeDatabaseError, "Failed to create snapshot")

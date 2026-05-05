@@ -17,9 +17,10 @@ interface StatCardProps {
   iconBg: string;
   glowColor: string;
   delta?: Delta;
+  subLabel?: string;
 }
 
-function StatCard({ title, value, icon, iconBg, glowColor, delta }: StatCardProps) {
+function StatCard({ title, value, icon, iconBg, glowColor, delta, subLabel }: StatCardProps) {
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 backdrop-blur-xl p-4 sm:p-5 flex flex-col gap-3 hover:border-white/12 hover:bg-white/5 transition-all duration-300 min-h-[120px] sm:min-h-[130px]">
       {/* Corner glow accent */}
@@ -61,6 +62,9 @@ function StatCard({ title, value, icon, iconBg, glowColor, delta }: StatCardProp
         <p className="mt-1.5 text-[10px] sm:text-xs font-medium text-white/40 tracking-widest uppercase">
           {title}
         </p>
+        {subLabel && (
+          <p className="mt-1 text-[10px] font-medium text-white/30 truncate">{subLabel}</p>
+        )}
       </div>
     </div>
   );
@@ -118,6 +122,13 @@ function computeDeltas(trends: TrendItem[] | undefined): {
   };
 }
 
+function buildSubLabel(showsCount: number, moviesCount: number, showsLabel = "show", moviesLabel = "movie"): string | undefined {
+  const parts: string[] = [];
+  if (showsCount > 0) parts.push(`${showsCount} ${showsLabel}${showsCount !== 1 ? "s" : ""}`);
+  if (moviesCount > 0) parts.push(`${moviesCount} ${moviesLabel}${moviesCount !== 1 ? "s" : ""}`);
+  return parts.length > 0 ? parts.join(" · ") : undefined;
+}
+
 export function OverviewCards() {
   const { data, isLoading, isFetching } = useStatsOverview();
   const { data: trends } = useTrends(14, "daily");
@@ -148,6 +159,10 @@ export function OverviewCards() {
 
   if (!data) return null;
 
+  const totalCompleted = (data.shows_watched ?? 0) + (data.movies_watched ?? 0);
+  const totalWatching = (data.shows_watching ?? 0) + (data.movies_watching ?? 0);
+  const totalPending = (data.shows_pending ?? 0) + (data.movies_pending ?? 0);
+
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 relative items-stretch">
       {isFetching && !isLoading && (
@@ -166,26 +181,29 @@ export function OverviewCards() {
         delta={watchTimeDelta}
       />
       <StatCard
-        title="Shows Watched"
-        value={data.shows_watched}
+        title="Completed"
+        value={totalCompleted}
         icon={<CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />}
         iconBg="bg-emerald-500/15 border border-emerald-500/25"
         glowColor="bg-emerald-500"
+        subLabel={buildSubLabel(data.shows_watched ?? 0, data.movies_watched ?? 0)}
       />
       <StatCard
-        title="Currently Watching"
-        value={data.shows_watching}
+        title="Watching"
+        value={totalWatching}
         icon={<PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />}
         iconBg="bg-blue-500/15 border border-blue-500/25"
         glowColor="bg-blue-500"
         delta={episodesDelta}
+        subLabel={buildSubLabel(data.shows_watching ?? 0, data.movies_watching ?? 0)}
       />
       <StatCard
         title="Pending"
-        value={data.shows_pending}
+        value={totalPending}
         icon={<Clock3 className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />}
         iconBg="bg-amber-500/15 border border-amber-500/25"
         glowColor="bg-amber-500"
+        subLabel={buildSubLabel(data.shows_pending ?? 0, data.movies_pending ?? 0)}
       />
     </div>
   );

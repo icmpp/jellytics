@@ -26,8 +26,12 @@ type StatsOverview struct {
 	ShowsWatched          int `json:"shows_watched"`
 	ShowsWatching         int `json:"shows_watching"`
 	ShowsPending          int `json:"shows_pending"`
+	MoviesWatched         int `json:"movies_watched"`
+	MoviesWatching        int `json:"movies_watching"`
+	MoviesPending         int `json:"movies_pending"`
 	EpisodesWatched       int `json:"episodes_watched"`
 	TotalShows            int `json:"total_shows"`
+	TotalMovies           int `json:"total_movies"`
 }
 
 type YearInReview struct {
@@ -58,6 +62,7 @@ type MonthSummary struct {
 type WeeklyPeriodSummary struct {
 	WatchTimeMinutes int `json:"watch_time_minutes"`
 	EpisodesWatched  int `json:"episodes_watched"`
+	MoviesWatched    int `json:"movies_watched"`
 }
 
 // WeeklySummary holds this-week and last-week stats from watch_history.
