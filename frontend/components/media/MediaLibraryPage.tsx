@@ -1,6 +1,7 @@
 "use client";
 
-import { Fragment, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { AppLayout, PageHeader } from "@/components/layout";
 import { MediaFilters } from "./MediaFilters";
@@ -143,8 +144,19 @@ export function MediaLibraryPage<T>({
             ) : (
               <>
                 <div className={MEDIA_GRID_CLASS}>
-                  {items.map((item) => (
-                    <Fragment key={getItemId(item)}>{renderCard(item)}</Fragment>
+                  {items.map((item, index) => (
+                    <motion.div
+                      key={`${filters.sort ?? "default"}-${getItemId(item)}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{
+                        duration: 0.2,
+                        delay: Math.min(index * 0.035, 0.45),
+                        ease: "easeOut",
+                      }}
+                    >
+                      {renderCard(item)}
+                    </motion.div>
                   ))}
                 </div>
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { motion } from "framer-motion";
 import {
   Select,
   SelectContent,
@@ -59,9 +61,12 @@ interface SortSelectProps {
 export function SortSelect({ mediaType, value, onChange }: SortSelectProps) {
   const options = mediaType === "movies" ? MOVIE_OPTIONS : SHOW_OPTIONS;
   const current = options.find((o) => o.value === (value as SortKey)) ?? options[0];
+  const [open, setOpen] = useState(false);
 
   return (
     <Select
+      open={open}
+      onOpenChange={setOpen}
       value={value || "__default"}
       onValueChange={(v) => onChange(v === "__default" ? "" : v)}
     >
@@ -71,7 +76,13 @@ export function SortSelect({ mediaType, value, onChange }: SortSelectProps) {
         title={`Sort: ${current.label}`}
       >
         <div className="flex items-center gap-2 min-w-0">
-          <ArrowUpDown className="h-4 w-4 shrink-0 text-white/40" />
+          <motion.div
+            animate={{ rotate: open ? 180 : 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 24 }}
+            style={{ display: "flex" }}
+          >
+            <ArrowUpDown className="h-4 w-4 shrink-0 text-white/40" />
+          </motion.div>
           <SelectValue>
             <span className="hidden sm:block truncate">{current.label}</span>
           </SelectValue>

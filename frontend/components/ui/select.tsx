@@ -31,7 +31,7 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-fit items-center justify-between gap-2 rounded-xl border px-4 text-sm text-white whitespace-nowrap transition-all outline-none",
+        "group flex w-fit items-center justify-between gap-2 rounded-xl border px-4 text-sm text-white whitespace-nowrap transition-all outline-none",
         "bg-white/[0.03] border-white/[0.08]",
         "hover:bg-white/[0.05]",
         "focus:bg-white/[0.05] focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20",
@@ -46,7 +46,7 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="size-4 opacity-50" />
+        <ChevronDownIcon className="size-4 opacity-50 transition-transform duration-200 group-data-[state=open]:rotate-180" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
