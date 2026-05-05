@@ -6,6 +6,7 @@ import { SectionHeader } from "@/components/layout";
 interface ChartCardProps {
   title: string;
   icon: ReactNode;
+  iconBg?: string;
   isLoading: boolean;
   isEmpty: boolean;
   emptyMessage?: string;
@@ -20,6 +21,7 @@ interface ChartCardProps {
 export function ChartCard({
   title,
   icon,
+  iconBg,
   isLoading,
   isEmpty,
   emptyMessage = "No data available",
@@ -33,7 +35,7 @@ export function ChartCard({
   return (
     <Card className={className}>
       <CardContent className="flex flex-col flex-1 min-h-0">
-        <SectionHeader icon={icon} title={title} extra={titleExtra} />
+        <SectionHeader icon={icon} title={title} iconBg={iconBg} extra={titleExtra} />
 
         {isLoading ? (
           <div className={`${minHeight} flex items-center justify-center`}>

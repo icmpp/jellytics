@@ -122,7 +122,12 @@ function computeDeltas(trends: TrendItem[] | undefined): {
   };
 }
 
-function buildSubLabel(showsCount: number, moviesCount: number, showsLabel = "show", moviesLabel = "movie"): string | undefined {
+function buildSubLabel(
+  showsCount: number,
+  moviesCount: number,
+  showsLabel = "show",
+  moviesLabel = "movie",
+): string | undefined {
   const parts: string[] = [];
   if (showsCount > 0) parts.push(`${showsCount} ${showsLabel}${showsCount !== 1 ? "s" : ""}`);
   if (moviesCount > 0) parts.push(`${moviesCount} ${moviesLabel}${moviesCount !== 1 ? "s" : ""}`);

@@ -94,9 +94,11 @@ export function ContinueWatching() {
 
   return (
     <Card>
+      <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full blur-3xl opacity-10 bg-blue-500" />
       <CardContent>
         <SectionHeader
-          icon={<PlayCircle className="h-5 w-5 text-blue-400" />}
+          icon={<PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />}
+          iconBg="bg-blue-500/15 border border-blue-500/25"
           title="Continue Watching"
         />
         {top.length === 0 ? (
