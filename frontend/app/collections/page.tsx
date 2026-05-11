@@ -9,6 +9,7 @@ import {
 } from "@/hooks/useCollections";
 import { SimpleMediaGridPage } from "@/components/media";
 import { Button } from "@/components/ui/button";
+import { CollectionsGridSkeleton } from "@/components/ui/collections-grid-skeleton";
 import { FolderOpen, FolderPlus, Trash2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -16,7 +17,19 @@ import { ConfirmPopover } from "@/components/ui/confirm-popover";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
+import { cn, COLLECTIONS_GRID_CLASS, MEDIA_CARD_BASE } from "@/lib/utils";
+
+function formatCollectionDate(dateStr: string): string {
+  try {
+    return new Date(dateStr).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
 
 export default function CollectionsPage() {
   const { data: collections = [], isLoading, isError, refetch } = useCollections();
@@ -125,7 +138,9 @@ export default function CollectionsPage() {
       isEmpty={collections.length === 0}
       emptyContent={
         <div className="flex flex-col items-center py-24 gap-6">
-          <FolderPlus className="h-12 w-12 text-white/20" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/4 border border-white/8">
+            <FolderOpen className="h-8 w-8 text-white/20" />
+          </div>
           <div className="text-center max-w-sm w-full">
             <p className="text-white/60 text-lg mb-2 font-medium">No collections yet</p>
             <p className="text-sm text-white/40 mb-6 mx-auto">
@@ -182,6 +197,8 @@ export default function CollectionsPage() {
           </div>
         </div>
       }
+      skeletonContent={<CollectionsGridSkeleton count={6} />}
+      gridClass={COLLECTIONS_GRID_CLASS}
       items={collections}
       renderCard={(c) => (
         <CollectionCard
@@ -215,118 +232,95 @@ function CollectionCard({
     <Link
       href={`/collections/${collection.id}`}
       aria-label={`Open collection: ${collection.name}`}
-      className="block min-w-0 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="block min-w-0 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background group"
     >
       <div
         className={cn(
-          "card-border group relative rounded-2xl p-[2px]",
-          "shadow-[0_4px_16px_-4px_rgba(0,0,0,0.5),0_1px_4px_-1px_rgba(0,0,0,0.35)]",
+          MEDIA_CARD_BASE,
+          "relative p-4 flex gap-3.5 items-start",
+          "hover:border-white/12 hover:bg-linear-to-b hover:from-white/[0.07] hover:to-white/3",
+          "transition-all duration-200",
         )}
       >
-        <div className="relative isolate aspect-2/3 w-full cursor-pointer overflow-hidden rounded-[calc(1rem-2px)]">
-          {/* Gradient "poster" background */}
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-linear-to-br from-violet-950 via-purple-950 to-fuchsia-950"
-          />
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-linear-to-br from-violet-500/15 via-purple-500/10 to-fuchsia-500/15"
-          />
+        {/* Folder icon */}
+        <div className="shrink-0 mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-linear-to-br from-violet-500/20 to-purple-600/20 border border-white/8">
+          <FolderOpen className="h-5 w-5 text-purple-400/80 transition-colors duration-200 group-hover:text-purple-400" />
+        </div>
 
-          {/* Bottom gradient for text legibility */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/85 via-black/30 to-transparent"
-          />
-
-          {/* Centered folder icon */}
-          <div className="pointer-events-none absolute inset-0 flex items-center justify-center pb-20">
-            <div
-              className={cn(
-                "flex h-14 w-14 items-center justify-center rounded-2xl",
-                "bg-white/8 ring-1 ring-white/10",
-              )}
-            >
-              <FolderOpen className="h-7 w-7 text-white/50 transition-colors duration-200 group-hover:text-primary/70" />
-            </div>
-          </div>
-
-          {/* Item count — top left */}
-          <span
+        {/* Content */}
+        <div className="flex-1 min-w-0 pr-6">
+          <h3
             className={cn(
-              "absolute left-2 top-2 z-10",
-              "flex items-center gap-1 rounded-full px-2 py-0.5",
-              "bg-black/55 ring-1 ring-white/15 backdrop-blur-md",
-              "text-[10px] font-semibold tabular-nums text-white/70",
+              "text-sm font-semibold text-white leading-snug truncate",
+              "transition-colors duration-200 group-hover:text-purple-300",
             )}
           >
-            {collection.itemCount}
-            <span className="font-normal text-white/40">
-              {collection.itemCount === 1 ? "item" : "items"}
+            {collection.name}
+          </h3>
+
+          {collection.description ? (
+            <p className="mt-1 text-xs text-white/45 line-clamp-2 leading-relaxed">
+              {collection.description}
+            </p>
+          ) : (
+            <p className="mt-1 text-xs text-white/25 italic">No description</p>
+          )}
+
+          <div className="mt-2.5 flex items-center gap-2">
+            <span className="inline-flex items-center gap-1 rounded-full bg-white/6 border border-white/8 px-2 py-0.5 text-[10px] font-medium text-white/50 tabular-nums">
+              {collection.itemCount}{" "}
+              <span className="font-normal text-white/35">
+                {collection.itemCount === 1 ? "item" : "items"}
+              </span>
             </span>
-          </span>
-
-          {/* Delete button — top right, revealed on hover */}
-          <div
-            className="absolute right-2 top-2 z-10 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-            onClick={stop}
-          >
-            <ConfirmPopover
-              open={confirmOpen}
-              onOpenChange={setConfirmOpen}
-              title="Delete collection?"
-              description={
-                <>
-                  <span className="text-white/70">&quot;{collection.name}&quot;</span> and all its
-                  items will be permanently removed.
-                </>
-              }
-              confirmLabel="Delete"
-              cancelLabel="Cancel"
-              confirmIcon={Trash2}
-              variant="destructive"
-              isLoading={isDeleting}
-              onConfirm={() => {
-                onDelete();
-                setConfirmOpen(false);
-              }}
-            >
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                className={cn(
-                  "h-7 w-7 rounded-full backdrop-blur-md",
-                  "bg-black/55 ring-1 ring-white/15 text-white/60",
-                  "hover:bg-red-500/30 hover:text-red-300 hover:ring-red-500/40",
-                  "transition-all duration-150",
-                )}
-                aria-label="Delete collection"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </Button>
-            </ConfirmPopover>
-          </div>
-
-          {/* Bottom info */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1 px-3 pb-3 pt-10">
-            <h3
-              className={cn(
-                "line-clamp-2 text-[0.8125rem] font-semibold leading-snug tracking-tight text-white",
-                "transition-colors duration-200 group-hover:text-primary/90",
-              )}
-            >
-              {collection.name}
-            </h3>
-            {collection.description ? (
-              <p className="line-clamp-2 text-[10px] font-medium leading-snug tracking-wide text-white/45">
-                {collection.description}
-              </p>
-            ) : (
-              <p className="text-[10px] font-medium tracking-wide text-white/30">No description</p>
+            {collection.createdAt && (
+              <span className="text-[10px] text-white/25">
+                {formatCollectionDate(collection.createdAt)}
+              </span>
             )}
           </div>
+        </div>
+
+        {/* Delete button — top right, revealed on hover */}
+        <div
+          className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+          onClick={stop}
+        >
+          <ConfirmPopover
+            open={confirmOpen}
+            onOpenChange={setConfirmOpen}
+            title="Delete collection?"
+            description={
+              <>
+                <span className="text-white/70">&quot;{collection.name}&quot;</span> and all its
+                items will be permanently removed.
+              </>
+            }
+            confirmLabel="Delete"
+            cancelLabel="Cancel"
+            confirmIcon={Trash2}
+            variant="destructive"
+            isLoading={isDeleting}
+            onConfirm={() => {
+              onDelete();
+              setConfirmOpen(false);
+            }}
+          >
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              className={cn(
+                "h-6 w-6 rounded-full",
+                "bg-white/6 ring-1 ring-white/10 text-white/40",
+                "hover:bg-red-500/20 hover:text-red-300 hover:ring-red-500/30",
+                "transition-all duration-150",
+              )}
+              aria-label="Delete collection"
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </ConfirmPopover>
         </div>
       </div>
     </Link>

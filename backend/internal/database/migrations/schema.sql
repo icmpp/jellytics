@@ -508,6 +508,7 @@ ALTER TABLE watch_history ADD COLUMN device_name             TEXT;
 ALTER TABLE watch_history ADD COLUMN movie_id                INTEGER REFERENCES movies(id) ON DELETE SET NULL;
 ALTER TABLE shows       ADD COLUMN userdata_hash              TEXT;
 ALTER TABLE movies      ADD COLUMN userdata_hash              TEXT;
+ALTER TABLE stats_snapshots ADD COLUMN average_session_duration_minutes REAL;
 
 -- Normalize any pre-existing NULL flags to 0
 UPDATE movies SET deleted_from_jellyfin = 0 WHERE deleted_from_jellyfin IS NULL;
