@@ -3,6 +3,13 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
+export interface UpNext {
+  episode_id: number;
+  season_number: number;
+  episode_number: number;
+  title?: string;
+}
+
 export interface Show {
   id: number;
   jellyfin_id: string;
@@ -19,6 +26,7 @@ export interface Show {
   last_watched_at?: string;
   created_at: string;
   removed_from_library?: boolean;
+  up_next?: UpNext | null;
 }
 
 interface ShowsResponse {
@@ -35,6 +43,7 @@ interface UseShowsFilters {
   watchedFrom?: string;
   watchedTo?: string;
   tags?: number[];
+  sort?: string;
   limit?: number;
   offset?: number;
 }
@@ -49,6 +58,7 @@ export function useShows(filters?: UseShowsFilters, options?: { enabled?: boolea
   if (filters?.watchedFrom) params.append("watched_from", filters.watchedFrom);
   if (filters?.watchedTo) params.append("watched_to", filters.watchedTo);
   if (filters?.tags?.length) params.append("tags", filters.tags.join(","));
+  if (filters?.sort) params.append("sort", filters.sort);
   if (filters?.limit !== undefined && filters?.limit !== null) {
     params.append("limit", filters.limit.toString());
   }
@@ -85,13 +95,14 @@ export function useShowsInfinite(
       if (filters?.watchedFrom) params.append("watched_from", filters.watchedFrom);
       if (filters?.watchedTo) params.append("watched_to", filters.watchedTo);
       if (filters?.tags?.length) params.append("tags", filters.tags.join(","));
+      if (filters?.sort) params.append("sort", filters.sort);
       params.append("limit", pageSize.toString());
       params.append("offset", pageParam.toString());
       return api.get<ShowsResponse>(`/shows?${params.toString()}`);
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
-      const loaded = allPages.reduce((acc, p) => acc + p.shows.length, 0);
+      const loaded = allPages.reduce((acc, p) => acc + (p.shows?.length ?? 0), 0);
       if (loaded >= lastPage.total) return undefined;
       return loaded;
     },

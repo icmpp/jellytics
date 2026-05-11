@@ -74,7 +74,8 @@ export function TopGenres() {
   return (
     <ChartCard
       title="Top Genres"
-      icon={<Film className="h-5 w-5 text-purple-400" />}
+      icon={<Film className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />}
+      iconBg="bg-purple-500/15 border border-purple-500/25"
       isLoading={false}
       isEmpty={isEmpty}
       emptyMessage="No genre data yet"

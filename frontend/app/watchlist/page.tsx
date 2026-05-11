@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, memo } from "react";
+import { useState, useMemo, memo, type MouseEvent } from "react";
 import { useWatchlist, type WatchlistItem } from "@/hooks/useWatchlist";
 import { SimpleMediaGridPage } from "@/components/media";
 import { Button } from "@/components/ui/button";
@@ -15,20 +15,13 @@ import { Bookmark, Film, Tv, Clock, Trash2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  getImageUrl,
-  getMoviePosterUrl,
-  getShowPosterUrl,
-  cn,
-  MEDIA_CARD_BASE,
-  MEDIA_CARD_TITLE_CLASS,
-} from "@/lib/utils";
+import { getImageUrl, getMoviePosterUrl, getShowPosterUrl, cn } from "@/lib/utils";
 import { PosterImage } from "@/components/ui/poster-image";
 import { RemoveFromWatchlistButton } from "@/components/watchlist";
 import { useMovies } from "@/hooks/useMovies";
 import { useShows } from "@/hooks/useShows";
 
-const ABOVE_THE_FOLD_COUNT = 8; // Eager-load images for first ~2 rows
+const ABOVE_THE_FOLD_COUNT = 8;
 
 const WatchlistCard = memo(function WatchlistCard({
   item,
@@ -39,63 +32,93 @@ const WatchlistCard = memo(function WatchlistCard({
 }) {
   const isShow = item.item_type === "show";
   const href = isShow ? `/shows/${item.item_id}` : `/movies/${item.item_id}`;
-  const loadImageEagerly = index < ABOVE_THE_FOLD_COUNT;
+  const posterSrc = item.jellyfin_id
+    ? getImageUrl(isShow ? "shows" : "movies", item.jellyfin_id, "poster")
+    : undefined;
+
+  const stop = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
 
   return (
     <Link
       href={href}
-      className={cn(
-        MEDIA_CARD_BASE,
-        "block min-w-0 h-full flex flex-col group relative cursor-pointer",
-      )}
+      aria-label={`View details for ${item.title}`}
+      className="block min-w-0 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       <div
-        className="absolute top-2 right-2 z-10"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-        }}
+        className={cn(
+          "card-border group relative rounded-2xl p-[2px]",
+          "shadow-[0_4px_16px_-4px_rgba(0,0,0,0.5),0_1px_4px_-1px_rgba(0,0,0,0.35)]",
+        )}
       >
-        <RemoveFromWatchlistButton
-          watchlistItemId={item.id}
-          showConfirmation={true}
-          variant="ghost"
-          size="icon-sm"
-          className="h-8 w-8 rounded-lg bg-black/60 border border-white/20 text-white/80 hover:bg-red-500/30 hover:text-red-300 hover:border-red-500/50 focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all"
-        >
-          <Trash2 className="h-4 w-4" />
-        </RemoveFromWatchlistButton>
-      </div>
+        <div className="relative isolate aspect-2/3 w-full cursor-pointer overflow-hidden rounded-[calc(1rem-2px)] bg-zinc-950">
+          <PosterImage
+            src={posterSrc}
+            alt={item.title}
+            type={isShow ? "show" : "movie"}
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+            iconSize="h-10 w-10"
+            showLabel={false}
+            priority={index < ABOVE_THE_FOLD_COUNT}
+          />
 
-      <div className="relative aspect-[2/3] w-full overflow-hidden shrink-0">
-        <PosterImage
-          src={
-            item.jellyfin_id
-              ? getImageUrl(isShow ? "shows" : "movies", item.jellyfin_id, "poster")
-              : undefined
-          }
-          alt={item.title}
-          type={isShow ? "show" : "movie"}
-          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-          hoverScale
-          iconSize="h-12 w-12"
-          showLabel={false}
-          priority={loadImageEagerly}
-        />
-      </div>
+          {/* Bottom gradient */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/90 via-black/35 to-black/10"
+          />
 
-      <div className="p-4 flex-1 min-h-0 flex flex-col">
-        <h3 className={cn(MEDIA_CARD_TITLE_CLASS, "group-hover:text-purple-400 transition-colors")}>
-          {item.title}
-        </h3>
-        <div className="flex items-center gap-1.5 text-xs text-white/40">
-          <Clock className="h-3 w-3" />
-          <span>
-            Added{" "}
-            {formatDistanceToNow(new Date(item.added_at), {
-              addSuffix: true,
-            })}
+          {/* Type badge — top left */}
+          <span
+            aria-label={isShow ? "TV show" : "Movie"}
+            className={cn(
+              "absolute left-2 top-2 z-10",
+              "flex h-7 w-7 items-center justify-center rounded-full",
+              "bg-black/55 ring-1 ring-white/15 backdrop-blur-md",
+            )}
+          >
+            {isShow ? (
+              <Tv className="h-3.5 w-3.5 text-white/70" />
+            ) : (
+              <Film className="h-3.5 w-3.5 text-white/70" />
+            )}
           </span>
+
+          {/* Remove button — top right, always visible */}
+          <div className="absolute right-2 top-2 z-10" onClick={stop}>
+            <RemoveFromWatchlistButton
+              watchlistItemId={item.id}
+              showConfirmation
+              variant="ghost"
+              size="icon-sm"
+              className={cn(
+                "h-7 w-7 rounded-full backdrop-blur-md",
+                "bg-black/55 ring-1 ring-white/15 text-white/60",
+                "hover:bg-red-500/30 hover:text-red-300 hover:ring-red-500/40",
+                "transition-all duration-150",
+              )}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </RemoveFromWatchlistButton>
+          </div>
+
+          {/* Bottom info */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1 px-3 pb-3 pt-10">
+            <h3
+              className={cn(
+                "line-clamp-2 text-[0.8125rem] font-semibold leading-snug tracking-tight text-white",
+                "transition-colors duration-200 group-hover:text-primary/90",
+              )}
+            >
+              {item.title}
+            </h3>
+            <p className="flex items-center gap-1 text-[10px] font-medium tabular-nums tracking-wide text-white/50">
+              <Clock className="h-3 w-3 shrink-0" />
+              {formatDistanceToNow(new Date(item.added_at), { addSuffix: true })}
+            </p>
+          </div>
         </div>
       </div>
     </Link>
@@ -111,12 +134,7 @@ const EmptyWatchlist = memo(function EmptyWatchlist({
   const { data: showsData } = useShows({ limit: 4 });
 
   const shown = useMemo(() => {
-    const teasers: {
-      id: number;
-      title: string;
-      type: "movie" | "show";
-      src: string;
-    }[] = [];
+    const teasers: { id: number; title: string; type: "movie" | "show"; src: string }[] = [];
     if (typeFilter !== "show") {
       moviesData?.movies?.slice(0, 3).forEach((m) => {
         teasers.push({
@@ -146,14 +164,13 @@ const EmptyWatchlist = memo(function EmptyWatchlist({
         <div className="flex gap-3 opacity-60">
           {shown.map((t) => (
             <Link key={`${t.type}-${t.id}`} href={`/${t.type}s/${t.id}`}>
-              <div className="relative w-20 aspect-[2/3] rounded-xl overflow-hidden bg-white/[0.04] border border-white/[0.08] hover:opacity-90 transition-opacity">
+              <div className="relative w-20 aspect-2/3 rounded-xl overflow-hidden bg-white/4 border border-white/8 hover:opacity-90 transition-opacity">
                 <Image src={t.src} alt={t.title} fill className="object-cover" sizes="80px" />
               </div>
             </Link>
           ))}
         </div>
       )}
-
       <div className="text-center">
         <Bookmark className="h-12 w-12 text-white/20 mx-auto mb-4" />
         <p className="text-white/60 text-lg mb-2 font-medium">
@@ -255,7 +272,6 @@ export default function WatchlistPage() {
       }
       isEmpty={filteredItems.length === 0}
       emptyContent={<EmptyWatchlist typeFilter={filter} />}
-      countLabel={`${filteredItems.length} ${filteredItems.length === 1 ? "item" : "items"} in watchlist`}
       items={filteredItems}
       renderCard={(item, index) => <WatchlistCard item={item} index={index} />}
       getItemKey={(item) => String(item.id)}

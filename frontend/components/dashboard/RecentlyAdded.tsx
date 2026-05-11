@@ -91,9 +91,11 @@ export function RecentlyAdded() {
 
   return (
     <Card>
+      <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full blur-3xl opacity-10 bg-emerald-500" />
       <CardContent>
         <SectionHeader
-          icon={<FolderPlus className="h-5 w-5 text-emerald-400" />}
+          icon={<FolderPlus className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />}
+          iconBg="bg-emerald-500/15 border border-emerald-500/25"
           title="Recently Added"
         />
         {top.length === 0 ? (

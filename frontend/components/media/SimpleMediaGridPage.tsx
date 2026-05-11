@@ -1,10 +1,11 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { AppLayout, PageHeader, PageContent } from "@/components/layout";
 import { MediaGridSkeleton } from "@/components/ui/media-grid-skeleton";
-import { RefetchingIndicator } from "@/components/ui/refetching-indicator";
-import { MEDIA_GRID_CLASS } from "@/lib/utils";
+import { ArrowUp } from "lucide-react";
+import { MEDIA_GRID_CLASS, cn } from "@/lib/utils";
 import type { BreadcrumbItem } from "@/components/navigation";
 
 interface SimpleMediaGridPageProps<T> {
@@ -19,7 +20,6 @@ interface SimpleMediaGridPageProps<T> {
   errorContent?: React.ReactNode;
   isEmpty: boolean;
   emptyContent: React.ReactNode;
-  countLabel: string;
   items: T[];
   renderCard: (item: T, index?: number) => React.ReactNode;
   getItemKey: (item: T) => string;
@@ -31,7 +31,7 @@ interface SimpleMediaGridPageProps<T> {
 }
 
 /**
- * Shared layout for archive, watchlist, and similar grid pages without filters or pagination.
+ * Shared layout for archive, watchlist, collections, and similar grid pages without filters.
  */
 export function SimpleMediaGridPage<T>({
   breadcrumb,
@@ -41,11 +41,9 @@ export function SimpleMediaGridPage<T>({
   actions,
   isLoading,
   isError = false,
-  isFetching = false,
   errorContent,
   isEmpty,
   emptyContent,
-  countLabel,
   items,
   renderCard,
   getItemKey,
@@ -55,15 +53,14 @@ export function SimpleMediaGridPage<T>({
 }: SimpleMediaGridPageProps<T>) {
   return (
     <AppLayout>
+      <PageHeader
+        breadcrumb={breadcrumb}
+        title={title}
+        description={description}
+        icon={icon}
+        actions={actions}
+      />
       <PageContent>
-        <PageHeader
-          breadcrumb={breadcrumb}
-          title={title}
-          description={description}
-          icon={icon}
-          actions={actions}
-        />
-
         {isLoading && (skeletonContent ?? <MediaGridSkeleton count={skeletonCount} />)}
 
         {!isLoading && isError && errorContent}
@@ -71,19 +68,55 @@ export function SimpleMediaGridPage<T>({
         {!isLoading && !isError && isEmpty && emptyContent}
 
         {!isLoading && !isError && !isEmpty && (
-          <>
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 mb-4 border-b border-white/[0.06]">
-              <p className="text-sm text-white/40">{countLabel}</p>
-              <RefetchingIndicator isFetching={isFetching} isLoading={isLoading} />
-            </div>
-            <div className={gridClass}>
-              {items.map((item, index) => (
-                <Fragment key={getItemKey(item)}>{renderCard(item, index)}</Fragment>
-              ))}
-            </div>
-          </>
+          <div className={gridClass}>
+            {items.map((item, index) => (
+              <motion.div
+                key={getItemKey(item)}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{
+                  duration: 0.2,
+                  delay: Math.min(index * 0.04, 0.5),
+                  ease: "easeOut",
+                }}
+              >
+                {renderCard(item, index)}
+              </motion.div>
+            ))}
+          </div>
         )}
       </PageContent>
+
+      <JumpToTopButton />
     </AppLayout>
+  );
+}
+
+function JumpToTopButton() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setVisible(window.scrollY > 800);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <button
+      type="button"
+      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      aria-label="Jump to top"
+      className={cn(
+        "fixed bottom-6 right-6 z-30 h-11 w-11 rounded-full",
+        "bg-purple-500/90 text-white shadow-xl shadow-black/40",
+        "hover:bg-purple-500 transition-colors",
+        "flex items-center justify-center",
+      )}
+    >
+      <ArrowUp className="h-5 w-5" />
+    </button>
   );
 }

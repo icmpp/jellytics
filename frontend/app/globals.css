@@ -31,7 +31,7 @@
 
     /* Media card grid: consistent layout across Movies, Shows, Watchlist, Archive */
     --media-card-title-lines: 2;
-    --media-card-title-min-height: calc(1em * var(--media-card-title-lines) * 1.25);
+    --media-card-title-min-height: calc(1em * var(--media-card-title-lines) * 1.15);
   }
 }
 
@@ -43,6 +43,7 @@
   html {
     overscroll-behavior: none;
     overflow-x: clip;
+    scrollbar-gutter: stable;
   }
 
   body {
@@ -124,6 +125,40 @@
 
 [data-content] {
   transition: opacity 200ms ease-in-out;
+}
+
+/* Rotating gradient border used on media cards */
+@property --card-border-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes card-border-spin {
+  to {
+    --card-border-angle: 360deg;
+  }
+}
+
+.card-border {
+  background: rgba(255, 255, 255, 0.08);
+  transition: box-shadow 500ms ease-out;
+}
+
+.card-border:hover {
+  background: conic-gradient(
+    from var(--card-border-angle),
+    transparent 0%,
+    rgba(139, 92, 246, 0) 60%,
+    rgba(139, 92, 246, 0.9) 75%,
+    rgba(192, 132, 252, 1) 80%,
+    rgba(139, 92, 246, 0.9) 85%,
+    rgba(139, 92, 246, 0) 100%
+  );
+  animation: card-border-spin 3s linear infinite;
+  box-shadow:
+    0 8px 32px -4px rgba(0, 0, 0, 0.6),
+    0 2px 12px -2px rgba(139, 92, 246, 0.2);
 }
 
 @keyframes pulse {

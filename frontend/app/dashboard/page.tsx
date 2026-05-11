@@ -151,21 +151,26 @@ function InitialSyncBanner() {
 export default function DashboardPage() {
   return (
     <AppLayout>
+      <PageHeader
+        title="Dashboard"
+        description="Your Jellytics overview - viewing statistics and activity"
+        actions={<DashboardHeaderActions />}
+      />
       <PageContent>
-        <PageHeader
-          title="Dashboard"
-          description="Your Jellytics overview - viewing statistics and activity"
-          actions={<DashboardHeaderActions />}
-          sticky={false}
-        />
         <UpdateBanner />
         <InitialSyncBanner />
 
         {/* 1. Stats block */}
         <section className="space-y-4">
           <OverviewCards />
-          <QuickStats />
-          <GoalsWidget />
+          <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-stretch">
+            <div className="flex-1 min-w-0">
+              <QuickStats />
+            </div>
+            <div className="lg:w-72 shrink-0">
+              <GoalsWidget />
+            </div>
+          </div>
         </section>
 
         {/* 2. Active viewing — Continue Watching + Currently Watching */}

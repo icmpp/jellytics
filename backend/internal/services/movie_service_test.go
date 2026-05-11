@@ -54,6 +54,10 @@ func (m *mockMovieStore) RemoveFromWatchlist(ctx context.Context, userID, itemID
 	return nil
 }
 
+func (m *mockMovieStore) StatusCounts(ctx context.Context, userID int, filter repository.MovieListFilter) (repository.StatusCounts, error) {
+	return repository.StatusCounts{}, nil
+}
+
 func TestMovieService_Get_Unauthorized(t *testing.T) {
 	svc := NewMovieService(&mockMovieStore{})
 	_, err := svc.Get(context.Background(), 1, 0)

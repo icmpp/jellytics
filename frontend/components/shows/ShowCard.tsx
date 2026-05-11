@@ -2,67 +2,54 @@
 
 import { memo } from "react";
 import { Show } from "@/hooks/useShows";
-import Link from "next/link";
-import {
-  getShowPosterUrl,
-  getWatchStatusText,
-  cn,
-  MEDIA_CARD_BASE,
-  PROGRESS_BAR_CLASS,
-} from "@/lib/utils";
-import { PosterImage } from "@/components/ui/poster-image";
+import { MediaCard } from "@/components/media";
+import { getShowPosterUrl, getWatchStatusText } from "@/lib/utils";
 
 interface ShowCardProps {
   show: Show;
 }
 
 export const ShowCard = memo(function ShowCard({ show }: ShowCardProps) {
-  const progress = show.total_episodes
-    ? Math.round((show.watched_episodes / show.total_episodes) * 100)
+  const totalEpisodes = show.total_episodes ?? 0;
+  const hasEpisodeProgress = totalEpisodes > 0;
+  const progressPct = hasEpisodeProgress
+    ? Math.round((show.watched_episodes / totalEpisodes) * 100)
     : 0;
-  const watchStatusText = getWatchStatusText(show.status, {
-    mediaType: "show",
-  });
+
+  const upNextLabel =
+    show.status === "watching" && show.up_next
+      ? `Next: S${show.up_next.season_number}E${show.up_next.episode_number}`
+      : null;
 
   return (
-    <Link
+    <MediaCard
+      itemType="show"
+      itemId={show.id}
       href={`/shows/${show.id}`}
-      aria-label={`View details for ${show.title}`}
-      className="block min-w-0 h-full"
-    >
-      <div className={cn(MEDIA_CARD_BASE, "group h-full flex flex-col cursor-pointer")}>
-        <div className="relative aspect-2/3 w-full overflow-hidden shrink-0">
-          <PosterImage
-            src={show.jellyfin_id ? getShowPosterUrl(show.jellyfin_id) : undefined}
-            alt={`Poster for ${show.title}`}
-            type="show"
-            hoverScale
-          />
-        </div>
-        <div className="p-4 flex-1 min-h-0 flex flex-col">
-          <h3 className="media-card-title font-semibold text-white line-clamp-2 mb-2 text-sm min-w-0">
-            {show.title}
-          </h3>
-          {show.total_episodes && show.total_episodes > 0 ? (
-            <div className="mt-2 space-y-2">
-              <div className="flex items-center justify-between gap-2 text-xs">
-                <span className="text-white/30">{watchStatusText}</span>
-                <span className="text-white/50 shrink-0">
-                  {show.watched_episodes}/{show.total_episodes} · {progress}%
-                </span>
-              </div>
-              <div className={PROGRESS_BAR_CLASS}>
-                <div
-                  className="h-full bg-linear-to-r from-purple-500 to-purple-400 transition-all duration-500"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-            </div>
-          ) : (
-            <div className="mt-2 text-xs text-white/30">{watchStatusText}</div>
-          )}
-        </div>
-      </div>
-    </Link>
+      title={show.title}
+      posterUrl={show.jellyfin_id ? getShowPosterUrl(show.jellyfin_id) : undefined}
+      status={show.status}
+      genre={show.genre}
+      meta={[show.year, hasEpisodeProgress ? `${totalEpisodes} eps` : null]}
+      progress={
+        hasEpisodeProgress
+          ? {
+              label: getWatchStatusText(show.status, { mediaType: "show" }),
+              value: progressPct,
+              secondary: `${show.watched_episodes}/${totalEpisodes} · ${progressPct}%`,
+            }
+          : undefined
+      }
+      bottomAccent={
+        upNextLabel ? (
+          <p className="truncate text-[10px] font-medium text-primary/80">
+            {upNextLabel}
+            {show.up_next?.title ? (
+              <span className="font-normal text-white/45"> · {show.up_next.title}</span>
+            ) : null}
+          </p>
+        ) : null
+      }
+    />
   );
 });

@@ -65,3 +65,13 @@ func (s *MovieService) Restore(ctx context.Context, id, userID int) error {
 	}
 	return s.movieStore.Restore(ctx, id, userID)
 }
+
+// StatusCounts returns aggregate counts per watch status, honoring the
+// supplied filters (except status, which is always ignored so each bucket is
+// comparable).
+func (s *MovieService) StatusCounts(ctx context.Context, userID int, filter repository.MovieListFilter) (repository.StatusCounts, error) {
+	if userID <= 0 {
+		return repository.StatusCounts{}, errors.New(errors.CodeUnauthorized, "Unauthorized")
+	}
+	return s.movieStore.StatusCounts(ctx, userID, filter)
+}

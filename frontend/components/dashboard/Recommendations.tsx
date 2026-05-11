@@ -51,9 +51,11 @@ export function Recommendations() {
 
   return (
     <Card>
+      <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full blur-3xl opacity-10 bg-amber-500" />
       <CardContent>
         <SectionHeader
-          icon={<Sparkles className="h-5 w-5 text-amber-400" />}
+          icon={<Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-amber-400" />}
+          iconBg="bg-amber-500/15 border border-amber-500/25"
           title="Recommended for you"
         />
         {isLoading ? (

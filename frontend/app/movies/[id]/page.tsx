@@ -113,7 +113,7 @@ export default function MovieDetailPage() {
 
   return (
     <AppLayout>
-      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] md:top-0 z-10 -mx-4 px-4 md:-mx-8 md:px-8 md:-mt-8 md:pt-8 pt-2 pb-3 bg-app-shell border-b border-white/6">
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] md:top-0 z-10 -mx-4 px-4 md:-mx-8 md:px-8 h-[72px] flex items-center bg-app-shell border-b border-white/6">
         <Breadcrumb items={breadcrumbItems} />
       </div>
 

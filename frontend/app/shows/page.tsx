@@ -1,18 +1,36 @@
 "use client";
 
-import { useMemo } from "react";
+import { Suspense, useEffect, useMemo, useRef } from "react";
 import { useShowsInfinite } from "@/hooks/useShows";
 import { useMediaFilters } from "@/hooks/useMediaFilters";
 import { usePreferences } from "@/hooks/usePreferences";
 import { useSyncStatus } from "@/hooks/useSyncStatus";
+import { useViewPrefs } from "@/hooks/useViewPrefs";
 import { ShowCard } from "@/components/shows/ShowCard";
 import { MediaLibraryPage } from "@/components/media";
 
-export default function ShowsPage() {
+function ShowsPageContent() {
   const filters = useMediaFilters();
   const { isSyncing, triggerSync } = useSyncStatus();
   const { data: preferences } = usePreferences();
   const pageSize = preferences?.display_items_per_page ?? 50;
+  const viewPrefs = useViewPrefs("shows");
+
+  const appliedDefaultRef = useRef(false);
+  useEffect(() => {
+    if (appliedDefaultRef.current) return;
+    appliedDefaultRef.current = true;
+    if (!filters.sort && viewPrefs.defaultSort) {
+      filters.setSort(viewPrefs.defaultSort);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [viewPrefs.defaultSort]);
+
+  useEffect(() => {
+    if (filters.sort && filters.sort !== viewPrefs.defaultSort) {
+      viewPrefs.setDefaultSort(filters.sort);
+    }
+  }, [filters.sort, viewPrefs]);
 
   const showFilters = useMemo(
     () => ({
@@ -24,6 +42,7 @@ export default function ShowsPage() {
       watchedFrom: filters.watchedFrom || undefined,
       watchedTo: filters.watchedTo || undefined,
       tags: filters.tagIds.length > 0 ? filters.tagIds : undefined,
+      sort: filters.sort || undefined,
     }),
     [
       filters.statusFilter,
@@ -34,13 +53,14 @@ export default function ShowsPage() {
       filters.watchedFrom,
       filters.watchedTo,
       filters.tagIds,
+      filters.sort,
     ],
   );
 
   const { data, isLoading, isFetching, error, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useShowsInfinite(showFilters, pageSize);
 
-  const shows = useMemo(() => data?.pages.flatMap((p) => p.shows) ?? [], [data]);
+  const shows = useMemo(() => data?.pages.flatMap((p) => p.shows ?? []) ?? [], [data]);
   const total = data?.pages[0]?.total ?? 0;
 
   const noFiltersActive = useMemo(
@@ -88,5 +108,13 @@ export default function ShowsPage() {
       renderCard={(show) => <ShowCard show={show} />}
       getItemId={(s) => s.id}
     />
+  );
+}
+
+export default function ShowsPage() {
+  return (
+    <Suspense>
+      <ShowsPageContent />
+    </Suspense>
   );
 }

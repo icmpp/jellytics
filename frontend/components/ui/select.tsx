@@ -31,10 +31,11 @@ function SelectTrigger({
       data-slot="select-trigger"
       data-size={size}
       className={cn(
-        "flex w-fit items-center justify-between gap-2 rounded-xl border px-4 text-sm text-white whitespace-nowrap transition-all outline-none",
+        "group flex w-fit items-center justify-between gap-2 rounded-xl border px-4 text-sm text-white whitespace-nowrap transition-all outline-none",
         "bg-white/[0.03] border-white/[0.08]",
         "hover:bg-white/[0.05]",
         "focus:bg-white/[0.05] focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20",
+        "data-[state=open]:border-purple-500/50 data-[state=open]:ring-2 data-[state=open]:ring-purple-500/20 data-[state=open]:bg-white/5",
         "disabled:cursor-not-allowed disabled:opacity-50",
         "data-[placeholder]:text-white/40",
         "data-[size=default]:h-11 data-[size=sm]:h-9",
@@ -45,7 +46,7 @@ function SelectTrigger({
     >
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDownIcon className="size-4 opacity-50" />
+        <ChevronDownIcon className="size-4 opacity-50 transition-transform duration-200 group-data-[state=open]:rotate-180" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
@@ -65,11 +66,13 @@ function SelectContent({
         className={cn(
           "relative z-50 max-h-[300px] min-w-[8rem] overflow-hidden rounded-xl border shadow-xl",
           "bg-[#18181b]/95 backdrop-blur-xl border-white/[0.08] text-white",
+          "will-change-[transform,opacity]",
           "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          "data-[state=open]:duration-150 data-[state=closed]:duration-100",
           "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
           "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
-          "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2",
-          "data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+          "data-[side=bottom]:slide-in-from-top-1 data-[side=left]:slide-in-from-right-1",
+          "data-[side=right]:slide-in-from-left-1 data-[side=top]:slide-in-from-bottom-1",
           position === "popper" &&
             "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
           className,
@@ -82,8 +85,7 @@ function SelectContent({
         <SelectPrimitive.Viewport
           className={cn(
             "p-1",
-            position === "popper" &&
-              "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1",
+            position === "popper" && "w-full min-w-(--radix-select-trigger-width) scroll-my-1",
           )}
         >
           {children}

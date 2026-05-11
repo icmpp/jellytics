@@ -52,7 +52,7 @@ interface QuickStatCardProps {
 
 function QuickStatCard({ label, value, trend, sub }: QuickStatCardProps) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 backdrop-blur-xl p-4 sm:p-5 flex flex-col gap-2 hover:border-white/12 hover:bg-white/5 transition-all duration-300">
+    <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 backdrop-blur-xl p-4 sm:p-5 flex flex-col gap-2 hover:border-white/12 hover:bg-white/5 transition-all duration-300 h-full">
       <p className="text-[10px] sm:text-xs font-medium text-white/40 uppercase tracking-widest">
         {label}
       </p>
@@ -82,7 +82,7 @@ export function QuickStats() {
       : 0;
 
   return (
-    <div className="grid gap-3 sm:gap-4 md:grid-cols-3">
+    <div className="grid gap-3 sm:gap-4 md:grid-cols-3 h-full">
       <QuickStatCard
         label="This Week"
         value={formatHours(thisWeekWatchTime)}

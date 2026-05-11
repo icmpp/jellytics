@@ -10,10 +10,8 @@ interface PosterImageProps {
   type?: "movie" | "show";
   className?: string;
   sizes?: string;
-  hoverScale?: boolean;
   iconSize?: string;
   showLabel?: boolean;
-  /** Use for above-the-fold images (e.g. first watchlist items) to load immediately */
   priority?: boolean;
 }
 
@@ -23,7 +21,6 @@ export function PosterImage({
   type = "movie",
   className = "object-cover",
   sizes = "(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw",
-  hoverScale = false,
   iconSize = "h-10 w-10",
   showLabel = true,
   priority = false,
@@ -45,7 +42,7 @@ export function PosterImage({
       src={src}
       alt={alt}
       fill
-      className={`${className}${hoverScale ? " group-hover:scale-105 transition-transform duration-500" : ""}`}
+      className={className}
       sizes={sizes}
       loading={priority ? "eager" : "lazy"}
       priority={priority}

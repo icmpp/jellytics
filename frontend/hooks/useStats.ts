@@ -3,13 +3,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 
-interface StatsOverview {
+export interface StatsOverview {
   total_watch_time_minutes: number;
   shows_watched: number;
   shows_watching: number;
   shows_pending: number;
+  movies_watched: number;
+  movies_watching: number;
+  movies_pending: number;
   episodes_watched: number;
   total_shows: number;
+  total_movies: number;
 }
 
 interface GenreBreakdown {
@@ -129,8 +133,8 @@ export function useWatchPatterns(days = 90) {
 }
 
 export interface WeeklySummary {
-  this_week: { watch_time_minutes: number; episodes_watched: number };
-  last_week: { watch_time_minutes: number; episodes_watched: number };
+  this_week: { watch_time_minutes: number; episodes_watched: number; movies_watched: number };
+  last_week: { watch_time_minutes: number; episodes_watched: number; movies_watched: number };
 }
 
 export function useWeeklySummary() {

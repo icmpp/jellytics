@@ -12,7 +12,7 @@ interface PageContentProps {
  */
 export function PageContent({ children, className = "" }: PageContentProps) {
   return (
-    <div className={className ? `space-y-6 md:space-y-8 ${className}` : "space-y-6 md:space-y-8"}>
+    <div className={`pt-5 md:pt-6 space-y-6 md:space-y-8${className ? ` ${className}` : ""}`}>
       {children}
     </div>
   );

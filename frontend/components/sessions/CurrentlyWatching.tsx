@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { SectionHeader } from "@/components/layout";
 import { useCurrentlyWatching } from "@/hooks/useStats";
@@ -51,14 +52,7 @@ function SessionCard({ session }: SessionCardProps) {
           <div className="absolute inset-0 flex items-center justify-center text-white/20">
             {isEpisode ? <Tv className="h-4 w-4" /> : <Film className="h-4 w-4" />}
           </div>
-          <img
-            src={posterUrl}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
-          />
+          {posterUrl && <Image src={posterUrl} alt="" fill className="object-cover" sizes="64px" />}
           {/* Bottom gradient overlay */}
           <div className="absolute inset-x-0 bottom-0 h-6 bg-linear-to-t from-black/40 to-transparent" />
         </div>
@@ -161,13 +155,14 @@ export function CurrentlyWatching() {
   }, [sessionCount]);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 backdrop-blur-xl p-4 sm:p-5 flex flex-col gap-4 hover:border-white/12 transition-all duration-300">
+    <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 backdrop-blur-xl p-4 sm:p-5 flex flex-col gap-4 hover:border-white/12 hover:bg-white/5 transition-all duration-300">
       {/* Corner glow */}
       <div className="pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full blur-3xl opacity-10 bg-purple-500" />
 
       <div className="relative">
         <SectionHeader
-          icon={<Play className="h-5 w-5 text-purple-400" />}
+          icon={<Play className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />}
+          iconBg="bg-purple-500/15 border border-purple-500/25"
           title="Currently Watching"
           extra={
             !isEmpty ? (
