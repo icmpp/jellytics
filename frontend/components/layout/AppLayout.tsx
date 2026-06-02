@@ -2,6 +2,7 @@
 
 import { SidebarNavigation } from "./SidebarNavigation";
 import { SidebarProvider, useSidebar } from "./SidebarContext";
+import { BackendErrorBanner } from "./BackendErrorBanner";
 import { GlobalSearch } from "@/components/navigation/GlobalSearch";
 import { useAuth } from "@/hooks/useAuth";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
@@ -32,6 +33,7 @@ function AppLayoutContent({ children }: AppLayoutProps) {
 
   return (
     <div className="min-h-screen bg-[#0d0d14]">
+      <BackendErrorBanner />
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       <SidebarNavigation onSearchClick={() => setSearchOpen(true)} />
       <main
