@@ -2,12 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, FolderPlus } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMovies } from "@/hooks/useMovies";
 import { useShows } from "@/hooks/useShows";
 import { PosterImage } from "@/components/ui/poster-image";
-import { SectionHeader } from "@/components/layout";
-import { Card, CardContent } from "@/components/ui/card";
 import { getMoviePosterUrl, getShowPosterUrl } from "@/lib/utils";
 
 interface RecentItem {
@@ -21,7 +19,7 @@ interface RecentItem {
 
 const CUTOFF_MS = Date.now() - 7 * 24 * 60 * 60 * 1000;
 
-export function RecentlyAdded() {
+export function RecentlyAddedContent() {
   const { data: moviesData } = useMovies({ limit: 10 });
   const { data: showsData } = useShows({ limit: 10 });
   const rowRef = useRef<HTMLDivElement>(null);
@@ -90,27 +88,19 @@ export function RecentlyAdded() {
   };
 
   return (
-    <Card>
-      <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full blur-3xl opacity-10 bg-emerald-500" />
-      <CardContent>
-        <SectionHeader
-          icon={<FolderPlus className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400" />}
-          iconBg="bg-emerald-500/15 border border-emerald-500/25"
-          title="Recently Added"
-        />
-        {top.length === 0 ? (
-          <div className="min-h-[220px] flex flex-col items-center justify-center text-center">
-            <FolderPlus className="h-10 w-10 text-white/15 mb-3" />
-            <p className="text-sm font-medium text-white/60">No recently added titles</p>
-            <p className="text-xs text-white/40 mt-1">
-              New movies and shows from your library will appear here
+    <>
+      {top.length === 0 ? (
+          <div className="min-h-[220px] flex flex-col items-center justify-center text-center gap-1">
+            <p className="text-xs font-mono text-white/35 select-none">no_recently_added</p>
+            <p className="text-[10px] font-mono text-white/20 select-none">
+              new movies and shows from your library will appear here
             </p>
           </div>
         ) : (
           <div className="relative">
             <div
               ref={rowRef}
-              className="flex gap-4 sm:gap-5 overflow-x-auto pb-2 scrollbar-none snap-x snap-proximity"
+              className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none snap-x snap-proximity"
             >
               {top.map((item) => (
                 <Link
@@ -118,7 +108,7 @@ export function RecentlyAdded() {
                   href={item.type === "movie" ? `/movies/${item.id}` : `/shows/${item.id}`}
                   className="group shrink-0 w-36 sm:w-40 md:w-44 snap-start"
                 >
-                  <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-white/4 border border-white/8 mb-2">
+                  <div className="relative aspect-2/3 rounded-sm overflow-hidden bg-[#0a0a12] border border-[#16162a] mb-2">
                     <PosterImage
                       src={item.posterUrl}
                       alt={item.title}
@@ -127,10 +117,12 @@ export function RecentlyAdded() {
                       className="object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
-                  <p className="text-sm text-white/80 truncate group-hover:text-white transition-colors leading-tight">
+                  <p className="text-xs font-mono text-white/50 truncate group-hover:text-white/80 transition-colors leading-tight">
                     {item.title}
                   </p>
-                  {item.year && <p className="text-xs text-white/40 mt-1">{item.year}</p>}
+                  {item.year && (
+                    <p className="text-[10px] font-mono text-white/25 mt-0.5">{item.year}</p>
+                  )}
                 </Link>
               ))}
             </div>
@@ -138,29 +130,28 @@ export function RecentlyAdded() {
               type="button"
               onClick={() => scrollRow("left")}
               aria-label="Scroll recently added left"
-              className={`hidden lg:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-sm transition ${
+              className={`hidden lg:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 items-center justify-center rounded-sm border border-[#16162a] bg-[#07070d] transition-colors ${
                 canScrollLeft
-                  ? "text-white/80 hover:text-white hover:bg-black/80"
+                  ? "text-white/45 hover:text-white/80 hover:border-violet-500/25"
                   : "pointer-events-none opacity-0"
               }`}
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-3.5 w-3.5" />
             </button>
             <button
               type="button"
               onClick={() => scrollRow("right")}
               aria-label="Scroll recently added right"
-              className={`hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-sm transition ${
+              className={`hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 items-center justify-center rounded-sm border border-[#16162a] bg-[#07070d] transition-colors ${
                 canScrollRight
-                  ? "text-white/80 hover:text-white hover:bg-black/80"
+                  ? "text-white/45 hover:text-white/80 hover:border-violet-500/25"
                   : "pointer-events-none opacity-0"
               }`}
             >
-              <ChevronRight className="h-5 w-5" />
+              <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>
         )}
-      </CardContent>
-    </Card>
+    </>
   );
 }

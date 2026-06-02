@@ -1,7 +1,7 @@
 "use client";
 
 import { useStatsOverview, useWeeklySummary } from "@/hooks/useStats";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Calendar, Tv, CheckCircle2 } from "lucide-react";
 
 function formatHours(minutes: number): string {
   const hours = Math.round(minutes / 60);
@@ -16,9 +16,9 @@ interface TrendIndicatorProps {
 function TrendIndicator({ current, previous }: TrendIndicatorProps) {
   if (previous === 0) {
     return (
-      <div className="flex items-center gap-1 text-[10px] sm:text-xs font-medium text-white/30">
+      <div className="flex items-center gap-1 text-[10px] font-mono text-white/35">
         <Minus className="h-3 w-3 shrink-0" />
-        <span>No prior data</span>
+        <span>no prior data</span>
       </div>
     );
   }
@@ -28,7 +28,7 @@ function TrendIndicator({ current, previous }: TrendIndicatorProps) {
 
   return (
     <div
-      className={`flex items-center gap-1 text-[10px] sm:text-xs font-semibold ${isPositive ? "text-emerald-400" : "text-red-400"}`}
+      className={`flex items-center gap-1 text-[10px] font-mono ${isPositive ? "text-emerald-400/80" : "text-red-400/80"}`}
     >
       {isPositive ? (
         <TrendingUp className="h-3 w-3 shrink-0" />
@@ -46,21 +46,29 @@ function TrendIndicator({ current, previous }: TrendIndicatorProps) {
 interface QuickStatCardProps {
   label: string;
   value: string | number;
+  icon: React.ReactNode;
   trend?: React.ReactNode;
   sub?: React.ReactNode;
 }
 
-function QuickStatCard({ label, value, trend, sub }: QuickStatCardProps) {
+function QuickStatCard({ label, value, icon, trend, sub }: QuickStatCardProps) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 backdrop-blur-xl p-4 sm:p-5 flex flex-col gap-2 hover:border-white/12 hover:bg-white/5 transition-all duration-300 h-full">
-      <p className="text-[10px] sm:text-xs font-medium text-white/40 uppercase tracking-widest">
-        {label}
-      </p>
-      <p className="text-2xl sm:text-3xl font-bold text-white tabular-nums tracking-tight leading-none">
-        {value}
-      </p>
-      {trend && <div className="pt-0.5">{trend}</div>}
-      {sub && <div className="pt-0.5">{sub}</div>}
+    <div className="relative overflow-hidden border border-[#16162a] bg-[#07070d] flex flex-col hover:border-violet-500/25 transition-colors duration-200">
+      <div className="h-0.5 w-full bg-violet-500/40 shrink-0" />
+      <div className="relative p-4 sm:p-5 flex flex-col flex-1">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <span className="shrink-0 text-violet-400/70">{icon}</span>
+          <p className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.15em] select-none truncate">
+            <span className="text-violet-400/45 mr-0.5">{'//'}</span>{label}
+          </p>
+        </div>
+        <p className="mt-3 text-2xl sm:text-3xl font-mono font-bold text-white tabular-nums tracking-tight leading-none">
+          {value}
+        </p>
+        <div className="mt-2 h-[18px] flex items-center">
+          {trend ?? sub ?? null}
+        </div>
+      </div>
     </div>
   );
 }
@@ -82,26 +90,29 @@ export function QuickStats() {
       : 0;
 
   return (
-    <div className="grid gap-3 sm:gap-4 md:grid-cols-3 h-full">
+    <>
       <QuickStatCard
-        label="This Week"
+        label="this_week"
+        icon={<Calendar className="h-4 w-4" />}
         value={formatHours(thisWeekWatchTime)}
         trend={<TrendIndicator current={thisWeekWatchTime} previous={lastWeekWatchTime} />}
       />
       <QuickStatCard
-        label="Episodes Watched"
+        label="episodes_watched"
+        icon={<Tv className="h-4 w-4" />}
         value={thisWeekEpisodes}
         trend={<TrendIndicator current={thisWeekEpisodes} previous={lastWeekEpisodes} />}
       />
       <QuickStatCard
-        label="Completion Rate"
+        label="completion_rate"
+        icon={<CheckCircle2 className="h-4 w-4" />}
         value={`${completionRate}%`}
         sub={
-          <p className="text-[10px] sm:text-xs text-white/30 font-medium">
+          <p className="text-[10px] font-mono text-white/40">
             {overview.shows_watched} of {overview.total_shows} shows
           </p>
         }
       />
-    </div>
+    </>
   );
 }

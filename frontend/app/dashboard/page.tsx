@@ -1,14 +1,9 @@
 "use client";
 
 import { OverviewCards } from "@/components/stats/OverviewCards";
-import { GenreBreakdown } from "@/components/stats/GenreBreakdown";
-import { WatchTimeChart } from "@/components/stats/WatchTimeChart";
-import { CurrentlyWatching } from "@/components/sessions";
 import { QuickStats } from "@/components/dashboard/QuickStats";
-import { TopGenres } from "@/components/dashboard/TopGenres";
-import { ContinueWatching } from "@/components/dashboard/ContinueWatching";
-import { RecentlyAdded } from "@/components/dashboard/RecentlyAdded";
-import { Recommendations } from "@/components/dashboard/Recommendations";
+import { MediaWindow } from "@/components/dashboard/MediaWindow";
+import { AnalyticsWindow } from "@/components/dashboard/AnalyticsWindow";
 import { GoalsWidget } from "@/components/dashboard/GoalsWidget";
 import { AppLayout, PageHeader, PageContent } from "@/components/layout";
 import { useSyncStatus } from "@/hooks/useSyncStatus";
@@ -37,17 +32,17 @@ function UpdateBanner() {
   if (!isOutdated) return null;
 
   return (
-    <div className="rounded-2xl backdrop-blur-xl bg-amber-500/10 border border-amber-500/20 p-4 sm:p-6">
+    <div className="rounded-xl bg-amber-500/8 border border-amber-500/20 p-4 sm:p-5">
       <div className="flex items-center gap-4">
-        <div className="p-3 rounded-xl bg-amber-500/20 shrink-0">
-          <ArrowUpCircle className="h-6 w-6 text-amber-400" />
+        <div className="p-2 rounded-md bg-amber-500/10 border border-amber-500/20 shrink-0">
+          <ArrowUpCircle className="h-4 w-4 text-amber-400" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="text-white font-semibold text-sm sm:text-base">Update available</h3>
-          <p className="text-white/50 text-xs sm:text-sm">
-            You&apos;re running <span className="text-white/70 font-medium">{current}</span>
+          <p className="text-amber-400 text-xs font-mono font-medium">update_available</p>
+          <p className="text-white/40 text-[11px] font-mono mt-0.5">
+            running <span className="text-white/60">{current}</span>
             {" — "}
-            <span className="text-amber-400 font-medium">{latest}</span> is now available.
+            <span className="text-amber-400">{latest}</span> available
           </p>
         </div>
         {latestUrl && (
@@ -55,10 +50,10 @@ function UpdateBanner() {
             href={latestUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-sm text-amber-400 hover:text-amber-300 transition-colors shrink-0 font-medium"
+            className="flex items-center gap-1 text-[11px] font-mono text-amber-400 hover:text-amber-300 transition-colors shrink-0"
           >
-            View release
-            <ExternalLink className="h-3.5 w-3.5" />
+            view release
+            <ExternalLink className="h-3 w-3 ml-0.5" />
           </a>
         )}
       </div>
@@ -70,7 +65,7 @@ function DashboardHeaderActions() {
   const { current, isOutdated, latestUrl } = useVersionCheck();
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5">
       {current &&
         current !== "dev" &&
         (isOutdated && latestUrl ? (
@@ -78,15 +73,15 @@ function DashboardHeaderActions() {
             href={latestUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 border border-amber-500/25 text-amber-400 hover:bg-amber-500/20 hover:border-amber-500/40 transition-all"
+            className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-mono bg-amber-500/8 border border-amber-500/20 text-amber-400 hover:bg-amber-500/15 hover:border-amber-500/35 transition-all"
             title="Update available"
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0" />v
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 animate-pulse" />v
             {current.replace(/^v/, "")}
           </a>
         ) : (
-          <span className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-white/5 border border-white/8 text-white/40">
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-400/60 shrink-0" />v
+          <span className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-mono bg-violet-500/5 border border-[#1e1e32] text-violet-500/50">
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-400/40 shrink-0" />v
             {current.replace(/^v/, "")}
           </span>
         ))}
@@ -94,19 +89,19 @@ function DashboardHeaderActions() {
         href="https://github.com/icmpp/jellytics"
         target="_blank"
         rel="noopener noreferrer"
-        className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-all"
+        className="p-1.5 rounded-md border border-transparent text-white/30 hover:text-violet-400 hover:border-[#1e1e32] hover:bg-violet-500/5 transition-all"
         title="GitHub"
       >
-        <GithubIcon className="h-5 w-5" />
+        <GithubIcon className="h-4 w-4" />
       </a>
       <a
         href="https://hub.docker.com/r/icmppp/jellytics"
         target="_blank"
         rel="noopener noreferrer"
-        className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-all"
+        className="p-1.5 rounded-md border border-transparent text-white/30 hover:text-violet-400 hover:border-[#1e1e32] hover:bg-violet-500/5 transition-all"
         title="Docker Hub"
       >
-        <DockerIcon className="h-5 w-5" />
+        <DockerIcon className="h-4 w-4" />
       </a>
     </div>
   );
@@ -124,24 +119,24 @@ function InitialSyncBanner() {
     : 0;
 
   return (
-    <div className="rounded-2xl backdrop-blur-xl bg-purple-500/10 border border-purple-500/20 p-6">
+    <div className="rounded-xl bg-violet-500/5 border border-violet-500/15 p-4 sm:p-5">
       <div className="flex items-center gap-4">
-        <div className="p-3 rounded-xl bg-purple-500/20">
-          <RefreshCw className="h-6 w-6 text-purple-400" />
+        <div className="p-2 rounded-md bg-violet-500/10 border border-violet-500/20 shrink-0">
+          <RefreshCw className="h-4 w-4 text-violet-400" />
         </div>
-        <div className="flex-1">
-          <h3 className="text-white font-semibold">No data yet</h3>
-          <p className="text-white/50 text-sm">
+        <div className="flex-1 min-w-0">
+          <p className="text-violet-400 text-xs font-mono font-medium">no_data_yet</p>
+          <p className="text-white/40 text-[11px] font-mono mt-0.5">
             {dataCount > 0
-              ? `${dataCount} items synced so far. Sync runs automatically in the background.`
-              : "Data is synced from Jellyfin to the database on a schedule. Trigger a manual sync in Settings, or wait for the next automatic sync."}
+              ? `${dataCount} items synced. sync running in background...`
+              : "data synced from jellyfin on schedule. trigger manual sync in settings, or wait."}
           </p>
         </div>
         <button
           onClick={() => refetch()}
-          className="text-sm text-purple-400 hover:text-purple-300 transition-colors shrink-0"
+          className="text-[11px] font-mono text-violet-400/70 hover:text-violet-300 transition-colors shrink-0"
         >
-          Refresh
+          refresh
         </button>
       </div>
     </div>
@@ -161,42 +156,19 @@ export default function DashboardPage() {
         <InitialSyncBanner />
 
         {/* 1. Stats block */}
-        <section className="space-y-4">
+        <section className="space-y-3 sm:space-y-4">
           <OverviewCards />
-          <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-stretch">
-            <div className="flex-1 min-w-0">
-              <QuickStats />
-            </div>
-            <div className="lg:w-72 shrink-0">
-              <GoalsWidget />
-            </div>
+          <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            <QuickStats />
+            <GoalsWidget />
           </div>
         </section>
 
-        {/* 2. Active viewing — Continue Watching + Currently Watching */}
-        <section className="grid gap-4 lg:grid-cols-2 lg:gap-6">
-          <ContinueWatching />
-          <CurrentlyWatching />
-        </section>
+        {/* 2. Media feeds */}
+        <MediaWindow />
 
-        {/* 3. Discovery — Recommendations + Recently Added */}
-        <section className="grid gap-4 lg:grid-cols-2 lg:gap-6">
-          <Recommendations />
-          <RecentlyAdded />
-        </section>
-
-        {/* 4. Analytics — Watch Time Chart + Top Genres, then Genre Breakdown */}
-        <section className="space-y-6">
-          <div className="grid gap-4 lg:grid-cols-3 lg:gap-6">
-            <div className="lg:col-span-2">
-              <WatchTimeChart />
-            </div>
-            <div>
-              <TopGenres />
-            </div>
-          </div>
-          <GenreBreakdown />
-        </section>
+        {/* 3. Analytics */}
+        <AnalyticsWindow />
       </PageContent>
     </AppLayout>
   );

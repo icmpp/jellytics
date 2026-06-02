@@ -1,1 +1,1 @@
-export { CurrentlyWatching } from "./CurrentlyWatching";
+export { CurrentlyWatchingContent } from "./CurrentlyWatching";

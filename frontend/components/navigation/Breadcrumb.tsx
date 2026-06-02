@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ChevronRight, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Home } from "lucide-react";
 
 export interface BreadcrumbItem {
   label?: string;
@@ -18,8 +18,8 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
   if (items.length === 0) return null;
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm overflow-hidden">
-      <ol className="flex items-center gap-1.5 list-none m-0 p-0">
+    <nav aria-label="Breadcrumb" className="flex items-center min-w-0 overflow-hidden">
+      <ol className="flex items-center list-none m-0 p-0 min-w-0 font-mono">
         {items.map((item, i) => {
           const isLast = i === items.length - 1;
           const isCurrentPage = !item.href && isLast;
@@ -28,52 +28,40 @@ export function Breadcrumb({ items }: BreadcrumbProps) {
             <li
               key={i}
               className={cn(
-                "flex items-center gap-1.5",
+                "flex items-center",
                 isCurrentPage ? "min-w-0 overflow-hidden" : "shrink-0",
               )}
             >
-              {i > 0 && <ChevronRight className="h-3 w-3 text-white/20 shrink-0" />}
+              {i > 0 && (
+                <span className="text-violet-400/30 mx-1.5 text-sm shrink-0 select-none">/</span>
+              )}
 
               {item.icon === "home" && item.href ? (
                 <Link
                   href={item.href}
-                  className={cn(
-                    "group relative flex items-center justify-center",
-                    "w-7 h-7 rounded-md",
-                    "bg-white/4 hover:bg-purple-500/15",
-                    "border border-white/6 hover:border-purple-500/30",
-                    "text-white/40 hover:text-purple-400",
-                    "transition-all duration-200",
-                  )}
                   aria-label="Home"
+                  className="flex items-center gap-1 px-1.5 py-1 rounded text-violet-400/60 hover:text-violet-300 hover:bg-violet-500/10 transition-all duration-150 text-sm"
                 >
-                  <Home className="h-3.5 w-3.5 transition-transform duration-200 group-hover:scale-110" />
+                  <Home className="h-3.5 w-3.5" />
+                  <span>~</span>
                 </Link>
               ) : item.href ? (
                 <Link
                   href={item.href}
-                  className={cn(
-                    "px-2 py-1 rounded-md",
-                    "text-white/45 hover:text-white/90",
-                    "hover:bg-white/6",
-                    "transition-all duration-200",
-                    "truncate",
-                  )}
+                  className="px-1.5 py-1 rounded text-sm text-violet-400/65 hover:text-violet-200 hover:bg-violet-500/10 transition-all duration-150"
                 >
-                  {item.label}
+                  {item.label?.toLowerCase()}
                 </Link>
               ) : (
                 <span
                   className={cn(
-                    "px-2 py-1 rounded-md",
-                    "text-white/70 font-medium",
-                    "bg-white/4",
-                    isCurrentPage && "truncate max-w-[220px] sm:max-w-none",
+                    "px-1 text-sm text-white/85 font-medium truncate",
+                    isCurrentPage && "max-w-[200px] sm:max-w-[380px]",
                   )}
                   title={isCurrentPage ? item.label : undefined}
                   aria-current={isCurrentPage ? "page" : undefined}
                 >
-                  {item.label}
+                  {item.label?.toLowerCase()}
                 </span>
               )}
             </li>

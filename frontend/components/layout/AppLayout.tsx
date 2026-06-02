@@ -32,7 +32,7 @@ function AppLayoutContent({ children }: AppLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0d0d14]">
+    <div className="min-h-screen bg-[#050508]">
       <BackendErrorBanner />
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       <SidebarNavigation onSearchClick={() => setSearchOpen(true)} />
@@ -43,7 +43,7 @@ function AppLayoutContent({ children }: AppLayoutProps) {
           isMobile
             ? "pt-[calc(3.5rem+env(safe-area-inset-top,0px)+1rem)] px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
             : "px-0 py-0",
-          !isMobile && (isCollapsed ? "ml-[72px]" : "ml-64"),
+          !isMobile && (isCollapsed ? "ml-[60px]" : "ml-60"),
         )}
       >
         <div
@@ -88,9 +88,9 @@ export function AppLayout({ children }: AppLayoutProps) {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={{ background: "linear-gradient(to bottom, #0a0a0f, #0d0d14)" }}
+        style={{ background: "#050508" }}
       >
-        <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-violet-400" />
       </div>
     );
   }

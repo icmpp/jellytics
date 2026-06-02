@@ -86,7 +86,10 @@ async function request<T>(
       headers,
     });
   } catch (err) {
-    const message = err instanceof Error ? `Failed to connect to API: ${err.message}` : "Failed to connect to API";
+    const message =
+      err instanceof Error
+        ? `Failed to connect to API: ${err.message}`
+        : "Failed to connect to API";
     if (typeof window !== "undefined") {
       window.dispatchEvent(
         new CustomEvent("jellytics:backend-error", {

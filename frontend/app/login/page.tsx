@@ -48,9 +48,7 @@ function ServerStatusBadge({
           <span className="block w-1.5 h-1.5 rounded-full bg-emerald-400 shrink-0" />
           <span className="text-emerald-400">
             reachable
-            {serverName && (
-              <span className="text-emerald-300/70 ml-1">— {serverName}</span>
-            )}
+            {serverName && <span className="text-emerald-300/70 ml-1">— {serverName}</span>}
           </span>
         </>
       )}
@@ -304,7 +302,10 @@ export default function LoginPage() {
       if (response.initial_sync_started) {
         toast.success({ title: "Welcome!", description: "Syncing your Jellyfin library…" });
       } else {
-        toast.success({ title: "Welcome back", description: `Signed in as ${response.user.username}` });
+        toast.success({
+          title: "Welcome back",
+          description: `Signed in as ${response.user.username}`,
+        });
       }
     } catch (err) {
       let errorMessage = "an unexpected error occurred";
@@ -326,7 +327,9 @@ export default function LoginPage() {
     }
   };
 
-  const clearError = () => { if (error) setError(""); };
+  const clearError = () => {
+    if (error) setError("");
+  };
 
   const waitingForServer = isFirstTime === true && serverStatus === "checking";
   const submitDisabled = loading || waitingForServer;
@@ -345,10 +348,7 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center p-4" style={PAGE_BG}>
       <div className="w-full max-w-md font-mono">
         {/* Terminal window */}
-        <div
-          className="border border-violet-500/20 rounded-xl overflow-hidden"
-          style={PANEL_GLOW}
-        >
+        <div className="border border-violet-500/20 rounded-xl overflow-hidden" style={PANEL_GLOW}>
           {/* Title bar */}
           <div className="bg-[#0c0c18] border-b border-violet-500/15 h-9 px-4 flex items-center">
             <div className="flex gap-1.5 shrink-0">
@@ -367,9 +367,7 @@ export default function LoginPage() {
             {/* Brand */}
             <div className="flex items-baseline gap-2 mb-6">
               <span className="text-violet-300 text-base tracking-wide">jellytics</span>
-              <span className="text-slate-700 text-xs">
-                v{process.env.NEXT_PUBLIC_APP_VERSION}
-              </span>
+              <span className="text-slate-700 text-xs">v{process.env.NEXT_PUBLIC_APP_VERSION}</span>
             </div>
 
             {/* Command prompt */}
@@ -402,7 +400,10 @@ export default function LoginPage() {
                     id="server_url"
                     type="url"
                     value={serverURL}
-                    onChange={(e) => { setServerURL(e.target.value); clearError(); }}
+                    onChange={(e) => {
+                      setServerURL(e.target.value);
+                      clearError();
+                    }}
                     placeholder="https://jellyfin.example.com"
                     className={INPUT_CLASS}
                     required
@@ -424,7 +425,10 @@ export default function LoginPage() {
                   id="username"
                   type="text"
                   value={username}
-                  onChange={(e) => { setUsername(e.target.value); clearError(); }}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    clearError();
+                  }}
                   placeholder="your_username"
                   className={INPUT_CLASS}
                   required
@@ -451,7 +455,10 @@ export default function LoginPage() {
                   id="password"
                   type={showPassword ? "text" : "password"}
                   value={password}
-                  onChange={(e) => { setPassword(e.target.value); clearError(); }}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    clearError();
+                  }}
                   placeholder="••••••••"
                   className={INPUT_CLASS}
                   required

@@ -7,7 +7,7 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="card"
       className={cn(
-        "relative overflow-hidden backdrop-blur-xl bg-white/3 border border-white/8 rounded-2xl text-white flex flex-col gap-6 py-6 min-w-0 hover:border-white/12 hover:bg-white/5 transition-all duration-300",
+        "relative overflow-hidden bg-[#07070d] border border-[#16162a] rounded-sm text-white flex flex-col gap-5 py-5 min-w-0 hover:border-violet-500/25 transition-colors duration-200",
         className,
       )}
       {...props}
@@ -60,7 +60,7 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
 
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <div data-slot="card-content" className={cn("px-6 overflow-hidden", className)} {...props} />
+    <div data-slot="card-content" className={cn("px-5 overflow-hidden", className)} {...props} />
   );
 }
 

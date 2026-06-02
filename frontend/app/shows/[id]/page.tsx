@@ -278,8 +278,14 @@ export default function ShowDetailPage() {
 
   return (
     <AppLayout>
-      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] md:top-0 z-10 -mx-4 px-4 md:-mx-8 md:px-8 h-[72px] flex items-center bg-app-shell border-b border-white/6">
-        <Breadcrumb items={breadcrumbItems} />
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] md:top-0 z-10 -mx-4 px-4 md:-mx-8 md:px-8 h-[64px] flex items-center bg-[#050508]">
+        <div className="-ml-1.5">
+          <Breadcrumb items={breadcrumbItems} />
+        </div>
+        <div
+          className="absolute bottom-0 left-0 right-0 h-px"
+          style={{ background: "linear-gradient(90deg, rgba(139,92,246,0.25) 0%, #1e1e32 22%, transparent 65%)" }}
+        />
       </div>
 
       <div className="mt-4 md:mt-8 space-y-4 md:space-y-6">
@@ -316,9 +322,17 @@ export default function ShowDetailPage() {
             <div className="min-w-0">
               <div className="flex flex-wrap items-start gap-3 sm:gap-4 mb-4">
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 wrap-break-word">
-                    {show.title}
-                  </h1>
+                  <div className="flex items-start gap-2 min-w-0 mb-2 sm:mb-3">
+                    <span className="text-violet-400 text-base sm:text-xl font-mono shrink-0 select-none phosphor-glow leading-tight mt-0.5 sm:mt-1">
+                      {">"}
+                    </span>
+                    <h1 className="text-xl sm:text-3xl md:text-4xl font-mono font-semibold text-white wrap-break-word leading-tight">
+                      {show.title}
+                    </h1>
+                    <span className="cursor-blink text-violet-400/60 text-xl leading-tight shrink-0 select-none hidden sm:inline mt-1">
+                      _
+                    </span>
+                  </div>
                   <div className="flex flex-wrap items-center gap-3 text-white/50">
                     {show.year && (
                       <div className="flex items-center gap-1.5">
@@ -434,7 +448,9 @@ export default function ShowDetailPage() {
               )}
 
               <div className="mb-6">
-                <label className="text-sm font-medium text-white/40 mb-3 block">Your Rating</label>
+                <label className="text-[10px] font-mono tracking-[0.12em] uppercase text-violet-300/55 mb-3 block select-none">
+                  <span className="text-violet-400/45">{'//'} </span>rating
+                </label>
                 <RatingStars
                   rating={rating?.rating || null}
                   onRatingChange={(newRating) => {
@@ -461,10 +477,12 @@ export default function ShowDetailPage() {
                         <Eye className="h-4 w-4 text-purple-400" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-lg sm:text-xl font-bold text-white">
+                        <div className="text-lg sm:text-xl font-mono font-semibold text-white">
                           {show.watched_episodes}
                         </div>
-                        <div className="text-xs text-white/40">Watched</div>
+                        <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
+                          {'//'} watched
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -476,10 +494,12 @@ export default function ShowDetailPage() {
                         <FilmIcon className="h-4 w-4 text-blue-400" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-lg sm:text-xl font-bold text-white">
+                        <div className="text-lg sm:text-xl font-mono font-semibold text-white">
                           {show.total_episodes || 0}
                         </div>
-                        <div className="text-xs text-white/40">Total</div>
+                        <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
+                          {'//'} total
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -491,8 +511,10 @@ export default function ShowDetailPage() {
                         <Percent className="h-4 w-4 text-emerald-400" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-lg sm:text-xl font-bold text-white">{progress}%</div>
-                        <div className="text-xs text-white/40">Complete</div>
+                        <div className="text-lg sm:text-xl font-mono font-semibold text-white">{progress}%</div>
+                        <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
+                          {'//'} complete
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -504,10 +526,12 @@ export default function ShowDetailPage() {
                         <Clock className="h-4 w-4 text-amber-400" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-lg sm:text-xl font-bold text-white">
+                        <div className="text-lg sm:text-xl font-mono font-semibold text-white">
                           {Math.round(show.total_watch_time_minutes / 60)}
                         </div>
-                        <div className="text-xs text-white/40">Hours</div>
+                        <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
+                          {'//'} hours
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -582,9 +606,10 @@ export default function ShowDetailPage() {
 
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-white flex items-center gap-2">
-                          <Tv className="h-5 w-5 text-purple-400" />
-                          Episodes ({epList.length})
+                        <CardTitle className="text-white flex items-center gap-2 font-mono">
+                          <Tv className="h-5 w-5 text-violet-400" />
+                          <span className="text-violet-400/50 text-sm select-none">{'//'}</span> episodes
+                          <span className="text-violet-300/40 text-sm font-normal">({epList.length})</span>
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -608,9 +633,9 @@ export default function ShowDetailPage() {
                 ) : (
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-white flex items-center gap-2">
-                        <Tv className="h-5 w-5 text-purple-400" />
-                        Episodes
+                      <CardTitle className="text-white flex items-center gap-2 font-mono">
+                        <Tv className="h-5 w-5 text-violet-400" />
+                        <span className="text-violet-400/50 text-sm select-none">{'//'}</span> episodes
                       </CardTitle>
                     </CardHeader>
                     <CardContent>

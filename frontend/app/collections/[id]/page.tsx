@@ -13,12 +13,7 @@ import { Button } from "@/components/ui/button";
 import { MediaGridSkeleton } from "@/components/ui/media-grid-skeleton";
 import { FolderOpen, Film, Tv, Trash2, Pencil, Loader2, ArrowUp, ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import {
-  resolvePosterUrl,
-  MEDIA_GRID_CLASS,
-  MEDIA_CARD_LINK_CLASS,
-  cn,
-} from "@/lib/utils";
+import { resolvePosterUrl, MEDIA_GRID_CLASS, MEDIA_CARD_LINK_CLASS, cn } from "@/lib/utils";
 import { PosterImage } from "@/components/ui/poster-image";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
@@ -319,9 +314,7 @@ function CollectionItemCard({
               title="Remove from collection?"
               description={
                 <>
-                  <span className="text-white/70">
-                    &quot;{item.title || "This item"}&quot;
-                  </span>{" "}
+                  <span className="text-white/70">&quot;{item.title || "This item"}&quot;</span>{" "}
                   will be removed from this collection.
                 </>
               }

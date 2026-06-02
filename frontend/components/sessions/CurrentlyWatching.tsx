@@ -2,11 +2,10 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { SectionHeader } from "@/components/layout";
 import { useCurrentlyWatching } from "@/hooks/useStats";
 import type { ActiveSession } from "@/hooks/useStats";
 import { Play, Pause, Film, Tv, Monitor, Smartphone, Tablet } from "lucide-react";
-import { PROGRESS_BAR_CLASS, getImageUrl } from "@/lib/utils";
+import { getImageUrl } from "@/lib/utils";
 
 function formatTime(ticks: number): string {
   const seconds = Math.floor(ticks / 10000000);
@@ -45,27 +44,25 @@ function SessionCard({ session }: SessionCardProps) {
     : getImageUrl("movies", session.item_id);
 
   return (
-    <div className="shrink-0 w-[85%] sm:w-[75%] lg:w-full lg:shrink snap-start rounded-2xl border border-white/8 bg-white/3 backdrop-blur-xl p-3 sm:p-4 hover:border-white/12 hover:bg-white/5 transition-all duration-300">
+    <div className="shrink-0 w-[85%] sm:w-[75%] lg:w-full lg:shrink snap-start rounded-sm border border-[#16162a] bg-[#0a0a12] p-3 sm:p-4 hover:border-violet-500/20 transition-colors duration-200">
       <div className="flex items-stretch gap-3">
         {/* Poster */}
-        <div className="relative w-16 shrink-0 rounded-xl overflow-hidden bg-white/5 border border-white/8 self-stretch min-h-[68px]">
-          <div className="absolute inset-0 flex items-center justify-center text-white/20">
-            {isEpisode ? <Tv className="h-4 w-4" /> : <Film className="h-4 w-4" />}
+        <div className="relative w-14 shrink-0 rounded-sm overflow-hidden bg-[#0d0d1a] border border-[#16162a] self-stretch min-h-[64px]">
+          <div className="absolute inset-0 flex items-center justify-center text-white/15">
+            {isEpisode ? <Tv className="h-3.5 w-3.5" /> : <Film className="h-3.5 w-3.5" />}
           </div>
-          {posterUrl && <Image src={posterUrl} alt="" fill className="object-cover" sizes="64px" />}
-          {/* Bottom gradient overlay */}
-          <div className="absolute inset-x-0 bottom-0 h-6 bg-linear-to-t from-black/40 to-transparent" />
+          {posterUrl && <Image src={posterUrl} alt="" fill className="object-cover" sizes="56px" />}
         </div>
 
-        <div className="flex-1 min-w-0 flex flex-col gap-2">
+        <div className="flex-1 min-w-0 flex flex-col gap-1.5">
           {/* Title + status badge */}
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-sm font-semibold text-white truncate leading-snug">
+              <p className="text-xs font-mono text-white/80 truncate leading-snug">
                 {session.item_name}
               </p>
               {isEpisode && session.series_name && (
-                <p className="text-[11px] text-white/40 truncate mt-0.5">
+                <p className="text-[10px] font-mono text-white/35 truncate mt-0.5">
                   {session.series_name}
                   {session.season_number &&
                     session.episode_number &&
@@ -74,30 +71,30 @@ function SessionCard({ session }: SessionCardProps) {
               )}
             </div>
             <span
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold shrink-0 ${
+              className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-sm text-[9px] font-mono shrink-0 ${
                 session.is_paused
-                  ? "bg-white/8 text-white/40 border border-white/10"
-                  : "bg-purple-500/15 text-purple-300 border border-purple-500/25"
+                  ? "bg-white/5 text-white/30 border border-[#16162a]"
+                  : "bg-violet-500/8 text-violet-400/80 border border-violet-500/20"
               }`}
             >
               {session.is_paused ? (
-                <Pause className="h-2.5 w-2.5" />
+                <Pause className="h-2 w-2" />
               ) : (
-                <Play className="h-2.5 w-2.5" />
+                <Play className="h-2 w-2" />
               )}
-              {session.is_paused ? "Paused" : "Playing"}
+              {session.is_paused ? "paused" : "playing"}
             </span>
           </div>
 
           {/* Progress */}
           <div className="space-y-1 mt-auto">
-            <div className={PROGRESS_BAR_CLASS}>
+            <div className="w-full h-[3px] overflow-hidden rounded-sm bg-black/50">
               <div
-                className="h-full bg-linear-to-r from-purple-500 to-purple-400 transition-all duration-300"
+                className="h-full bg-violet-500/70 transition-all duration-300"
                 style={{ width: `${Math.min(100, Math.max(0, progressPercent))}%` }}
               />
             </div>
-            <div className="flex items-center justify-between text-[10px] text-white/35 tabular-nums">
+            <div className="flex items-center justify-between text-[9px] font-mono text-white/25 tabular-nums">
               <span>{timePosition}</span>
               <span>
                 {Math.round(session.playback_percentage)}% · {timeRemaining} left
@@ -106,7 +103,7 @@ function SessionCard({ session }: SessionCardProps) {
           </div>
 
           {/* Device */}
-          <div className="flex items-center gap-1.5 text-[11px] text-white/30">
+          <div className="flex items-center gap-1.5 text-[10px] font-mono text-white/20">
             {getDeviceIcon(session.device_type, session.client_name)}
             <span className="truncate">{session.device_name || session.client_name}</span>
           </div>
@@ -118,20 +115,20 @@ function SessionCard({ session }: SessionCardProps) {
 
 function SessionSkeleton() {
   return (
-    <div className="rounded-2xl border border-white/8 bg-white/3 p-3 sm:p-4">
+    <div className="rounded-sm border border-[#16162a] bg-[#0a0a12] p-3 sm:p-4">
       <div className="flex items-stretch gap-3">
-        <div className="w-11 min-h-[68px] rounded-xl bg-white/8 animate-pulse shrink-0" />
-        <div className="flex-1 space-y-2.5 pt-0.5">
-          <div className="h-4 w-3/4 bg-white/8 rounded-lg animate-pulse" />
-          <div className="h-3 w-1/2 bg-white/5 rounded-lg animate-pulse" />
-          <div className="h-1.5 w-full bg-white/8 rounded-full animate-pulse mt-2" />
+        <div className="w-14 min-h-[64px] rounded-sm bg-white/5 animate-pulse shrink-0" />
+        <div className="flex-1 space-y-2 pt-0.5">
+          <div className="h-3 w-3/4 bg-white/5 rounded-sm animate-pulse" />
+          <div className="h-2.5 w-1/2 bg-white/3 rounded-sm animate-pulse" />
+          <div className="h-[3px] w-full bg-white/5 rounded-sm animate-pulse mt-3" />
         </div>
       </div>
     </div>
   );
 }
 
-export function CurrentlyWatching() {
+export function CurrentlyWatchingContent() {
   const { data, isLoading, isFetching } = useCurrentlyWatching();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -155,50 +152,30 @@ export function CurrentlyWatching() {
   }, [sessionCount]);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/8 bg-white/3 backdrop-blur-xl p-4 sm:p-5 flex flex-col gap-4 hover:border-white/12 hover:bg-white/5 transition-all duration-300">
-      {/* Corner glow */}
-      <div className="pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full blur-3xl opacity-10 bg-purple-500" />
-
-      <div className="relative">
-        <SectionHeader
-          icon={<Play className="h-4 w-4 sm:h-5 sm:w-5 text-purple-400" />}
-          iconBg="bg-purple-500/15 border border-purple-500/25"
-          title="Currently Watching"
-          extra={
-            !isEmpty ? (
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-white/35">
-                  {data.count} {data.count === 1 ? "session" : "sessions"}
-                </span>
-                {isFetching && !isLoading && (
-                  <div className="h-1 w-14 bg-purple-500/20 rounded-full overflow-hidden">
-                    <div className="h-full bg-purple-500 animate-pulse" style={{ width: "60%" }} />
-                  </div>
-                )}
-              </div>
-            ) : undefined
-          }
-        />
-      </div>
+    <div className="flex flex-col gap-3">
+      {isFetching && !isLoading && (
+        <div className="h-px w-full bg-[#16162a] overflow-hidden">
+          <div className="h-full w-1/3 bg-violet-500/40 animate-pulse" />
+        </div>
+      )}
 
       {isLoading ? (
-        <div className="space-y-3">
+        <div className="space-y-2">
           <SessionSkeleton />
           <SessionSkeleton />
         </div>
       ) : isEmpty ? (
-        <div className="min-h-[140px] sm:min-h-[180px] flex flex-col items-center justify-center text-center gap-2">
-          <div className="p-3 rounded-2xl bg-white/5 border border-white/8 mb-1">
-            <Play className="h-6 w-6 text-white/20" />
-          </div>
-          <p className="text-sm font-medium text-white/50">Nothing playing right now</p>
-          <p className="text-xs text-white/25">Active Jellyfin sessions will appear here</p>
+        <div className="min-h-[200px] flex flex-col items-center justify-center text-center gap-1">
+          <p className="text-xs font-mono text-white/35 select-none">nothing_playing</p>
+          <p className="text-[10px] font-mono text-white/20 select-none">
+            active jellyfin sessions will appear here
+          </p>
         </div>
       ) : (
         <>
           <div
             ref={scrollRef}
-            className="flex lg:flex-col gap-2 sm:gap-3 overflow-x-auto lg:overflow-x-visible scrollbar-none snap-x snap-proximity lg:snap-none"
+            className="flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible scrollbar-none snap-x snap-proximity lg:snap-none"
           >
             {data.sessions.map((session) => (
               <SessionCard key={session.id} session={session} />
@@ -206,12 +183,12 @@ export function CurrentlyWatching() {
           </div>
 
           {sessionCount > 1 && (
-            <div className="flex lg:hidden justify-center gap-1.5">
+            <div className="flex lg:hidden justify-center gap-1 pt-1">
               {data.sessions.map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1.5 rounded-full transition-all duration-200 ${
-                    i === activeIndex ? "w-4 bg-purple-400" : "w-1.5 bg-white/20"
+                  className={`h-1 rounded-sm transition-all duration-200 ${
+                    i === activeIndex ? "w-4 bg-violet-400/60" : "w-1 bg-white/15"
                   }`}
                 />
               ))}
