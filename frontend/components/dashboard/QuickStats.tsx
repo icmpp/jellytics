@@ -59,15 +59,14 @@ function QuickStatCard({ label, value, icon, trend, sub }: QuickStatCardProps) {
         <div className="flex items-center gap-1.5 min-w-0">
           <span className="shrink-0 text-violet-400/70">{icon}</span>
           <p className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.15em] select-none truncate">
-            <span className="text-violet-400/45 mr-0.5">{'//'}</span>{label}
+            <span className="text-violet-400/45 mr-0.5">{"//"}</span>
+            {label}
           </p>
         </div>
         <p className="mt-3 text-2xl sm:text-3xl font-mono font-bold text-white tabular-nums tracking-tight leading-none">
           {value}
         </p>
-        <div className="mt-2 h-[18px] flex items-center">
-          {trend ?? sub ?? null}
-        </div>
+        <div className="mt-2 h-[18px] flex items-center">{trend ?? sub ?? null}</div>
       </div>
     </div>
   );

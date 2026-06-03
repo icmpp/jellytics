@@ -148,7 +148,6 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
       >
         {/* All content sits above the scanline pseudo-element */}
         <div className="relative z-10 flex flex-col h-full">
-
           {/* Terminal title bar */}
           <div
             className={cn(
@@ -262,7 +261,10 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
                           <motion.div
                             layoutId="sidebar-active-collapsed"
                             className="absolute left-0 top-1/2 -mt-2.5 w-[3px] h-5 rounded-r z-0"
-                            style={{ background: "#8b5cf6", boxShadow: "2px 0 8px rgba(139,92,246,0.5)" }}
+                            style={{
+                              background: "#8b5cf6",
+                              boxShadow: "2px 0 8px rgba(139,92,246,0.5)",
+                            }}
                             transition={{ type: "spring", stiffness: 500, damping: 38 }}
                           />
                         )}
@@ -387,7 +389,9 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
                     <ChevronRight className="h-[18px] w-[18px]" />
                   ) : (
                     <>
-                      <span className="w-3 text-center text-xs text-violet-400/40 select-none">·</span>
+                      <span className="w-3 text-center text-xs text-violet-400/40 select-none">
+                        ·
+                      </span>
                       <ChevronLeft className="h-4 w-4" />
                       <span>collapse</span>
                     </>
@@ -406,7 +410,9 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
                   )}
                 >
                   {!isCollapsed && (
-                    <span className="w-3 text-center text-xs text-red-400/35 group-hover:text-red-400/60 select-none">·</span>
+                    <span className="w-3 text-center text-xs text-red-400/35 group-hover:text-red-400/60 select-none">
+                      ·
+                    </span>
                   )}
                   <LogOut className={cn(isCollapsed ? "h-[18px] w-[18px]" : "h-4 w-4")} />
                   {!isCollapsed && <span>exit session</span>}
@@ -423,7 +429,9 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
               style={{ background: "#5b21b6", borderTop: "1px solid rgba(139,92,246,0.3)" }}
             >
               {isCollapsed ? (
-                <span className="text-[11px] text-white/90 font-bold tracking-widest uppercase">N</span>
+                <span className="text-[11px] text-white/90 font-bold tracking-widest uppercase">
+                  N
+                </span>
               ) : (
                 <div className="flex items-center gap-0">
                   <span

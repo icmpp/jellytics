@@ -82,7 +82,11 @@ export function GenreBreakdownContent() {
   }, [chartData, total]);
 
   const diversityLabel =
-    diversityScore >= 80 ? "Eclectic viewer" : diversityScore >= 50 ? "Balanced mix" : "Focused taste";
+    diversityScore >= 80
+      ? "Eclectic viewer"
+      : diversityScore >= 50
+        ? "Balanced mix"
+        : "Focused taste";
 
   if (isLoading) {
     return (
@@ -97,7 +101,9 @@ export function GenreBreakdownContent() {
       <div className="min-h-[380px] flex flex-col items-center justify-center text-center gap-1">
         <PieChartIcon className="h-10 w-10 text-white/10 mb-2" />
         <p className="text-xs font-mono text-white/40">no_genre_data_yet</p>
-        <p className="text-[10px] font-mono text-white/20">watch more titles to see your genre breakdown</p>
+        <p className="text-[10px] font-mono text-white/20">
+          watch more titles to see your genre breakdown
+        </p>
       </div>
     );
   }
@@ -184,9 +190,35 @@ export function GenreBreakdownContent() {
                         : "0.0";
                     return (
                       <g>
-                        <text x={cx} y={cy - 12} textAnchor="middle" className="fill-white/80" fontSize={13} fontWeight={600}>{activeGenre?.name ?? "Genres"}</text>
-                        <text x={cx} y={cy + 12} textAnchor="middle" className="fill-white" fontSize={22} fontWeight={700}>{percent}%</text>
-                        <text x={cx} y={cy + 30} textAnchor="middle" className="fill-white/40" fontSize={11}>{activeGenre?.value ?? 0} titles</text>
+                        <text
+                          x={cx}
+                          y={cy - 12}
+                          textAnchor="middle"
+                          className="fill-white/80"
+                          fontSize={13}
+                          fontWeight={600}
+                        >
+                          {activeGenre?.name ?? "Genres"}
+                        </text>
+                        <text
+                          x={cx}
+                          y={cy + 12}
+                          textAnchor="middle"
+                          className="fill-white"
+                          fontSize={22}
+                          fontWeight={700}
+                        >
+                          {percent}%
+                        </text>
+                        <text
+                          x={cx}
+                          y={cy + 30}
+                          textAnchor="middle"
+                          className="fill-white/40"
+                          fontSize={11}
+                        >
+                          {activeGenre?.value ?? 0} titles
+                        </text>
                       </g>
                     );
                   }}
@@ -194,7 +226,10 @@ export function GenreBreakdownContent() {
               </Pie>
               <Tooltip
                 content={(props) => (
-                  <GenreTooltip {...(props as unknown as Parameters<typeof GenreTooltip>[0])} total={total} />
+                  <GenreTooltip
+                    {...(props as unknown as Parameters<typeof GenreTooltip>[0])}
+                    total={total}
+                  />
                 )}
               />
             </PieChart>
@@ -206,7 +241,9 @@ export function GenreBreakdownContent() {
           <div className="grid grid-cols-2 gap-2">
             <div className="rounded-xl border border-white/8 bg-white/3 p-2.5">
               <p className="text-[11px] uppercase tracking-[0.12em] text-white/45">Top Genre</p>
-              <p className="mt-1 text-sm font-semibold text-white truncate">{leadingGenre?.name ?? "—"}</p>
+              <p className="mt-1 text-sm font-semibold text-white truncate">
+                {leadingGenre?.name ?? "—"}
+              </p>
               {leadingGenre && total > 0 && (
                 <p className="mt-0.5 text-[11px] tabular-nums text-white/40">
                   {((leadingGenre.value / total) * 100).toFixed(0)}% of library
@@ -224,8 +261,24 @@ export function GenreBreakdownContent() {
                 </div>
                 <div className="relative h-8 w-8 shrink-0">
                   <svg viewBox="0 0 36 36" className="h-8 w-8 -rotate-90">
-                    <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="3" />
-                    <circle cx="18" cy="18" r="14" fill="none" stroke={`url(#${gradientId}-ring)`} strokeWidth="3" strokeLinecap="round" strokeDasharray={`${diversityScore * 0.88} 100`} />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="14"
+                      fill="none"
+                      stroke="rgba(255,255,255,0.06)"
+                      strokeWidth="3"
+                    />
+                    <circle
+                      cx="18"
+                      cy="18"
+                      r="14"
+                      fill="none"
+                      stroke={`url(#${gradientId}-ring)`}
+                      strokeWidth="3"
+                      strokeLinecap="round"
+                      strokeDasharray={`${diversityScore * 0.88} 100`}
+                    />
                   </svg>
                 </div>
               </div>
@@ -243,17 +296,32 @@ export function GenreBreakdownContent() {
                   className={`group flex items-center gap-2.5 p-2 rounded-xl border transition-all duration-200 cursor-default ${isActive ? "bg-white/6 border-white/15 shadow-sm shadow-white/4" : "bg-white/2 border-white/6 hover:bg-white/4"}`}
                   onMouseEnter={() => setActiveIndex(index)}
                 >
-                  <div className={`h-3 w-3 rounded-md shrink-0 transition-transform duration-200 ${isActive ? "scale-125" : ""}`} style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                  <div
+                    className={`h-3 w-3 rounded-md shrink-0 transition-transform duration-200 ${isActive ? "scale-125" : ""}`}
+                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  />
                   <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-medium text-white truncate leading-tight">{item.name}</p>
+                    <p className="text-[13px] font-medium text-white truncate leading-tight">
+                      {item.name}
+                    </p>
                     <div className="flex items-center gap-1.5 mt-0.5">
                       <div className="h-1 flex-1 rounded-full bg-white/6 overflow-hidden">
-                        <div className="h-full rounded-full transition-all duration-500" style={{ width: `${percentage}%`, backgroundColor: COLORS[index % COLORS.length] }} />
+                        <div
+                          className="h-full rounded-full transition-all duration-500"
+                          style={{
+                            width: `${percentage}%`,
+                            backgroundColor: COLORS[index % COLORS.length],
+                          }}
+                        />
                       </div>
-                      <span className="text-[11px] text-white/50 tabular-nums shrink-0">{percentage}%</span>
+                      <span className="text-[11px] text-white/50 tabular-nums shrink-0">
+                        {percentage}%
+                      </span>
                     </div>
                   </div>
-                  <span className="rounded-md bg-white/5 px-1.5 py-0.5 text-xs font-medium text-white/70 tabular-nums shrink-0">{item.value}</span>
+                  <span className="rounded-md bg-white/5 px-1.5 py-0.5 text-xs font-medium text-white/70 tabular-nums shrink-0">
+                    {item.value}
+                  </span>
                 </div>
               );
             })}

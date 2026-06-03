@@ -134,7 +134,10 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
             </div>
 
             {/* Shell prompt input */}
-            <div className="flex items-center gap-2 px-3.5 py-3" style={{ borderBottom: "1px solid #16162a" }}>
+            <div
+              className="flex items-center gap-2 px-3.5 py-3"
+              style={{ borderBottom: "1px solid #16162a" }}
+            >
               <span className="font-mono text-sm text-violet-400/70 select-none shrink-0">
                 ~/search
               </span>
@@ -179,7 +182,11 @@ export function GlobalSearch({ open, onClose }: GlobalSearchProps) {
                 )}
 
                 {movieCount > 0 && (
-                  <ResultSection title="movies" count={movieCount} icon={<Film className="h-3 w-3" />}>
+                  <ResultSection
+                    title="movies"
+                    count={movieCount}
+                    icon={<Film className="h-3 w-3" />}
+                  >
                     {data!.movies.map((m, i) => (
                       <ResultRow
                         key={m.id}

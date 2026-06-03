@@ -5,7 +5,12 @@ import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 
 const subscribe = () => () => {};
-const useIsClient = () => useSyncExternalStore(subscribe, () => true, () => false);
+const useIsClient = () =>
+  useSyncExternalStore(
+    subscribe,
+    () => true,
+    () => false,
+  );
 
 interface SidebarTooltipProps {
   label: string;
@@ -80,7 +85,10 @@ export function SidebarTooltip({ label, hint, enabled = true, children }: Sideba
                   {hint && (
                     <span
                       className="text-[10px] text-violet-300/70 px-1.5 py-0.5 rounded select-none"
-                      style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.2)" }}
+                      style={{
+                        background: "rgba(139,92,246,0.12)",
+                        border: "1px solid rgba(139,92,246,0.2)",
+                      }}
                     >
                       {hint}
                     </span>

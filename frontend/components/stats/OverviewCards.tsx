@@ -53,7 +53,9 @@ function StatCard({ title, value, icon, accentColor, delta, subLabel }: StatCard
       <div className={`h-0.5 w-full shrink-0 ${accentTopLine[accentColor]}`} />
 
       {/* Subtle colour wash behind value */}
-      <div className={`absolute inset-x-0 top-0 h-24 bg-linear-to-b ${accentGlow[accentColor]} to-transparent pointer-events-none`} />
+      <div
+        className={`absolute inset-x-0 top-0 h-24 bg-linear-to-b ${accentGlow[accentColor]} to-transparent pointer-events-none`}
+      />
 
       <div className="relative p-4 sm:p-5 flex flex-col flex-1">
         {/* Label row: icon + // title + delta */}
@@ -61,7 +63,8 @@ function StatCard({ title, value, icon, accentColor, delta, subLabel }: StatCard
           <div className="flex items-center gap-1.5 min-w-0">
             <span className={`shrink-0 ${accentIconClass[accentColor]}`}>{icon}</span>
             <p className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 tracking-[0.15em] uppercase select-none truncate">
-              <span className="text-violet-400/45 mr-0.5">{'//'}</span>{title}
+              <span className="text-violet-400/45 mr-0.5">{"//"}</span>
+              {title}
             </p>
           </div>
           {delta && (
@@ -89,7 +92,9 @@ function StatCard({ title, value, icon, accentColor, delta, subLabel }: StatCard
         </p>
 
         {/* Sublabel — always rendered to keep cards the same height */}
-        <p className={`mt-2 text-[10px] font-mono truncate ${subLabel ? "text-white/40" : "invisible select-none"}`}>
+        <p
+          className={`mt-2 text-[10px] font-mono truncate ${subLabel ? "text-white/40" : "invisible select-none"}`}
+        >
           {subLabel ?? "·"}
         </p>
       </div>

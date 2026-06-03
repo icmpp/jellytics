@@ -183,7 +183,9 @@ export function WatchTimeChartContent() {
       <div className="min-h-[380px] flex flex-col items-center justify-center text-center gap-1">
         <TrendingUp className="h-10 w-10 text-white/10 mb-2" />
         <p className="text-xs font-mono text-white/40">no_trend_data_yet</p>
-        <p className="text-[10px] font-mono text-white/20">watch some content to see your daily watch time trend</p>
+        <p className="text-[10px] font-mono text-white/20">
+          watch some content to see your daily watch time trend
+        </p>
       </div>
     );
   }
@@ -219,17 +221,44 @@ export function WatchTimeChartContent() {
                 : "border-red-400/20 bg-red-500/10 text-red-300"
             }`}
           >
-            {weekTrend.up ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-            {weekTrend.up ? "+" : ""}{weekTrend.pct}% vs prev week
+            {weekTrend.up ? (
+              <TrendingUp className="h-3 w-3" />
+            ) : (
+              <TrendingDown className="h-3 w-3" />
+            )}
+            {weekTrend.up ? "+" : ""}
+            {weekTrend.pct}% vs prev week
           </span>
         )}
       </div>
 
       <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <StatCard icon={<Clock className="h-3.5 w-3.5 text-purple-400" />} label="Daily Avg" value={avgHours.toFixed(1)} unit="h" />
-        <StatCard icon={<Zap className="h-3.5 w-3.5 text-amber-400" />} label="Peak Day" value={peakDay.hours.toFixed(1)} unit="h" sub={peakDay.date || undefined} />
-        <StatCard icon={<Flame className="h-3.5 w-3.5 text-orange-400" />} label="Streak" value={`${streak}`} unit=" days" />
-        <StatCard icon={<Calendar className="h-3.5 w-3.5 text-cyan-400" />} label="Consistency" value={`${consistencyPct}`} unit="%" sub={`${activeDays}/${chartData.length} active days`} />
+        <StatCard
+          icon={<Clock className="h-3.5 w-3.5 text-purple-400" />}
+          label="Daily Avg"
+          value={avgHours.toFixed(1)}
+          unit="h"
+        />
+        <StatCard
+          icon={<Zap className="h-3.5 w-3.5 text-amber-400" />}
+          label="Peak Day"
+          value={peakDay.hours.toFixed(1)}
+          unit="h"
+          sub={peakDay.date || undefined}
+        />
+        <StatCard
+          icon={<Flame className="h-3.5 w-3.5 text-orange-400" />}
+          label="Streak"
+          value={`${streak}`}
+          unit=" days"
+        />
+        <StatCard
+          icon={<Calendar className="h-3.5 w-3.5 text-cyan-400" />}
+          label="Consistency"
+          value={`${consistencyPct}`}
+          unit="%"
+          sub={`${activeDays}/${chartData.length} active days`}
+        />
       </div>
 
       <div className="mb-3 flex items-center justify-between">
@@ -279,15 +308,95 @@ export function WatchTimeChartContent() {
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
-            <XAxis dataKey="date" stroke="rgba(255,255,255,0.35)" fontSize={11} tickLine={false} axisLine={false} minTickGap={days > 60 ? 40 : days > 30 ? 30 : 14} interval="preserveStartEnd" dy={4} />
-            <YAxis stroke="rgba(255,255,255,0.35)" fontSize={11} tickLine={false} axisLine={false} width={36} tickFormatter={(value: number) => `${value}h`} domain={[0, (dataMax: number) => Math.max(1, Math.ceil(dataMax * 1.15))]} />
-            <Tooltip content={tooltipContent} cursor={{ stroke: "rgba(255,255,255,0.12)", strokeWidth: 1, strokeDasharray: "4 4" }} />
-            {avgHours > 0 && <ReferenceLine y={Number(avgHours.toFixed(2))} stroke="rgba(196,181,253,0.28)" strokeDasharray="6 4" ifOverflow="extendDomain" />}
-            {showPeakRef && <ReferenceLine y={Number(maxHours.toFixed(2))} stroke="rgba(245,158,11,0.18)" strokeDasharray="4 4" ifOverflow="extendDomain" />}
-            <Area type="monotone" dataKey="watchTime" stroke="none" fill={`url(#${areaGradientId})`} fillOpacity={1} legendType="none" animationDuration={800} animationEasing="ease-out" connectNulls />
-            <Line type="monotone" dataKey="watchTime" stroke={`url(#${lineGradientId})`} strokeWidth={2.5} strokeLinecap="round" dot={false} activeDot={{ r: 5, fill: "#a855f7", stroke: "rgba(168,85,247,0.25)", strokeWidth: 8 }} legendType="none" animationDuration={900} animationEasing="ease-out" connectNulls />
-            {showRollingAvg && <Line type="monotone" dataKey="rollingAvg" stroke="#22d3ee" strokeOpacity={0.55} strokeWidth={1.5} strokeLinecap="round" strokeDasharray="6 3" dot={false} legendType="none" animationDuration={1000} animationEasing="ease-out" connectNulls />}
-            {days >= 30 && <Brush dataKey="date" height={18} stroke="rgba(168,85,247,0.30)" travellerWidth={7} fill="rgba(255,255,255,0.02)" tickFormatter={() => ""} />}
+            <XAxis
+              dataKey="date"
+              stroke="rgba(255,255,255,0.35)"
+              fontSize={11}
+              tickLine={false}
+              axisLine={false}
+              minTickGap={days > 60 ? 40 : days > 30 ? 30 : 14}
+              interval="preserveStartEnd"
+              dy={4}
+            />
+            <YAxis
+              stroke="rgba(255,255,255,0.35)"
+              fontSize={11}
+              tickLine={false}
+              axisLine={false}
+              width={36}
+              tickFormatter={(value: number) => `${value}h`}
+              domain={[0, (dataMax: number) => Math.max(1, Math.ceil(dataMax * 1.15))]}
+            />
+            <Tooltip
+              content={tooltipContent}
+              cursor={{ stroke: "rgba(255,255,255,0.12)", strokeWidth: 1, strokeDasharray: "4 4" }}
+            />
+            {avgHours > 0 && (
+              <ReferenceLine
+                y={Number(avgHours.toFixed(2))}
+                stroke="rgba(196,181,253,0.28)"
+                strokeDasharray="6 4"
+                ifOverflow="extendDomain"
+              />
+            )}
+            {showPeakRef && (
+              <ReferenceLine
+                y={Number(maxHours.toFixed(2))}
+                stroke="rgba(245,158,11,0.18)"
+                strokeDasharray="4 4"
+                ifOverflow="extendDomain"
+              />
+            )}
+            <Area
+              type="monotone"
+              dataKey="watchTime"
+              stroke="none"
+              fill={`url(#${areaGradientId})`}
+              fillOpacity={1}
+              legendType="none"
+              animationDuration={800}
+              animationEasing="ease-out"
+              connectNulls
+            />
+            <Line
+              type="monotone"
+              dataKey="watchTime"
+              stroke={`url(#${lineGradientId})`}
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              dot={false}
+              activeDot={{ r: 5, fill: "#a855f7", stroke: "rgba(168,85,247,0.25)", strokeWidth: 8 }}
+              legendType="none"
+              animationDuration={900}
+              animationEasing="ease-out"
+              connectNulls
+            />
+            {showRollingAvg && (
+              <Line
+                type="monotone"
+                dataKey="rollingAvg"
+                stroke="#22d3ee"
+                strokeOpacity={0.55}
+                strokeWidth={1.5}
+                strokeLinecap="round"
+                strokeDasharray="6 3"
+                dot={false}
+                legendType="none"
+                animationDuration={1000}
+                animationEasing="ease-out"
+                connectNulls
+              />
+            )}
+            {days >= 30 && (
+              <Brush
+                dataKey="date"
+                height={18}
+                stroke="rgba(168,85,247,0.30)"
+                travellerWidth={7}
+                fill="rgba(255,255,255,0.02)"
+                tickFormatter={() => ""}
+              />
+            )}
           </LineChart>
         </ResponsiveContainer>
       </div>

@@ -8,9 +8,9 @@ import { TopGenresContent } from "@/components/dashboard/TopGenres";
 import { GenreBreakdownContent } from "@/components/stats/GenreBreakdown";
 
 const TABS = [
-  { id: "watchtime",  label: "watch_time_trend",  icon: TrendingUp },
-  { id: "topgenres",  label: "top_genres",         icon: Film       },
-  { id: "breakdown",  label: "genre_breakdown",    icon: PieChart   },
+  { id: "watchtime", label: "watch_time_trend", icon: TrendingUp },
+  { id: "topgenres", label: "top_genres", icon: Film },
+  { id: "breakdown", label: "genre_breakdown", icon: PieChart },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -48,15 +48,11 @@ export function AnalyticsWindow() {
                     : "text-white/30 hover:text-white/60 hover:bg-[#0a0a14]",
                 )}
               >
-                {isActive && (
-                  <span className="absolute inset-x-0 top-0 h-px bg-violet-500" />
-                )}
+                {isActive && <span className="absolute inset-x-0 top-0 h-px bg-violet-500" />}
                 <Icon
                   className={cn(
                     "h-3 w-3 shrink-0 transition-colors",
-                    isActive
-                      ? "text-violet-400/60"
-                      : "text-white/20 group-hover:text-white/40",
+                    isActive ? "text-violet-400/60" : "text-white/20 group-hover:text-white/40",
                   )}
                 />
                 {tab.label}
@@ -68,9 +64,15 @@ export function AnalyticsWindow() {
 
       {/* Content — all tabs mounted so data stays fresh; only active is visible */}
       <div className="bg-[#07070d] p-4 sm:p-5 min-h-[400px]">
-        <div className={active === "watchtime" ? "" : "hidden"}><WatchTimeChartContent /></div>
-        <div className={active === "topgenres" ? "" : "hidden"}><TopGenresContent /></div>
-        <div className={active === "breakdown" ? "" : "hidden"}><GenreBreakdownContent /></div>
+        <div className={active === "watchtime" ? "" : "hidden"}>
+          <WatchTimeChartContent />
+        </div>
+        <div className={active === "topgenres" ? "" : "hidden"}>
+          <TopGenresContent />
+        </div>
+        <div className={active === "breakdown" ? "" : "hidden"}>
+          <GenreBreakdownContent />
+        </div>
       </div>
     </div>
   );

@@ -88,7 +88,9 @@ export function TopGenresContent() {
       <div className="min-h-[300px] flex flex-col items-center justify-center text-center gap-1">
         <Film className="h-10 w-10 text-white/10 mb-2" />
         <p className="text-xs font-mono text-white/40">no_genre_data_yet</p>
-        <p className="text-[10px] font-mono text-white/20">watch more titles to see your top genres</p>
+        <p className="text-[10px] font-mono text-white/20">
+          watch more titles to see your top genres
+        </p>
       </div>
     );
   }
@@ -125,21 +127,35 @@ export function TopGenresContent() {
         const colors = GENRE_COLORS[index % GENRE_COLORS.length];
         const PodiumIcon = PODIUM_ICONS[index];
         return (
-          <div key={genre.name} className="group rounded-xl border border-white/8 bg-white/2 p-3 transition-colors hover:bg-white/4">
+          <div
+            key={genre.name}
+            className="group rounded-xl border border-white/8 bg-white/2 p-3 transition-colors hover:bg-white/4"
+          >
             <div className="flex items-center justify-between text-sm mb-2">
               <div className="flex items-center gap-2.5 min-w-0">
-                <span className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${index < 3 ? colors.bg + "/20 ring-2 " + colors.ring : "border border-white/10 bg-white/5"}`}>
-                  {PodiumIcon ? <PodiumIcon className="h-3.5 w-3.5 text-white/80" /> : <span className="text-xs font-semibold text-white/70">{index + 1}</span>}
+                <span
+                  className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full ${index < 3 ? colors.bg + "/20 ring-2 " + colors.ring : "border border-white/10 bg-white/5"}`}
+                >
+                  {PodiumIcon ? (
+                    <PodiumIcon className="h-3.5 w-3.5 text-white/80" />
+                  ) : (
+                    <span className="text-xs font-semibold text-white/70">{index + 1}</span>
+                  )}
                 </span>
                 <span className="font-medium text-white truncate">{genre.name}</span>
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-xs text-white/50">{share}%</span>
-                <span className="rounded-md bg-white/5 px-1.5 py-0.5 text-xs font-medium text-white/70">{genre.count}</span>
+                <span className="rounded-md bg-white/5 px-1.5 py-0.5 text-xs font-medium text-white/70">
+                  {genre.count}
+                </span>
               </div>
             </div>
             <div className="relative w-full h-2 rounded-full bg-white/8 overflow-hidden">
-              <div className={`absolute inset-y-0 left-0 rounded-full bg-linear-to-r ${colors.bar} transition-all duration-700 ease-out`} style={{ width: `${percentage}%` }} />
+              <div
+                className={`absolute inset-y-0 left-0 rounded-full bg-linear-to-r ${colors.bar} transition-all duration-700 ease-out`}
+                style={{ width: `${percentage}%` }}
+              />
             </div>
           </div>
         );
@@ -149,8 +165,24 @@ export function TopGenresContent() {
         <div className="mt-1 flex items-center gap-3 rounded-xl border border-white/8 bg-white/2 px-3 py-2.5">
           <div className="relative h-9 w-9 shrink-0">
             <svg viewBox="0 0 36 36" className="h-9 w-9 -rotate-90">
-              <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="3" />
-              <circle cx="18" cy="18" r="15" fill="none" stroke="url(#diversityGrad)" strokeWidth="3" strokeLinecap="round" strokeDasharray={`${diversityScore * 0.942} 100`} />
+              <circle
+                cx="18"
+                cy="18"
+                r="15"
+                fill="none"
+                stroke="rgba(255,255,255,0.08)"
+                strokeWidth="3"
+              />
+              <circle
+                cx="18"
+                cy="18"
+                r="15"
+                fill="none"
+                stroke="url(#diversityGrad)"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeDasharray={`${diversityScore * 0.942} 100`}
+              />
               <defs>
                 <linearGradient id="diversityGrad">
                   <stop offset="0%" stopColor="#a855f7" />
@@ -158,12 +190,18 @@ export function TopGenresContent() {
                 </linearGradient>
               </defs>
             </svg>
-            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/80">{diversityScore}</span>
+            <span className="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white/80">
+              {diversityScore}
+            </span>
           </div>
           <div className="min-w-0">
             <p className="text-xs font-medium text-white/80">Taste Diversity</p>
             <p className="text-[11px] text-white/40">
-              {diversityScore >= 80 ? "Eclectic viewer — wide range of genres" : diversityScore >= 50 ? "Balanced mix across genres" : "Focused on a few favorites"}
+              {diversityScore >= 80
+                ? "Eclectic viewer — wide range of genres"
+                : diversityScore >= 50
+                  ? "Balanced mix across genres"
+                  : "Focused on a few favorites"}
             </p>
           </div>
         </div>

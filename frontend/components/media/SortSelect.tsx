@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export type SortKey =
   | ""
@@ -27,29 +28,29 @@ export type SortKey =
   | "progress_asc";
 
 const COMMON_OPTIONS: { value: SortKey; label: string }[] = [
-  { value: "", label: "Recently watched" },
-  { value: "added_desc", label: "Recently added" },
-  { value: "added_asc", label: "Oldest added" },
-  { value: "title_asc", label: "Title (A–Z)" },
-  { value: "title_desc", label: "Title (Z–A)" },
-  { value: "year_desc", label: "Year (newest)" },
-  { value: "year_asc", label: "Year (oldest)" },
-  { value: "last_watched_desc", label: "Last watched (newest)" },
-  { value: "last_watched_asc", label: "Last watched (oldest)" },
+  { value: "", label: "recently_watched" },
+  { value: "added_desc", label: "recently_added" },
+  { value: "added_asc", label: "oldest_added" },
+  { value: "title_asc", label: "title_asc" },
+  { value: "title_desc", label: "title_desc" },
+  { value: "year_desc", label: "year_desc" },
+  { value: "year_asc", label: "year_asc" },
+  { value: "last_watched_desc", label: "last_watched_desc" },
+  { value: "last_watched_asc", label: "last_watched_asc" },
 ];
 
 const MOVIE_OPTIONS: { value: SortKey; label: string }[] = [
   ...COMMON_OPTIONS,
-  { value: "runtime_desc", label: "Runtime (longest)" },
-  { value: "runtime_asc", label: "Runtime (shortest)" },
-  { value: "progress_desc", label: "Most watched" },
-  { value: "progress_asc", label: "Least watched" },
+  { value: "runtime_desc", label: "runtime_desc" },
+  { value: "runtime_asc", label: "runtime_asc" },
+  { value: "progress_desc", label: "progress_desc" },
+  { value: "progress_asc", label: "progress_asc" },
 ];
 
 const SHOW_OPTIONS: { value: SortKey; label: string }[] = [
   ...COMMON_OPTIONS,
-  { value: "progress_desc", label: "Most progress" },
-  { value: "progress_asc", label: "Least progress" },
+  { value: "progress_desc", label: "progress_desc" },
+  { value: "progress_asc", label: "progress_asc" },
 ];
 
 interface SortSelectProps {
@@ -72,7 +73,16 @@ export function SortSelect({ mediaType, value, onChange }: SortSelectProps) {
     >
       {/* Icon-only on mobile, full label on sm+ */}
       <SelectTrigger
-        className="h-11 w-11 shrink-0 sm:w-auto sm:min-w-[170px]"
+        className={cn(
+          "h-11 w-11 shrink-0 rounded-sm font-mono sm:w-auto sm:min-w-[170px]",
+          // Open/selected state mirrors the filters button: violet fill, no ring.
+          // These also override the base Select's purple focus/open styling.
+          "focus:ring-0 focus:border-violet-500/30 focus:bg-violet-500/10",
+          "data-[state=open]:ring-0 data-[state=open]:border-violet-500/30 data-[state=open]:bg-violet-500/10 data-[state=open]:text-violet-300 data-[state=open]:[&_svg]:text-violet-300/70",
+          open
+            ? "border-violet-500/30 bg-violet-500/10 text-violet-300 hover:bg-violet-500/15"
+            : "border-[#16162a] bg-[#0a0a14] hover:bg-[#0d0d1a]",
+        )}
         title={`Sort: ${current.label}`}
       >
         <div className="flex items-center gap-2 min-w-0">
@@ -88,9 +98,17 @@ export function SortSelect({ mediaType, value, onChange }: SortSelectProps) {
           </SelectValue>
         </div>
       </SelectTrigger>
-      <SelectContent align="end" collisionPadding={8} className="max-w-[220px]">
+      <SelectContent
+        align="end"
+        collisionPadding={8}
+        className="max-w-[220px] rounded-sm border-[#16162a] bg-[#07070d] font-mono"
+      >
         {options.map((o) => (
-          <SelectItem key={o.value || "__default"} value={o.value || "__default"}>
+          <SelectItem
+            key={o.value || "__default"}
+            value={o.value || "__default"}
+            className="rounded-sm text-xs"
+          >
             {o.label}
           </SelectItem>
         ))}

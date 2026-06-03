@@ -9,10 +9,10 @@ import { RecommendationsContent } from "./Recommendations";
 import { CurrentlyWatchingContent } from "@/components/sessions/CurrentlyWatching";
 
 const TABS = [
-  { id: "continue",  label: "continue_watching",  icon: PlayCircle },
-  { id: "live",      label: "currently_watching", icon: Play       },
-  { id: "recent",    label: "recently_added",      icon: FolderPlus },
-  { id: "suggested", label: "recommended",         icon: Sparkles   },
+  { id: "continue", label: "continue_watching", icon: PlayCircle },
+  { id: "live", label: "currently_watching", icon: Play },
+  { id: "recent", label: "recently_added", icon: FolderPlus },
+  { id: "suggested", label: "recommended", icon: Sparkles },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -51,15 +51,11 @@ export function MediaWindow() {
                 )}
               >
                 {/* Violet top stripe on active tab */}
-                {isActive && (
-                  <span className="absolute inset-x-0 top-0 h-px bg-violet-500" />
-                )}
+                {isActive && <span className="absolute inset-x-0 top-0 h-px bg-violet-500" />}
                 <Icon
                   className={cn(
                     "h-3 w-3 shrink-0 transition-colors",
-                    isActive
-                      ? "text-violet-400/60"
-                      : "text-white/20 group-hover:text-white/40",
+                    isActive ? "text-violet-400/60" : "text-white/20 group-hover:text-white/40",
                   )}
                 />
                 {tab.label}
@@ -71,10 +67,18 @@ export function MediaWindow() {
 
       {/* Content — all tabs are mounted so data stays fresh; only active is visible */}
       <div className="bg-[#07070d] p-4 sm:p-5 min-h-[260px]">
-        <div className={active === "continue"  ? "" : "hidden"}><ContinueWatchingContent /></div>
-        <div className={active === "live"      ? "" : "hidden"}><CurrentlyWatchingContent /></div>
-        <div className={active === "recent"    ? "" : "hidden"}><RecentlyAddedContent /></div>
-        <div className={active === "suggested" ? "" : "hidden"}><RecommendationsContent /></div>
+        <div className={active === "continue" ? "" : "hidden"}>
+          <ContinueWatchingContent />
+        </div>
+        <div className={active === "live" ? "" : "hidden"}>
+          <CurrentlyWatchingContent />
+        </div>
+        <div className={active === "recent" ? "" : "hidden"}>
+          <RecentlyAddedContent />
+        </div>
+        <div className={active === "suggested" ? "" : "hidden"}>
+          <RecommendationsContent />
+        </div>
       </div>
     </div>
   );

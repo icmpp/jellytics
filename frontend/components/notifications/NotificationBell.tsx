@@ -51,7 +51,8 @@ export function NotificationBell({
             <Bell className="h-4 w-4" />
             {count > 0 && (
               <span className="absolute -top-2 -right-1.5 flex items-center justify-center">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-sm opacity-50"
+                <span
+                  className="animate-ping absolute inline-flex h-full w-full rounded-sm opacity-50"
                   style={{ background: "#7c3aed" }}
                 />
                 <span
@@ -76,7 +77,6 @@ export function NotificationBell({
       >
         <div className="terminal-scanlines relative overflow-hidden rounded-lg">
           <div className="relative z-10 flex flex-col">
-
             {/* Terminal title bar */}
             <div
               className="flex items-center gap-2.5 px-3 h-9 shrink-0"
@@ -169,7 +169,6 @@ export function NotificationBell({
                 </button>
               )}
             </div>
-
           </div>
         </div>
       </PopoverContent>
@@ -216,35 +215,42 @@ function NotificationItem({
   const timestamp = formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true });
 
   const content = (
-    <div className={cn(
-      "group flex items-start gap-2.5 px-3 py-2.5 transition-colors relative",
-      isUnread
-        ? "hover:bg-[#0d0d1a]"
-        : "hover:bg-[#0a0a12] opacity-60 hover:opacity-80",
-    )}
+    <div
+      className={cn(
+        "group flex items-start gap-2.5 px-3 py-2.5 transition-colors relative",
+        isUnread ? "hover:bg-[#0d0d1a]" : "hover:bg-[#0a0a12] opacity-60 hover:opacity-80",
+      )}
       style={isUnread ? { boxShadow: "inset 3px 0 0 rgba(139,92,246,0.4)" } : {}}
     >
       {/* Prompt marker */}
-      <span className={cn(
-        "font-mono text-xs shrink-0 mt-0.5 select-none transition-colors",
-        isUnread
-          ? "text-violet-400/70 group-hover:text-violet-400 phosphor-glow"
-          : "text-white/15",
-      )}>
+      <span
+        className={cn(
+          "font-mono text-xs shrink-0 mt-0.5 select-none transition-colors",
+          isUnread
+            ? "text-violet-400/70 group-hover:text-violet-400 phosphor-glow"
+            : "text-white/15",
+        )}
+      >
         {isUnread ? ">" : "·"}
       </span>
 
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-2">
-          <p className={cn(
-            "font-mono text-xs leading-snug truncate",
-            isUnread ? "text-white/85" : "text-white/40",
-          )}>
+          <p
+            className={cn(
+              "font-mono text-xs leading-snug truncate",
+              isUnread ? "text-white/85" : "text-white/40",
+            )}
+          >
             {notification.title}
           </p>
           {isUnread && (
             <button
-              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMarkRead(); }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onMarkRead();
+              }}
               className="shrink-0 font-mono text-[9px] text-violet-400/40 hover:text-violet-300/70 transition-colors select-none"
               title="Mark read"
             >
@@ -253,10 +259,12 @@ function NotificationItem({
           )}
         </div>
         {notification.body && (
-          <p className={cn(
-            "font-mono text-[11px] mt-0.5 line-clamp-2",
-            isUnread ? "text-white/45" : "text-white/25",
-          )}>
+          <p
+            className={cn(
+              "font-mono text-[11px] mt-0.5 line-clamp-2",
+              isUnread ? "text-white/45" : "text-white/25",
+            )}
+          >
             {notification.body}
           </p>
         )}
@@ -267,7 +275,15 @@ function NotificationItem({
 
   if (href !== "#") {
     return (
-      <Link href={href} onClick={() => { onMarkRead(); onClick(); }} className="block" style={{ borderBottom: "1px solid #16162a" }}>
+      <Link
+        href={href}
+        onClick={() => {
+          onMarkRead();
+          onClick();
+        }}
+        className="block"
+        style={{ borderBottom: "1px solid #16162a" }}
+      >
         {content}
       </Link>
     );
@@ -275,7 +291,10 @@ function NotificationItem({
 
   return (
     <div
-      onClick={() => { onMarkRead(); onClick(); }}
+      onClick={() => {
+        onMarkRead();
+        onClick();
+      }}
       className="cursor-pointer"
       style={{ borderBottom: "1px solid #16162a" }}
     >

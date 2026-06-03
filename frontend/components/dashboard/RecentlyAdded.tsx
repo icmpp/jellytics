@@ -90,68 +90,68 @@ export function RecentlyAddedContent() {
   return (
     <>
       {top.length === 0 ? (
-          <div className="min-h-[220px] flex flex-col items-center justify-center text-center gap-1">
-            <p className="text-xs font-mono text-white/35 select-none">no_recently_added</p>
-            <p className="text-[10px] font-mono text-white/20 select-none">
-              new movies and shows from your library will appear here
-            </p>
+        <div className="min-h-[220px] flex flex-col items-center justify-center text-center gap-1">
+          <p className="text-xs font-mono text-white/35 select-none">no_recently_added</p>
+          <p className="text-[10px] font-mono text-white/20 select-none">
+            new movies and shows from your library will appear here
+          </p>
+        </div>
+      ) : (
+        <div className="relative">
+          <div
+            ref={rowRef}
+            className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none snap-x snap-proximity"
+          >
+            {top.map((item) => (
+              <Link
+                key={`${item.type}-${item.id}`}
+                href={item.type === "movie" ? `/movies/${item.id}` : `/shows/${item.id}`}
+                className="group shrink-0 w-36 sm:w-40 md:w-44 snap-start"
+              >
+                <div className="relative aspect-2/3 rounded-sm overflow-hidden bg-[#0a0a12] border border-[#16162a] mb-2">
+                  <PosterImage
+                    src={item.posterUrl}
+                    alt={item.title}
+                    type={item.type}
+                    sizes="176px"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <p className="text-xs font-mono text-white/50 truncate group-hover:text-white/80 transition-colors leading-tight">
+                  {item.title}
+                </p>
+                {item.year && (
+                  <p className="text-[10px] font-mono text-white/25 mt-0.5">{item.year}</p>
+                )}
+              </Link>
+            ))}
           </div>
-        ) : (
-          <div className="relative">
-            <div
-              ref={rowRef}
-              className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none snap-x snap-proximity"
-            >
-              {top.map((item) => (
-                <Link
-                  key={`${item.type}-${item.id}`}
-                  href={item.type === "movie" ? `/movies/${item.id}` : `/shows/${item.id}`}
-                  className="group shrink-0 w-36 sm:w-40 md:w-44 snap-start"
-                >
-                  <div className="relative aspect-2/3 rounded-sm overflow-hidden bg-[#0a0a12] border border-[#16162a] mb-2">
-                    <PosterImage
-                      src={item.posterUrl}
-                      alt={item.title}
-                      type={item.type}
-                      sizes="176px"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  </div>
-                  <p className="text-xs font-mono text-white/50 truncate group-hover:text-white/80 transition-colors leading-tight">
-                    {item.title}
-                  </p>
-                  {item.year && (
-                    <p className="text-[10px] font-mono text-white/25 mt-0.5">{item.year}</p>
-                  )}
-                </Link>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() => scrollRow("left")}
-              aria-label="Scroll recently added left"
-              className={`hidden lg:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 items-center justify-center rounded-sm border border-[#16162a] bg-[#07070d] transition-colors ${
-                canScrollLeft
-                  ? "text-white/45 hover:text-white/80 hover:border-violet-500/25"
-                  : "pointer-events-none opacity-0"
-              }`}
-            >
-              <ChevronLeft className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollRow("right")}
-              aria-label="Scroll recently added right"
-              className={`hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 items-center justify-center rounded-sm border border-[#16162a] bg-[#07070d] transition-colors ${
-                canScrollRight
-                  ? "text-white/45 hover:text-white/80 hover:border-violet-500/25"
-                  : "pointer-events-none opacity-0"
-              }`}
-            >
-              <ChevronRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
-        )}
+          <button
+            type="button"
+            onClick={() => scrollRow("left")}
+            aria-label="Scroll recently added left"
+            className={`hidden lg:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 items-center justify-center rounded-sm border border-[#16162a] bg-[#07070d] transition-colors ${
+              canScrollLeft
+                ? "text-white/45 hover:text-white/80 hover:border-violet-500/25"
+                : "pointer-events-none opacity-0"
+            }`}
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollRow("right")}
+            aria-label="Scroll recently added right"
+            className={`hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 items-center justify-center rounded-sm border border-[#16162a] bg-[#07070d] transition-colors ${
+              canScrollRight
+                ? "text-white/45 hover:text-white/80 hover:border-violet-500/25"
+                : "pointer-events-none opacity-0"
+            }`}
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
     </>
   );
 }

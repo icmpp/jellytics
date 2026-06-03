@@ -1,5 +1,7 @@
 "use client";
 
+import { useId } from "react";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { StatusCounts } from "@/hooks/useStatusCounts";
 
@@ -11,10 +13,10 @@ interface StatusSegmentedProps {
 }
 
 const SEGMENTS: { value: string; label: string; countKey: keyof StatusCounts }[] = [
-  { value: "", label: "All", countKey: "all" },
-  { value: "watched", label: "Watched", countKey: "watched" },
-  { value: "watching", label: "Watching", countKey: "watching" },
-  { value: "pending", label: "Pending", countKey: "pending" },
+  { value: "", label: "all", countKey: "all" },
+  { value: "watched", label: "watched", countKey: "watched" },
+  { value: "watching", label: "watching", countKey: "watching" },
+  { value: "pending", label: "pending", countKey: "pending" },
 ];
 
 function formatCount(n: number | undefined): string {
@@ -25,13 +27,17 @@ function formatCount(n: number | undefined): string {
 }
 
 export function StatusSegmented({ value, onChange, counts, className }: StatusSegmentedProps) {
+  // Scopes the shared-layout animation to this instance so the violet
+  // highlight glides between segments — the sidebar nav's signature move.
+  const layoutId = useId();
+
   return (
     <div
       role="tablist"
       aria-label="Filter by watch status"
       className={cn(
-        "inline-flex h-11 items-center rounded-xl border border-white/[0.08] bg-white/[0.03] p-1 gap-1",
-        "w-full sm:w-auto overflow-x-auto no-scrollbar",
+        "inline-flex h-11 items-stretch overflow-hidden rounded-sm border border-[#16162a] bg-[#06060d]",
+        "w-full sm:w-auto overflow-x-auto scrollbar-none",
         className,
       )}
     >
@@ -46,17 +52,49 @@ export function StatusSegmented({ value, onChange, counts, className }: StatusSe
             aria-selected={active}
             onClick={() => onChange(seg.value)}
             className={cn(
-              "relative flex items-center gap-2 px-3 sm:px-4 h-full rounded-lg text-sm font-medium whitespace-nowrap",
-              "transition-colors border",
-              active
-                ? "border-purple-500/30 bg-purple-500/10 text-white shadow-sm"
-                : "border-transparent text-white/60 hover:text-white hover:bg-white/4",
+              "group relative flex items-center gap-1.5 whitespace-nowrap border-r border-[#16162a] px-3 sm:px-4 text-xs font-mono transition-colors last:border-r-0",
+              active ? "text-violet-300/90" : "text-white/40 hover:text-white/70",
             )}
           >
-            <span>{seg.label}</span>
+            {/* Sliding active highlight — mirrors the sidebar nav indicator */}
+            {active && (
+              <motion.span
+                layoutId={layoutId}
+                className="absolute inset-0 z-0 bg-[#07070d]"
+                style={{ boxShadow: "inset 0 1.5px 0 #8b5cf6" }}
+                transition={{ type: "spring", stiffness: 500, damping: 38 }}
+              />
+            )}
+
+            {/* Prompt: > when active, faint · otherwise */}
+            <span
+              className={cn(
+                "relative z-10 w-2 shrink-0 select-none text-center",
+                active
+                  ? "text-violet-400 phosphor-glow"
+                  : "text-violet-400/35 group-hover:text-violet-400/60",
+              )}
+              aria-hidden="true"
+            >
+              {active ? ">" : "·"}
+            </span>
+
+            <span
+              className={cn(
+                "relative z-10 transition-transform",
+                !active && "group-hover:translate-x-0.5",
+              )}
+            >
+              {seg.label}
+              {active && <span className="cursor-blink ml-px text-violet-400/80">_</span>}
+            </span>
+
             {count !== undefined && count !== null && (
               <span
-                className={cn("text-xs tabular-nums", active ? "text-purple-300" : "text-white/40")}
+                className={cn(
+                  "relative z-10 text-xs tabular-nums",
+                  active ? "text-violet-400/70" : "text-white/25",
+                )}
               >
                 {formatCount(count)}
               </span>

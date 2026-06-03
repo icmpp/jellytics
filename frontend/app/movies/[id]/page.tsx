@@ -119,7 +119,10 @@ export default function MovieDetailPage() {
         </div>
         <div
           className="absolute bottom-0 left-0 right-0 h-px"
-          style={{ background: "linear-gradient(90deg, rgba(139,92,246,0.25) 0%, #1e1e32 22%, transparent 65%)" }}
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(139,92,246,0.25) 0%, #1e1e32 22%, transparent 65%)",
+          }}
         />
       </div>
 
@@ -290,7 +293,7 @@ export default function MovieDetailPage() {
 
               <div className="mb-6">
                 <label className="text-[10px] font-mono tracking-[0.12em] uppercase text-violet-300/55 mb-3 block select-none">
-                  <span className="text-violet-400/45">{'//'} </span>rating
+                  <span className="text-violet-400/45">{"//"} </span>rating
                 </label>
                 <RatingStars
                   rating={rating?.rating || null}
@@ -322,7 +325,7 @@ export default function MovieDetailPage() {
                           {Math.round(movie.total_watch_time_minutes / 60)}
                         </div>
                         <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
-                          {'//'} hours
+                          {"//"} hours
                         </div>
                       </div>
                     </div>
@@ -339,7 +342,7 @@ export default function MovieDetailPage() {
                           {movie.watch_count}
                         </div>
                         <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
-                          {'//'} watches
+                          {"//"} watches
                         </div>
                       </div>
                     </div>
@@ -356,7 +359,7 @@ export default function MovieDetailPage() {
                           {Math.round(movie.completion_percentage)}%
                         </div>
                         <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
-                          {'//'} complete
+                          {"//"} complete
                         </div>
                       </div>
                     </div>
@@ -378,7 +381,7 @@ export default function MovieDetailPage() {
                             })}
                           </div>
                           <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
-                            {'//'} first watched
+                            {"//"} first watched
                           </div>
                         </div>
                       </div>

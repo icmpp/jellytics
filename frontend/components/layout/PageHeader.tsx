@@ -62,26 +62,13 @@ export function PageHeader({
           )}
         </div>
 
-        {actions && (
-          <div className="flex shrink-0 items-center gap-2 pt-0.5">{actions}</div>
-        )}
+        {actions && <div className="flex shrink-0 items-center gap-2 pt-0.5">{actions}</div>}
       </div>
     </div>
   );
 
   if (!sticky) {
-    return (
-      <div>
-        {inner}
-        <div
-          className="mt-5 h-px"
-          style={{
-            background:
-              "linear-gradient(90deg, rgba(139,92,246,0.25) 0%, #1e1e32 22%, transparent 65%)",
-          }}
-        />
-      </div>
-    );
+    return <div>{inner}</div>;
   }
 
   return (

@@ -15,7 +15,7 @@ export function GoalsWidget() {
         <div className="flex items-center gap-1.5">
           <Flame className="h-3.5 w-3.5 text-amber-400/70 shrink-0" />
           <p className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.15em] select-none">
-            <span className="text-violet-400/45 mr-0.5">{'// '}</span>streak
+            <span className="text-violet-400/45 mr-0.5">{"// "}</span>streak
           </p>
         </div>
         <p className="mt-3 text-2xl sm:text-3xl font-mono font-bold text-white tabular-nums tracking-tight leading-none">
@@ -25,7 +25,9 @@ export function GoalsWidget() {
           {data.longest_streak > 0 ? (
             <div className="flex items-center gap-1 text-white/45">
               <Trophy className="h-3 w-3 text-amber-400/55 shrink-0" />
-              <span className="text-[10px] font-mono tabular-nums">best {data.longest_streak}d</span>
+              <span className="text-[10px] font-mono tabular-nums">
+                best {data.longest_streak}d
+              </span>
             </div>
           ) : (
             <span className="text-[10px] font-mono text-white/35">watch today to start</span>

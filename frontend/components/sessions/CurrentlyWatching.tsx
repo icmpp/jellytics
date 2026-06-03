@@ -77,11 +77,7 @@ function SessionCard({ session }: SessionCardProps) {
                   : "bg-violet-500/8 text-violet-400/80 border border-violet-500/20"
               }`}
             >
-              {session.is_paused ? (
-                <Pause className="h-2 w-2" />
-              ) : (
-                <Play className="h-2 w-2" />
-              )}
+              {session.is_paused ? <Pause className="h-2 w-2" /> : <Play className="h-2 w-2" />}
               {session.is_paused ? "paused" : "playing"}
             </span>
           </div>

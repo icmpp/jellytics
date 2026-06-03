@@ -284,7 +284,10 @@ export default function ShowDetailPage() {
         </div>
         <div
           className="absolute bottom-0 left-0 right-0 h-px"
-          style={{ background: "linear-gradient(90deg, rgba(139,92,246,0.25) 0%, #1e1e32 22%, transparent 65%)" }}
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(139,92,246,0.25) 0%, #1e1e32 22%, transparent 65%)",
+          }}
         />
       </div>
 
@@ -449,7 +452,7 @@ export default function ShowDetailPage() {
 
               <div className="mb-6">
                 <label className="text-[10px] font-mono tracking-[0.12em] uppercase text-violet-300/55 mb-3 block select-none">
-                  <span className="text-violet-400/45">{'//'} </span>rating
+                  <span className="text-violet-400/45">{"//"} </span>rating
                 </label>
                 <RatingStars
                   rating={rating?.rating || null}
@@ -481,7 +484,7 @@ export default function ShowDetailPage() {
                           {show.watched_episodes}
                         </div>
                         <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
-                          {'//'} watched
+                          {"//"} watched
                         </div>
                       </div>
                     </div>
@@ -498,7 +501,7 @@ export default function ShowDetailPage() {
                           {show.total_episodes || 0}
                         </div>
                         <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
-                          {'//'} total
+                          {"//"} total
                         </div>
                       </div>
                     </div>
@@ -511,9 +514,11 @@ export default function ShowDetailPage() {
                         <Percent className="h-4 w-4 text-emerald-400" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-lg sm:text-xl font-mono font-semibold text-white">{progress}%</div>
+                        <div className="text-lg sm:text-xl font-mono font-semibold text-white">
+                          {progress}%
+                        </div>
                         <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
-                          {'//'} complete
+                          {"//"} complete
                         </div>
                       </div>
                     </div>
@@ -530,7 +535,7 @@ export default function ShowDetailPage() {
                           {Math.round(show.total_watch_time_minutes / 60)}
                         </div>
                         <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
-                          {'//'} hours
+                          {"//"} hours
                         </div>
                       </div>
                     </div>
@@ -608,8 +613,13 @@ export default function ShowDetailPage() {
                       <CardHeader>
                         <CardTitle className="text-white flex items-center gap-2 font-mono">
                           <Tv className="h-5 w-5 text-violet-400" />
-                          <span className="text-violet-400/50 text-sm select-none">{'//'}</span> episodes
-                          <span className="text-violet-300/40 text-sm font-normal">({epList.length})</span>
+                          <span className="text-violet-400/50 text-sm select-none">
+                            {"//"}
+                          </span>{" "}
+                          episodes
+                          <span className="text-violet-300/40 text-sm font-normal">
+                            ({epList.length})
+                          </span>
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -635,7 +645,8 @@ export default function ShowDetailPage() {
                     <CardHeader>
                       <CardTitle className="text-white flex items-center gap-2 font-mono">
                         <Tv className="h-5 w-5 text-violet-400" />
-                        <span className="text-violet-400/50 text-sm select-none">{'//'}</span> episodes
+                        <span className="text-violet-400/50 text-sm select-none">{"//"}</span>{" "}
+                        episodes
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
