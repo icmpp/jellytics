@@ -76,7 +76,9 @@ export function EmptyTerminal({
               <span className="cursor-blink ml-px text-violet-400/80">_</span>
             </p>
             {subtext && (
-              <p className="mt-1.5 max-w-xs text-xs leading-relaxed text-violet-300/45">{subtext}</p>
+              <p className="mt-1.5 max-w-xs text-xs leading-relaxed text-violet-300/45">
+                {subtext}
+              </p>
             )}
           </div>
 
@@ -133,7 +135,9 @@ export function TerminalAction({
 
   const inner = (
     <>
-      {Icon && <Icon className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" />}
+      {Icon && (
+        <Icon className="h-3.5 w-3.5 shrink-0 transition-transform group-hover:translate-x-0.5" />
+      )}
       {label}
     </>
   );

@@ -325,7 +325,13 @@ function TypeSegmented({
 }
 
 /** Sort select styled to match the library's terminal SortSelect. */
-function WatchlistSort({ value, onChange }: { value: SortOrder; onChange: (v: SortOrder) => void }) {
+function WatchlistSort({
+  value,
+  onChange,
+}: {
+  value: SortOrder;
+  onChange: (v: SortOrder) => void;
+}) {
   const [open, setOpen] = useState(false);
   const current = SORT_OPTIONS.find((o) => o.value === value) ?? SORT_OPTIONS[0];
 
@@ -414,7 +420,10 @@ function WatchlistSearch({ value, onChange }: { value: string; onChange: (v: str
           !focused && (
             <kbd
               className="hidden select-none rounded-sm px-1.5 py-0.5 text-[10px] font-mono text-violet-300/70 sm:block"
-              style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.2)" }}
+              style={{
+                background: "rgba(139,92,246,0.12)",
+                border: "1px solid rgba(139,92,246,0.2)",
+              }}
             >
               /
             </kbd>
@@ -474,7 +483,9 @@ export default function WatchlistPage() {
     const items = data?.items ?? [];
     return [...items]
       .filter((item) => (filter === "all" ? true : item.item_type === filter))
-      .filter((item) => (normalizedQuery ? item.title.toLowerCase().includes(normalizedQuery) : true))
+      .filter((item) =>
+        normalizedQuery ? item.title.toLowerCase().includes(normalizedQuery) : true,
+      )
       .sort((a, b) => {
         if (sortOrder === "title_asc") return a.title.localeCompare(b.title);
         if (sortOrder === "title_desc") return b.title.localeCompare(a.title);
