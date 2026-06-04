@@ -1,9 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { toast } from "@/hooks/useToast";
+import { ToastAction } from "@/components/ui/toast";
 
 export interface WatchlistItem {
   id: number;
@@ -103,6 +104,29 @@ export function useAddToWatchlist() {
 export function useRemoveFromWatchlist() {
   const queryClient = useQueryClient();
 
+  // Re-add a just-removed item (optimistically) for the toast's Undo action.
+  const restoreItem = async (item: WatchlistItem) => {
+    await queryClient.cancelQueries({ queryKey: ["watchlist"] });
+    const previous = queryClient.getQueryData<WatchlistResponse>(["watchlist"]);
+
+    queryClient.setQueryData<WatchlistResponse>(["watchlist"], {
+      items: [item, ...(previous?.items ?? [])],
+      total: (previous?.total ?? 0) + 1,
+    });
+
+    try {
+      await api.post("/watchlist", { item_type: item.item_type, item_id: item.item_id });
+      queryClient.invalidateQueries({ queryKey: ["watchlist"] });
+    } catch (error) {
+      console.error("Failed to restore watchlist item:", error);
+      queryClient.setQueryData<WatchlistResponse>(["watchlist"], previous);
+      toast.error({
+        title: "Error",
+        description: "Failed to restore item. Please try again.",
+      });
+    }
+  };
+
   return useMutation({
     mutationFn: async (itemId: number | { itemType: "show" | "movie"; itemId: number }) => {
       let watchlistItemId: number;
@@ -154,14 +178,22 @@ export function useRemoveFromWatchlist() {
         }
       }
 
-      return { previousWatchlist, itemTitle };
+      return { previousWatchlist, itemTitle, removedItem: itemToRemove };
     },
     onSuccess: (_, variables, context) => {
       queryClient.invalidateQueries({ queryKey: ["watchlist"] });
 
+      const removed = context?.removedItem;
       toast.success({
         title: "Removed from watchlist",
         description: `${context?.itemTitle || "Item"} has been removed from your watchlist.`,
+        action: removed
+          ? React.createElement(
+              ToastAction,
+              { altText: "Undo removal", onClick: () => restoreItem(removed) },
+              "Undo",
+            )
+          : undefined,
       });
     },
     onError: (error, variables, context) => {
