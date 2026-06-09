@@ -16,6 +16,7 @@ import {
   isToday,
 } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { WatchHistoryItem } from "@/hooks/useWatchHistory";
 
 export interface DayActivity {
@@ -73,29 +74,37 @@ export function HistoryCalendar({ items, selectedDate, onSelectDate }: HistoryCa
   }, [viewDate]);
 
   return (
-    <div className="rounded-2xl backdrop-blur-xl bg-white/3 border border-white/8 overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/8">
+    <div className="overflow-hidden rounded-sm border border-[#16162a] bg-[#0a0a14] font-mono">
+      <div
+        className="flex items-center justify-between border-b border-[#16162a] px-4 py-2.5"
+        style={{ background: "#06060d" }}
+      >
         <button
           onClick={() => setViewDate(subMonths(viewDate, 1))}
-          className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/6 transition-colors"
+          className="rounded-sm p-1.5 text-white/40 transition-colors hover:bg-violet-500/10 hover:text-violet-300"
           aria-label="Previous month"
         >
-          <ChevronLeft className="h-5 w-5" />
+          <ChevronLeft className="h-4 w-4" />
         </button>
-        <h2 className="text-sm font-semibold text-white">{format(viewDate, "MMMM yyyy")}</h2>
+        <h2 className="text-sm font-semibold lowercase text-violet-300/90">
+          {format(viewDate, "MMMM yyyy")}
+        </h2>
         <button
           onClick={() => setViewDate(addMonths(viewDate, 1))}
-          className="p-2 rounded-lg text-white/40 hover:text-white hover:bg-white/6 transition-colors"
+          className="rounded-sm p-1.5 text-white/40 transition-colors hover:bg-violet-500/10 hover:text-violet-300"
           aria-label="Next month"
         >
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="h-4 w-4" />
         </button>
       </div>
 
       <div className="p-4">
-        <div className="grid grid-cols-7 gap-1 mb-2">
+        <div className="mb-2 grid grid-cols-7 gap-1">
           {WEEKDAY_LABELS.map((label) => (
-            <div key={label} className="text-center text-xs text-white/40 font-medium py-1">
+            <div
+              key={label}
+              className="py-1 text-center text-[11px] lowercase tracking-wide text-violet-400/40"
+            >
               {label}
             </div>
           ))}
@@ -114,35 +123,38 @@ export function HistoryCalendar({ items, selectedDate, onSelectDate }: HistoryCa
                 key={dateKey}
                 type="button"
                 onClick={() => onSelectDate(hasActivity ? (isSelected ? null : dateKey) : null)}
-                className={`relative h-10 rounded-lg text-sm transition-colors flex flex-col items-center justify-center ${
+                className={cn(
+                  "relative flex h-10 flex-col items-center justify-center rounded-sm text-sm tabular-nums transition-colors",
                   !isCurrentMonth
                     ? "text-white/20"
                     : isSelected
-                      ? "bg-purple-500/30 text-purple-300 ring-1 ring-purple-400/50"
+                      ? "bg-violet-500/15 text-violet-300 ring-1 ring-violet-500/40"
                       : hasActivity
-                        ? "bg-white/8 text-white hover:bg-white/12"
-                        : "text-white/50 hover:bg-white/4"
-                }`}
+                        ? "bg-[#0d0d1a] text-white/90 hover:bg-violet-500/10"
+                        : "text-white/40 hover:bg-[#0d0d1a]",
+                )}
                 aria-label={`${format(day, "PPP")}${hasActivity ? `, ${activity.count} items` : ""}`}
               >
                 {format(day, "d")}
                 {hasActivity && (
                   <span
-                    className={`absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full ${
-                      isSelected ? "bg-purple-300" : "bg-purple-400/80"
-                    }`}
+                    className={cn(
+                      "absolute bottom-1 left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full",
+                      isSelected ? "bg-violet-300" : "bg-violet-400/80",
+                    )}
                   />
                 )}
                 {isTodayDate && !isSelected && (
-                  <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-white/50" />
+                  <span className="absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full bg-white/40" />
                 )}
               </button>
             );
           })}
         </div>
         {selectedDate && activityByDate[selectedDate] && (
-          <div className="mt-4 pt-4 border-t border-white/8">
-            <p className="text-xs text-white/40">
+          <div className="mt-4 border-t border-[#16162a] pt-4">
+            <p className="text-xs text-violet-300/50">
+              <span className="select-none text-violet-400/45">{"# "}</span>
               {activityByDate[selectedDate].count} item
               {activityByDate[selectedDate].count !== 1 ? "s" : ""} ·{" "}
               {Math.floor(activityByDate[selectedDate].totalMinutes / 60)}h{" "}
