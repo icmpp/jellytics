@@ -1,7 +1,9 @@
 # ============================================
 # Stage 1: Build Go backend
 # ============================================
-FROM golang:alpine AS backend-builder
+# Pinned for reproducible builds. mattn/go-sqlite3 requires CGO, so we need a
+# C toolchain and the sqlite headers in this stage only.
+FROM golang:1.25-alpine AS backend-builder
 
 ARG JELLYTICS_VERSION=dev
 
@@ -9,6 +11,7 @@ WORKDIR /app
 
 RUN apk add --no-cache gcc musl-dev sqlite-dev
 
+# Download deps in their own layer so they cache unless go.mod/go.sum change.
 COPY backend/go.mod backend/go.sum ./
 RUN go mod download
 
@@ -21,7 +24,7 @@ RUN CGO_ENABLED=1 GOOS=linux go build \
 # ============================================
 # Stage 2: Build Next.js frontend
 # ============================================
-FROM node:alpine AS frontend-builder
+FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app
 
@@ -29,18 +32,21 @@ ARG NEXT_PUBLIC_API_URL=/api/v1
 ARG BACKEND_URL=http://127.0.0.1:8080
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV BACKEND_URL=$BACKEND_URL
+ENV NEXT_TELEMETRY_DISABLED=1
 
+# Install deps in their own layer so they cache unless package files change.
 COPY frontend/package*.json ./
 RUN npm ci
 
 COPY frontend/ .
-ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # ============================================
 # Stage 3: Runtime image (single container)
 # ============================================
-FROM node:alpine
+# node:20-alpine is the floor: Next.js standalone needs a Node runtime. The Go
+# binary rides along; ca-certificates + sqlite-libs are its only runtime deps.
+FROM node:20-alpine
 
 LABEL org.opencontainers.image.title="Jellytics"
 LABEL org.opencontainers.image.description="Jellyfin analytics and usage statistics"
@@ -51,16 +57,14 @@ LABEL org.opencontainers.image.authors="icmpp"
 
 WORKDIR /app
 
-# Install only required runtime deps for backend
-RUN apk add --no-cache ca-certificates sqlite-libs
+# Runtime deps for the CGO sqlite backend, plus the data dir, in one layer.
+RUN apk add --no-cache ca-certificates sqlite-libs \
+    && mkdir -p /app/data
 
-# Create data directory
-RUN mkdir -p /app/data
-
-# Copy backend (migrations are embedded in the binary)
+# Copy backend (migrations are embedded in the binary).
 COPY --from=backend-builder /app/server /app/server
 
-# Copy frontend (standalone output)
+# Copy frontend (standalone output: server.js + minimal pruned node_modules).
 COPY --from=frontend-builder /app/public ./public
 COPY --from=frontend-builder /app/.next/standalone ./
 COPY --from=frontend-builder /app/.next/static ./.next/static
@@ -70,7 +74,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-# Backend connects to itself via localhost when frontend proxies
+# Frontend proxies to the backend over loopback inside this single container.
 ENV BACKEND_URL=http://127.0.0.1:8080
 ENV JELLYTICS_SERVER_PORT=8080
 ENV JELLYTICS_SERVER_HOST=0.0.0.0
