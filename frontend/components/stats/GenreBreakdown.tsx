@@ -7,8 +7,8 @@ import { Loader2, PieChart as PieChartIcon, Sparkles } from "lucide-react";
 import { ChartCard } from "@/components/ui/chart-card";
 
 const COLORS = [
-  "#a855f7",
-  "#c084fc",
+  "#8b5cf6",
+  "#a78bfa",
   "#8b5cf6",
   "#7c3aed",
   "#6366f1",
@@ -39,8 +39,8 @@ function GenreTooltip({
   const pct = total > 0 ? ((item.value / total) * 100).toFixed(1) : "0.0";
 
   return (
-    <div className="rounded-xl border border-white/10 bg-[rgba(16,16,24,0.96)] px-4 py-3 shadow-xl shadow-black/50 backdrop-blur-sm">
-      <p className="mb-1.5 text-xs font-semibold text-white">{item.name}</p>
+    <div className="rounded-sm border border-[#16162a] bg-[rgba(7,7,13,0.96)] px-4 py-3 font-mono shadow-xl shadow-black/50 backdrop-blur-sm">
+      <p className="mb-1.5 text-xs font-semibold text-violet-300/90">{item.name}</p>
       <div className="flex items-baseline gap-2">
         <span className="tabular-nums text-sm font-bold text-white">{item.value}</span>
         <span className="text-[11px] text-white/40">titles</span>
@@ -112,10 +112,10 @@ export function GenreBreakdownContent() {
     <>
       {/* Badges row */}
       <div className="mb-4 flex items-center gap-2">
-        <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/70">
+        <span className="rounded-sm border border-[#16162a] bg-[#0a0a14] px-2.5 py-1 font-mono text-xs text-white/60">
           {chartData.length} genres
         </span>
-        <span className="rounded-full border border-purple-400/20 bg-purple-500/10 px-2.5 py-1 text-xs text-purple-200">
+        <span className="rounded-sm border border-violet-500/25 bg-violet-500/10 px-2.5 py-1 font-mono text-xs text-violet-300/90">
           {total} titles
         </span>
       </div>
@@ -123,10 +123,12 @@ export function GenreBreakdownContent() {
       {/* Genre DNA bar */}
       <div className="mb-5 space-y-2">
         <div className="flex items-center justify-between">
-          <p className="text-[11px] uppercase tracking-[0.16em] text-white/45">Genre DNA</p>
+          <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-violet-300/55">
+            <span className="text-violet-400/45 select-none">{"# "}</span>genre_dna
+          </p>
           {activeGenre && (
-            <p className="text-[11px] text-white/50 tabular-nums">
-              <span className="font-medium text-white/70">{activeGenre.name}</span> —{" "}
+            <p className="font-mono text-[11px] text-white/50 tabular-nums">
+              <span className="font-medium text-violet-300/80">{activeGenre.name}</span> —{" "}
               {((activeGenre.value / total) * 100).toFixed(1)}%
             </p>
           )}
@@ -154,7 +156,7 @@ export function GenreBreakdownContent() {
             <PieChart>
               <defs>
                 <linearGradient id={`${gradientId}-ring`}>
-                  <stop offset="0%" stopColor="#a855f7" />
+                  <stop offset="0%" stopColor="#8b5cf6" />
                   <stop offset="100%" stopColor="#22d3ee" />
                 </linearGradient>
               </defs>
@@ -239,24 +241,28 @@ export function GenreBreakdownContent() {
         {/* Legend + insights */}
         <div className="w-full lg:w-7/12 space-y-3">
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl border border-white/8 bg-white/3 p-2.5">
-              <p className="text-[11px] uppercase tracking-[0.12em] text-white/45">Top Genre</p>
-              <p className="mt-1 text-sm font-semibold text-white truncate">
+            <div className="rounded-sm border border-[#16162a] bg-[#0a0a14] p-2.5">
+              <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+                <span className="text-violet-400/45 select-none">{"# "}</span>top_genre
+              </p>
+              <p className="mt-1 font-mono text-sm font-semibold text-white truncate">
                 {leadingGenre?.name ?? "—"}
               </p>
               {leadingGenre && total > 0 && (
-                <p className="mt-0.5 text-[11px] tabular-nums text-white/40">
+                <p className="mt-0.5 font-mono text-[11px] tabular-nums text-white/40">
                   {((leadingGenre.value / total) * 100).toFixed(0)}% of library
                 </p>
               )}
             </div>
-            <div className="rounded-xl border border-white/8 bg-white/3 p-2.5">
+            <div className="rounded-sm border border-[#16162a] bg-[#0a0a14] p-2.5">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.12em] text-white/45">Diversity</p>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+                    <span className="text-violet-400/45 select-none">{"# "}</span>diversity
+                  </p>
                   <div className="mt-1 flex items-center gap-1.5">
-                    <p className="text-sm font-semibold text-white">{diversityScore}%</p>
-                    <Sparkles className="h-3 w-3 text-purple-400" />
+                    <p className="font-mono text-sm font-semibold text-white">{diversityScore}%</p>
+                    <Sparkles className="h-3 w-3 text-violet-400/70" />
                   </div>
                 </div>
                 <div className="relative h-8 w-8 shrink-0">
@@ -282,7 +288,7 @@ export function GenreBreakdownContent() {
                   </svg>
                 </div>
               </div>
-              <p className="mt-0.5 text-[11px] text-white/35">{diversityLabel}</p>
+              <p className="mt-0.5 font-mono text-[11px] text-white/35">{diversityLabel}</p>
             </div>
           </div>
 
@@ -293,15 +299,15 @@ export function GenreBreakdownContent() {
               return (
                 <div
                   key={item.name}
-                  className={`group flex items-center gap-2.5 p-2 rounded-xl border transition-all duration-200 cursor-default ${isActive ? "bg-white/6 border-white/15 shadow-sm shadow-white/4" : "bg-white/2 border-white/6 hover:bg-white/4"}`}
+                  className={`group flex items-center gap-2.5 p-2 rounded-sm border transition-all duration-200 cursor-default ${isActive ? "bg-violet-500/10 border-violet-500/30" : "bg-[#0a0a14] border-[#16162a] hover:border-violet-500/20 hover:bg-[#0d0d1a]"}`}
                   onMouseEnter={() => setActiveIndex(index)}
                 >
                   <div
-                    className={`h-3 w-3 rounded-md shrink-0 transition-transform duration-200 ${isActive ? "scale-125" : ""}`}
+                    className={`h-3 w-3 rounded-sm shrink-0 transition-transform duration-200 ${isActive ? "scale-125" : ""}`}
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-medium text-white truncate leading-tight">
+                    <p className="font-mono text-[13px] font-medium text-white truncate leading-tight">
                       {item.name}
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5">
@@ -314,12 +320,12 @@ export function GenreBreakdownContent() {
                           }}
                         />
                       </div>
-                      <span className="text-[11px] text-white/50 tabular-nums shrink-0">
+                      <span className="font-mono text-[11px] text-white/50 tabular-nums shrink-0">
                         {percentage}%
                       </span>
                     </div>
                   </div>
-                  <span className="rounded-md bg-white/5 px-1.5 py-0.5 text-xs font-medium text-white/70 tabular-nums shrink-0">
+                  <span className="rounded-sm border border-[#16162a] bg-[#06060d] px-1.5 py-0.5 font-mono text-xs text-white/70 tabular-nums shrink-0">
                     {item.value}
                   </span>
                 </div>
@@ -370,21 +376,21 @@ export function GenreBreakdown() {
   return (
     <ChartCard
       title="Genre Breakdown"
-      icon={<PieChartIcon className="h-5 w-5 text-purple-400" />}
+      icon={<PieChartIcon className="h-5 w-5" />}
       isLoading={isLoading}
       minHeight="min-h-[350px]"
       isEmpty={!data || Object.keys(data).length === 0}
-      emptyMessage="No genre data yet"
-      emptyDescription="Watch more titles to see your genre breakdown"
+      emptyMessage="no_genre_data_yet"
+      emptyDescription="watch more titles to see your genre breakdown"
       emptyIcon={<PieChartIcon className="h-10 w-10" />}
       className="h-full"
       titleExtra={
         !isLoading && leadingGenre ? (
           <div className="flex items-center gap-2">
-            <span className="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/70">
+            <span className="rounded-sm border border-[#16162a] bg-[#0a0a14] px-2.5 py-1 font-mono text-xs text-white/60">
               {chartData.length} genres
             </span>
-            <span className="rounded-full border border-purple-400/20 bg-purple-500/10 px-2.5 py-1 text-xs text-purple-200">
+            <span className="rounded-sm border border-violet-500/25 bg-violet-500/10 px-2.5 py-1 font-mono text-xs text-violet-300/90">
               {total} titles
             </span>
           </div>
@@ -395,10 +401,12 @@ export function GenreBreakdown() {
       {chartData.length > 0 && (
         <div className="mb-5 space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-[11px] uppercase tracking-[0.16em] text-white/45">Genre DNA</p>
+            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-violet-300/55">
+              <span className="text-violet-400/45 select-none">{"# "}</span>genre_dna
+            </p>
             {activeGenre && (
-              <p className="text-[11px] text-white/50 tabular-nums">
-                <span className="font-medium text-white/70">{activeGenre.name}</span> —{" "}
+              <p className="font-mono text-[11px] text-white/50 tabular-nums">
+                <span className="font-medium text-violet-300/80">{activeGenre.name}</span> —{" "}
                 {((activeGenre.value / total) * 100).toFixed(1)}%
               </p>
             )}
@@ -427,7 +435,7 @@ export function GenreBreakdown() {
             <PieChart>
               <defs>
                 <linearGradient id={`${gradientId}-ring`}>
-                  <stop offset="0%" stopColor="#a855f7" />
+                  <stop offset="0%" stopColor="#8b5cf6" />
                   <stop offset="100%" stopColor="#22d3ee" />
                 </linearGradient>
               </defs>
@@ -513,24 +521,28 @@ export function GenreBreakdown() {
         <div className="w-full lg:w-7/12 space-y-3">
           {/* Quick insights row */}
           <div className="grid grid-cols-2 gap-2">
-            <div className="rounded-xl border border-white/8 bg-white/3 p-2.5">
-              <p className="text-[11px] uppercase tracking-[0.12em] text-white/45">Top Genre</p>
-              <p className="mt-1 text-sm font-semibold text-white truncate">
+            <div className="rounded-sm border border-[#16162a] bg-[#0a0a14] p-2.5">
+              <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+                <span className="text-violet-400/45 select-none">{"# "}</span>top_genre
+              </p>
+              <p className="mt-1 font-mono text-sm font-semibold text-white truncate">
                 {leadingGenre?.name ?? "—"}
               </p>
               {leadingGenre && total > 0 && (
-                <p className="mt-0.5 text-[11px] tabular-nums text-white/40">
+                <p className="mt-0.5 font-mono text-[11px] tabular-nums text-white/40">
                   {((leadingGenre.value / total) * 100).toFixed(0)}% of library
                 </p>
               )}
             </div>
-            <div className="rounded-xl border border-white/8 bg-white/3 p-2.5">
+            <div className="rounded-sm border border-[#16162a] bg-[#0a0a14] p-2.5">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.12em] text-white/45">Diversity</p>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+                    <span className="text-violet-400/45 select-none">{"# "}</span>diversity
+                  </p>
                   <div className="mt-1 flex items-center gap-1.5">
-                    <p className="text-sm font-semibold text-white">{diversityScore}%</p>
-                    <Sparkles className="h-3 w-3 text-purple-400" />
+                    <p className="font-mono text-sm font-semibold text-white">{diversityScore}%</p>
+                    <Sparkles className="h-3 w-3 text-violet-400/70" />
                   </div>
                 </div>
                 <div className="relative h-8 w-8 shrink-0">
@@ -556,7 +568,7 @@ export function GenreBreakdown() {
                   </svg>
                 </div>
               </div>
-              <p className="mt-0.5 text-[11px] text-white/35">{diversityLabel}</p>
+              <p className="mt-0.5 font-mono text-[11px] text-white/35">{diversityLabel}</p>
             </div>
           </div>
 
@@ -568,21 +580,21 @@ export function GenreBreakdown() {
               return (
                 <div
                   key={item.name}
-                  className={`group flex items-center gap-2.5 p-2 rounded-xl border transition-all duration-200 cursor-default ${
+                  className={`group flex items-center gap-2.5 p-2 rounded-sm border transition-all duration-200 cursor-default ${
                     isActive
-                      ? "bg-white/6 border-white/15 shadow-sm shadow-white/4"
-                      : "bg-white/2 border-white/6 hover:bg-white/4"
+                      ? "bg-violet-500/10 border-violet-500/30"
+                      : "bg-[#0a0a14] border-[#16162a] hover:border-violet-500/20 hover:bg-[#0d0d1a]"
                   }`}
                   onMouseEnter={() => setActiveIndex(index)}
                 >
                   <div
-                    className={`h-3 w-3 rounded-md shrink-0 transition-transform duration-200 ${isActive ? "scale-125" : ""}`}
+                    className={`h-3 w-3 rounded-sm shrink-0 transition-transform duration-200 ${isActive ? "scale-125" : ""}`}
                     style={{
                       backgroundColor: COLORS[index % COLORS.length],
                     }}
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="text-[13px] font-medium text-white truncate leading-tight">
+                    <p className="font-mono text-[13px] font-medium text-white truncate leading-tight">
                       {item.name}
                     </p>
                     <div className="flex items-center gap-1.5 mt-0.5">
@@ -595,12 +607,12 @@ export function GenreBreakdown() {
                           }}
                         />
                       </div>
-                      <span className="text-[11px] text-white/50 tabular-nums shrink-0">
+                      <span className="font-mono text-[11px] text-white/50 tabular-nums shrink-0">
                         {percentage}%
                       </span>
                     </div>
                   </div>
-                  <span className="rounded-md bg-white/5 px-1.5 py-0.5 text-xs font-medium text-white/70 tabular-nums shrink-0">
+                  <span className="rounded-sm border border-[#16162a] bg-[#06060d] px-1.5 py-0.5 font-mono text-xs text-white/70 tabular-nums shrink-0">
                     {item.value}
                   </span>
                 </div>

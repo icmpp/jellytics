@@ -51,16 +51,18 @@ function StatCard({
   sub?: string;
 }) {
   return (
-    <div className="group rounded-xl border border-white/8 bg-white/3 p-3 transition-colors duration-200 hover:border-white/12 hover:bg-white/5">
+    <div className="group rounded-sm border border-[#16162a] bg-[#0a0a14] p-3 transition-colors duration-200 hover:border-violet-500/25 hover:bg-[#0d0d1a]">
       <div className="mb-1.5 flex items-center gap-1.5">
         {icon}
-        <p className="text-[11px] uppercase tracking-[0.12em] text-white/40">{label}</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55 truncate">
+          {label}
+        </p>
       </div>
-      <p className="tabular-nums text-lg font-bold text-white">
+      <p className="font-mono tabular-nums text-lg font-bold text-white">
         {value}
         <span className="text-sm font-normal text-white/45">{unit}</span>
       </p>
-      {sub && <p className="mt-0.5 text-[10px] text-white/30">{sub}</p>}
+      {sub && <p className="mt-0.5 font-mono text-[10px] text-white/30">{sub}</p>}
     </div>
   );
 }
@@ -79,10 +81,10 @@ function ChartTooltip({
   const point = payload[0].payload;
 
   return (
-    <div className="rounded-xl border border-white/10 bg-[rgba(16,16,24,0.96)] px-4 py-3 shadow-xl shadow-black/50 backdrop-blur-sm">
-      <p className="mb-2 text-xs font-medium text-white/55">{point.fullDate}</p>
+    <div className="rounded-sm border border-[#16162a] bg-[rgba(7,7,13,0.96)] px-4 py-3 font-mono shadow-xl shadow-black/50 backdrop-blur-sm">
+      <p className="mb-2 text-xs text-violet-300/70">{point.fullDate}</p>
       <div className="flex items-baseline gap-2">
-        <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-purple-400" />
+        <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-violet-400" />
         <span className="tabular-nums text-sm font-semibold text-white">
           {point.watchTime.toFixed(1)}h
         </span>
@@ -194,28 +196,28 @@ export function WatchTimeChartContent() {
     <>
       {/* Controls row */}
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <div className="flex rounded-full border border-white/10 bg-white/5 p-0.5">
+        <div className="inline-flex items-stretch overflow-hidden rounded-sm border border-[#16162a] bg-[#06060d]">
           {RANGE_OPTIONS.map((option) => (
             <button
               key={option.value}
               type="button"
               onClick={() => setDays(option.value)}
-              className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
+              className={`border-r border-[#16162a] px-2.5 py-1 text-xs font-mono transition-colors last:border-r-0 ${
                 days === option.value
-                  ? "bg-purple-500/30 text-purple-100 shadow-sm shadow-purple-500/20"
-                  : "text-white/50 hover:text-white/80"
+                  ? "bg-violet-500/10 text-violet-300"
+                  : "text-white/40 hover:text-white/70"
               }`}
             >
               {option.label}
             </button>
           ))}
         </div>
-        <span className="rounded-full border border-purple-400/20 bg-purple-500/10 px-2.5 py-1 text-xs tabular-nums text-purple-200">
+        <span className="rounded-sm border border-violet-500/25 bg-violet-500/10 px-2.5 py-1 font-mono text-xs tabular-nums text-violet-300/90">
           {totalHours.toFixed(1)}h total
         </span>
         {weekTrend && (
           <span
-            className={`flex items-center gap-1 rounded-full border px-2 py-1 text-xs tabular-nums ${
+            className={`flex items-center gap-1 rounded-sm border px-2 py-1 font-mono text-xs tabular-nums ${
               weekTrend.up
                 ? "border-emerald-400/20 bg-emerald-500/10 text-emerald-300"
                 : "border-red-400/20 bg-red-500/10 text-red-300"
@@ -234,27 +236,27 @@ export function WatchTimeChartContent() {
 
       <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
         <StatCard
-          icon={<Clock className="h-3.5 w-3.5 text-purple-400" />}
-          label="Daily Avg"
+          icon={<Clock className="h-3.5 w-3.5 text-violet-400/70" />}
+          label="daily_avg"
           value={avgHours.toFixed(1)}
           unit="h"
         />
         <StatCard
           icon={<Zap className="h-3.5 w-3.5 text-amber-400" />}
-          label="Peak Day"
+          label="peak_day"
           value={peakDay.hours.toFixed(1)}
           unit="h"
           sub={peakDay.date || undefined}
         />
         <StatCard
           icon={<Flame className="h-3.5 w-3.5 text-orange-400" />}
-          label="Streak"
+          label="streak"
           value={`${streak}`}
           unit=" days"
         />
         <StatCard
           icon={<Calendar className="h-3.5 w-3.5 text-cyan-400" />}
-          label="Consistency"
+          label="consistency"
           value={`${consistencyPct}`}
           unit="%"
           sub={`${activeDays}/${chartData.length} active days`}
@@ -264,13 +266,13 @@ export function WatchTimeChartContent() {
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {avgHours > 0 && (
-            <div className="flex items-center gap-1.5 text-[11px] text-white/35">
-              <span className="inline-block w-3 border-t border-dashed border-purple-300/40" />
+            <div className="flex items-center gap-1.5 font-mono text-[11px] text-white/35">
+              <span className="inline-block w-3 border-t border-dashed border-violet-300/40" />
               avg
             </div>
           )}
           {showPeakRef && (
-            <div className="flex items-center gap-1.5 text-[11px] text-white/35">
+            <div className="flex items-center gap-1.5 font-mono text-[11px] text-white/35">
               <span className="inline-block w-3 border-t border-dashed border-amber-400/40" />
               peak
             </div>
@@ -279,10 +281,10 @@ export function WatchTimeChartContent() {
         <button
           type="button"
           onClick={() => setShowRollingAvg((prev) => !prev)}
-          className={`rounded-full border px-2.5 py-1 text-xs transition-all duration-200 ${
+          className={`rounded-sm border px-2.5 py-1 font-mono text-xs transition-colors ${
             showRollingAvg
               ? "border-cyan-400/25 bg-cyan-400/10 text-cyan-200"
-              : "border-white/10 bg-white/5 text-white/50 hover:text-white/80"
+              : "border-[#16162a] bg-[#0a0a14] text-white/50 hover:text-white/80"
           }`}
         >
           7-day smoothing
@@ -297,14 +299,14 @@ export function WatchTimeChartContent() {
           >
             <defs>
               <linearGradient id={lineGradientId} x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#a855f7" />
-                <stop offset="50%" stopColor="#c084fc" />
-                <stop offset="100%" stopColor="#a855f7" />
+                <stop offset="0%" stopColor="#8b5cf6" />
+                <stop offset="50%" stopColor="#a78bfa" />
+                <stop offset="100%" stopColor="#8b5cf6" />
               </linearGradient>
               <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="rgba(168,85,247,0.28)" />
-                <stop offset="60%" stopColor="rgba(168,85,247,0.06)" />
-                <stop offset="100%" stopColor="rgba(168,85,247,0)" />
+                <stop offset="0%" stopColor="rgba(139,92,246,0.28)" />
+                <stop offset="60%" stopColor="rgba(139,92,246,0.06)" />
+                <stop offset="100%" stopColor="rgba(139,92,246,0)" />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
@@ -365,7 +367,7 @@ export function WatchTimeChartContent() {
               strokeWidth={2.5}
               strokeLinecap="round"
               dot={false}
-              activeDot={{ r: 5, fill: "#a855f7", stroke: "rgba(168,85,247,0.25)", strokeWidth: 8 }}
+              activeDot={{ r: 5, fill: "#8b5cf6", stroke: "rgba(139,92,246,0.25)", strokeWidth: 8 }}
               legendType="none"
               animationDuration={900}
               animationEasing="ease-out"
@@ -391,7 +393,7 @@ export function WatchTimeChartContent() {
               <Brush
                 dataKey="date"
                 height={18}
-                stroke="rgba(168,85,247,0.30)"
+                stroke="rgba(139,92,246,0.30)"
                 travellerWidth={7}
                 fill="rgba(255,255,255,0.02)"
                 tickFormatter={() => ""}
@@ -484,26 +486,26 @@ export function WatchTimeChart() {
   return (
     <ChartCard
       title="Watch Time Trend"
-      icon={<TrendingUp className="h-5 w-5 text-purple-400" />}
+      icon={<TrendingUp className="h-5 w-5" />}
       isLoading={isLoading}
       minHeight="min-h-[350px]"
       isEmpty={chartData.length === 0}
-      emptyMessage="No trend data yet"
-      emptyDescription="Watch some content to see your daily watch time trend"
+      emptyMessage="no_trend_data_yet"
+      emptyDescription="watch some content to see your daily watch time trend"
       emptyIcon={<TrendingUp className="h-10 w-10" />}
       className="h-full"
       titleExtra={
         <div className="flex items-center gap-2">
-          <div className="flex rounded-full border border-white/10 bg-white/5 p-0.5">
+          <div className="inline-flex items-stretch overflow-hidden rounded-sm border border-[#16162a] bg-[#06060d]">
             {RANGE_OPTIONS.map((option) => (
               <button
                 key={option.value}
                 type="button"
                 onClick={() => setDays(option.value)}
-                className={`rounded-full px-2.5 py-1 text-xs font-medium transition-all duration-200 ${
+                className={`border-r border-[#16162a] px-2.5 py-1 text-xs font-mono transition-colors last:border-r-0 ${
                   days === option.value
-                    ? "bg-purple-500/30 text-purple-100 shadow-sm shadow-purple-500/20"
-                    : "text-white/50 hover:text-white/80"
+                    ? "bg-violet-500/10 text-violet-300"
+                    : "text-white/40 hover:text-white/70"
                 }`}
               >
                 {option.label}
@@ -511,13 +513,13 @@ export function WatchTimeChart() {
             ))}
           </div>
           {!isLoading && chartData.length > 0 && (
-            <span className="hidden rounded-full border border-purple-400/20 bg-purple-500/10 px-2.5 py-1 text-xs tabular-nums text-purple-200 sm:inline-flex">
+            <span className="hidden rounded-sm border border-violet-500/25 bg-violet-500/10 px-2.5 py-1 font-mono text-xs tabular-nums text-violet-300/90 sm:inline-flex">
               {totalHours.toFixed(1)}h total
             </span>
           )}
           {weekTrend && (
             <span
-              className={`hidden items-center gap-1 rounded-full border px-2 py-1 text-xs tabular-nums sm:inline-flex ${
+              className={`hidden items-center gap-1 rounded-sm border px-2 py-1 font-mono text-xs tabular-nums sm:inline-flex ${
                 weekTrend.up
                   ? "border-emerald-400/20 bg-emerald-500/10 text-emerald-300"
                   : "border-red-400/20 bg-red-500/10 text-red-300"
@@ -537,27 +539,27 @@ export function WatchTimeChart() {
     >
       <div className="mb-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
         <StatCard
-          icon={<Clock className="h-3.5 w-3.5 text-purple-400" />}
-          label="Daily Avg"
+          icon={<Clock className="h-3.5 w-3.5 text-violet-400/70" />}
+          label="daily_avg"
           value={avgHours.toFixed(1)}
           unit="h"
         />
         <StatCard
           icon={<Zap className="h-3.5 w-3.5 text-amber-400" />}
-          label="Peak Day"
+          label="peak_day"
           value={peakDay.hours.toFixed(1)}
           unit="h"
           sub={peakDay.date || undefined}
         />
         <StatCard
           icon={<Flame className="h-3.5 w-3.5 text-orange-400" />}
-          label="Streak"
+          label="streak"
           value={`${streak}`}
           unit=" days"
         />
         <StatCard
           icon={<Calendar className="h-3.5 w-3.5 text-cyan-400" />}
-          label="Consistency"
+          label="consistency"
           value={`${consistencyPct}`}
           unit="%"
           sub={`${activeDays}/${chartData.length} active days`}
@@ -567,13 +569,13 @@ export function WatchTimeChart() {
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-3">
           {avgHours > 0 && (
-            <div className="flex items-center gap-1.5 text-[11px] text-white/35">
-              <span className="inline-block w-3 border-t border-dashed border-purple-300/40" />
+            <div className="flex items-center gap-1.5 font-mono text-[11px] text-white/35">
+              <span className="inline-block w-3 border-t border-dashed border-violet-300/40" />
               avg
             </div>
           )}
           {showPeakRef && (
-            <div className="flex items-center gap-1.5 text-[11px] text-white/35">
+            <div className="flex items-center gap-1.5 font-mono text-[11px] text-white/35">
               <span className="inline-block w-3 border-t border-dashed border-amber-400/40" />
               peak
             </div>
@@ -582,10 +584,10 @@ export function WatchTimeChart() {
         <button
           type="button"
           onClick={() => setShowRollingAvg((prev) => !prev)}
-          className={`rounded-full border px-2.5 py-1 text-xs transition-all duration-200 ${
+          className={`rounded-sm border px-2.5 py-1 font-mono text-xs transition-colors ${
             showRollingAvg
               ? "border-cyan-400/25 bg-cyan-400/10 text-cyan-200"
-              : "border-white/10 bg-white/5 text-white/50 hover:text-white/80"
+              : "border-[#16162a] bg-[#0a0a14] text-white/50 hover:text-white/80"
           }`}
         >
           7-day smoothing
@@ -605,14 +607,14 @@ export function WatchTimeChart() {
           >
             <defs>
               <linearGradient id={lineGradientId} x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="#a855f7" />
-                <stop offset="50%" stopColor="#c084fc" />
-                <stop offset="100%" stopColor="#a855f7" />
+                <stop offset="0%" stopColor="#8b5cf6" />
+                <stop offset="50%" stopColor="#a78bfa" />
+                <stop offset="100%" stopColor="#8b5cf6" />
               </linearGradient>
               <linearGradient id={areaGradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="rgba(168,85,247,0.28)" />
-                <stop offset="60%" stopColor="rgba(168,85,247,0.06)" />
-                <stop offset="100%" stopColor="rgba(168,85,247,0)" />
+                <stop offset="0%" stopColor="rgba(139,92,246,0.28)" />
+                <stop offset="60%" stopColor="rgba(139,92,246,0.06)" />
+                <stop offset="100%" stopColor="rgba(139,92,246,0)" />
               </linearGradient>
             </defs>
 
@@ -682,8 +684,8 @@ export function WatchTimeChart() {
               dot={false}
               activeDot={{
                 r: 5,
-                fill: "#a855f7",
-                stroke: "rgba(168,85,247,0.25)",
+                fill: "#8b5cf6",
+                stroke: "rgba(139,92,246,0.25)",
                 strokeWidth: 8,
               }}
               legendType="none"
@@ -711,7 +713,7 @@ export function WatchTimeChart() {
               <Brush
                 dataKey="date"
                 height={18}
-                stroke="rgba(168,85,247,0.30)"
+                stroke="rgba(139,92,246,0.30)"
                 travellerWidth={7}
                 fill="rgba(255,255,255,0.02)"
                 tickFormatter={() => ""}

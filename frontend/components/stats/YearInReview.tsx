@@ -12,7 +12,6 @@ import { useYearInReview, type YearInReview as YearInReviewType } from "@/hooks/
 import { formatRuntime } from "@/lib/utils";
 import { format } from "date-fns";
 import { Calendar, Film, Tv, Trophy, Clock, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { exportYearInReviewToPDF } from "@/lib/export";
 import { ChartCard } from "@/components/ui/chart-card";
 
@@ -26,37 +25,39 @@ export function YearInReview() {
   return (
     <ChartCard
       title="Year in Review"
-      icon={<Calendar className="h-5 w-5 text-purple-400" />}
+      icon={<Calendar className="h-5 w-5" />}
       isLoading={isLoading && !data}
       minHeight="min-h-[200px]"
       isEmpty={!data}
-      emptyMessage={`No data for ${year}`}
-      emptyDescription="Try selecting a different year"
+      emptyMessage={`no_data_for_${year}`}
+      emptyDescription="try selecting a different year"
       emptyIcon={<Calendar className="h-10 w-10" />}
       titleExtra={
         <div className="flex items-center gap-2">
           <Select value={year.toString()} onValueChange={(v) => setYear(parseInt(v, 10))}>
-            <SelectTrigger size="sm" className="w-[100px] text-xs">
+            <SelectTrigger
+              size="sm"
+              className="w-[100px] rounded-sm border-[#16162a] bg-[#0a0a14] font-mono text-xs"
+            >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="rounded-sm border-[#16162a] bg-[#07070d] font-mono">
               {YEAR_OPTIONS.map((y) => (
-                <SelectItem key={y} value={y.toString()}>
+                <SelectItem key={y} value={y.toString()} className="rounded-sm text-xs">
                   {y}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
           {data && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs"
+            <button
+              type="button"
               onClick={() => exportYearInReviewToPDF(data, `year-in-review-${year}`)}
+              className="inline-flex items-center gap-1.5 rounded-sm border border-[#16162a] bg-[#0a0a14] px-2.5 py-1.5 font-mono text-xs text-white/70 transition-colors hover:bg-[#0d0d1a] hover:text-violet-300"
             >
               <Download className="h-3.5 w-3.5" />
-              PDF
-            </Button>
+              pdf
+            </button>
           )}
         </div>
       }
@@ -79,25 +80,25 @@ function YearInReviewContent({ data }: { data: YearInReviewType }) {
     <div className="space-y-5">
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         <StatCard
-          label="Watch Time"
+          label="watch_time"
           value={formatRuntime(data.total_watch_minutes) ?? "0m"}
-          icon={<Clock className="h-3.5 w-3.5 text-purple-400" />}
+          icon={<Clock className="h-3.5 w-3.5 text-violet-400/70" />}
         />
         <StatCard
-          label="Episodes"
+          label="episodes"
           value={data.episodes_watched.toString()}
-          icon={<Tv className="h-3.5 w-3.5 text-blue-400" />}
+          icon={<Tv className="h-3.5 w-3.5 text-blue-400/70" />}
         />
         <StatCard
-          label="Movies"
+          label="movies"
           value={data.movies_watched.toString()}
-          icon={<Film className="h-3.5 w-3.5 text-cyan-400" />}
+          icon={<Film className="h-3.5 w-3.5 text-cyan-400/70" />}
         />
         {topGenresList.length > 0 && (
           <StatCard
-            label="Top Genre"
+            label="top_genre"
             value={topGenresList[0][0]}
-            icon={<Trophy className="h-3.5 w-3.5 text-amber-400" />}
+            icon={<Trophy className="h-3.5 w-3.5 text-amber-400/70" />}
           />
         )}
       </div>
@@ -105,15 +106,15 @@ function YearInReviewContent({ data }: { data: YearInReviewType }) {
       <div className="grid sm:grid-cols-2 gap-5">
         {data.top_movies && data.top_movies.length > 0 && (
           <div>
-            <p className="text-[11px] uppercase tracking-[0.12em] text-white/40 mb-2.5 flex items-center gap-1.5">
-              <Film className="h-3.5 w-3.5 text-purple-400" />
-              Top Movies
+            <p className="mb-2.5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+              <Film className="h-3.5 w-3.5 text-violet-400/70" />
+              <span className="text-violet-400/45 select-none">{"# "}</span>top_movies
             </p>
             <div className="space-y-1">
               {data.top_movies.map((m, i) => (
                 <div
                   key={m.id}
-                  className="flex items-center justify-between text-sm py-2 px-3 rounded-xl bg-white/3 border border-white/6 hover:bg-white/5 transition-colors"
+                  className="flex items-center justify-between rounded-sm border border-[#16162a] bg-[#0a0a14] px-3 py-2 font-mono text-sm transition-colors hover:border-violet-500/25 hover:bg-[#0d0d1a]"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="text-xs font-bold text-white/30 w-5 text-center tabular-nums shrink-0">
@@ -131,15 +132,15 @@ function YearInReviewContent({ data }: { data: YearInReviewType }) {
         )}
         {data.top_shows && data.top_shows.length > 0 && (
           <div>
-            <p className="text-[11px] uppercase tracking-[0.12em] text-white/40 mb-2.5 flex items-center gap-1.5">
-              <Tv className="h-3.5 w-3.5 text-purple-400" />
-              Top Shows
+            <p className="mb-2.5 flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+              <Tv className="h-3.5 w-3.5 text-violet-400/70" />
+              <span className="text-violet-400/45 select-none">{"# "}</span>top_shows
             </p>
             <div className="space-y-1">
               {data.top_shows.map((s, i) => (
                 <div
                   key={s.id}
-                  className="flex items-center justify-between text-sm py-2 px-3 rounded-xl bg-white/3 border border-white/6 hover:bg-white/5 transition-colors"
+                  className="flex items-center justify-between rounded-sm border border-[#16162a] bg-[#0a0a14] px-3 py-2 font-mono text-sm transition-colors hover:border-violet-500/25 hover:bg-[#0d0d1a]"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="text-xs font-bold text-white/30 w-5 text-center tabular-nums shrink-0">
@@ -159,21 +160,21 @@ function YearInReviewContent({ data }: { data: YearInReviewType }) {
 
       {data.month_by_month && data.month_by_month.length > 0 && (
         <div>
-          <p className="text-[11px] uppercase tracking-[0.12em] text-white/40 mb-2.5">
-            Month by Month
+          <p className="mb-2.5 font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+            <span className="text-violet-400/45 select-none">{"# "}</span>month_by_month
           </p>
-          <div className="overflow-x-auto rounded-xl border border-white/6">
-            <table className="w-full text-sm">
+          <div className="overflow-x-auto rounded-sm border border-[#16162a]">
+            <table className="w-full font-mono text-sm">
               <thead>
-                <tr className="bg-white/3">
-                  <th className="text-left py-2.5 px-3 text-[11px] uppercase tracking-wider text-white/40 font-medium">
-                    Month
+                <tr className="bg-[#0a0a14]">
+                  <th className="px-3 py-2.5 text-left text-[10px] uppercase tracking-wider text-violet-300/55 font-medium">
+                    month
                   </th>
-                  <th className="text-right py-2.5 px-3 text-[11px] uppercase tracking-wider text-white/40 font-medium">
-                    Watch Time
+                  <th className="px-3 py-2.5 text-right text-[10px] uppercase tracking-wider text-violet-300/55 font-medium">
+                    watch_time
                   </th>
-                  <th className="text-right py-2.5 px-3 text-[11px] uppercase tracking-wider text-white/40 font-medium">
-                    Episodes
+                  <th className="px-3 py-2.5 text-right text-[10px] uppercase tracking-wider text-violet-300/55 font-medium">
+                    episodes
                   </th>
                 </tr>
               </thead>
@@ -181,15 +182,15 @@ function YearInReviewContent({ data }: { data: YearInReviewType }) {
                 {data.month_by_month.map((row) => (
                   <tr
                     key={row.month}
-                    className="border-t border-white/5 hover:bg-white/3 transition-colors"
+                    className="border-t border-[#16162a] transition-colors hover:bg-[#0d0d1a]"
                   >
-                    <td className="py-2.5 px-3 text-white/70">
+                    <td className="px-3 py-2.5 text-white/70">
                       {format(new Date(row.month + "-01"), "MMMM yyyy")}
                     </td>
-                    <td className="text-right py-2.5 px-3 text-white/55 tabular-nums">
+                    <td className="px-3 py-2.5 text-right text-white/55 tabular-nums">
                       {formatRuntime(row.total_watch_minutes) ?? "0m"}
                     </td>
-                    <td className="text-right py-2.5 px-3 text-white/55 tabular-nums">
+                    <td className="px-3 py-2.5 text-right text-white/55 tabular-nums">
                       {row.episodes_watched}
                     </td>
                   </tr>
@@ -205,12 +206,14 @@ function YearInReviewContent({ data }: { data: YearInReviewType }) {
 
 function StatCard({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="group rounded-xl border border-white/8 bg-white/3 p-3 transition-colors duration-200 hover:border-white/12 hover:bg-white/5">
+    <div className="group rounded-sm border border-[#16162a] bg-[#0a0a14] p-3 transition-colors duration-200 hover:border-violet-500/25 hover:bg-[#0d0d1a]">
       <div className="mb-1.5 flex items-center gap-1.5">
         {icon}
-        <p className="text-[11px] uppercase tracking-[0.12em] text-white/40">{label}</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55 truncate">
+          {label}
+        </p>
       </div>
-      <p className="text-lg font-bold text-white tabular-nums truncate">{value}</p>
+      <p className="font-mono text-lg font-bold text-white tabular-nums truncate">{value}</p>
     </div>
   );
 }

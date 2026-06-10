@@ -181,16 +181,18 @@ export function parseGenres(genre?: string | null): string[] {
 
 export const RECHARTS_TOOLTIP_STYLE = {
   contentStyle: {
-    backgroundColor: "rgba(20, 20, 30, 0.95)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    borderRadius: "12px",
-    boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
-    padding: "12px 16px",
+    backgroundColor: "rgba(7, 7, 13, 0.96)",
+    border: "1px solid #16162a",
+    borderRadius: "2px",
+    boxShadow: "0 4px 24px rgba(0,0,0,0.5)",
+    padding: "10px 14px",
+    fontFamily:
+      "var(--font-mono, ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace)",
   },
   labelStyle: {
-    color: "rgba(255,255,255,0.7)",
-    fontSize: "12px",
+    color: "rgba(196,181,253,0.7)",
+    fontSize: "11px",
     marginBottom: "4px",
   },
-  itemStyle: { color: "rgba(255,255,255,0.9)", fontSize: "13px" },
+  itemStyle: { color: "rgba(255,255,255,0.9)", fontSize: "12px" },
 } as const;
