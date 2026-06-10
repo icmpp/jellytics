@@ -1,9 +1,15 @@
 "use client";
 
 import { HelpCircle, Server, CheckCircle2, XCircle, Loader2, AlertCircle } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import {
+  SettingsCardHeader,
+  FieldLabel,
+  SettingsDivider,
+  INPUT_CLASS,
+  TerminalButton,
+} from "./SettingsPrimitives";
 
 export type ServerStatus = "idle" | "checking" | "valid" | "invalid";
 
@@ -42,11 +48,11 @@ function getStatusIcon(status: ServerStatus) {
 function getStatusText(status: ServerStatus) {
   switch (status) {
     case "checking":
-      return "Checking server...";
+      return "pinging server...";
     case "valid":
-      return "Server found!";
+      return "server reachable";
     case "invalid":
-      return "Could not reach server";
+      return "no response — check url";
     default:
       return "";
   }
@@ -71,45 +77,44 @@ export function JellyfinServerCard({
   onTest,
 }: Props) {
   return (
-    <Card className="relative overflow-hidden">
-      <div className="pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full blur-3xl opacity-15 bg-purple-500" />
-      <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <Server className="h-5 w-5 text-purple-400" />
-          Jellyfin Server
-        </CardTitle>
-        <CardDescription>
-          Configure your server address and verify credentials before saving
-        </CardDescription>
-      </CardHeader>
+    <Card>
+      <SettingsCardHeader
+        icon={<Server className="h-5 w-5" />}
+        title="jellyfin_server"
+        description="Configure your server address and verify credentials before saving"
+      />
       <CardContent className="space-y-6">
         {/* Server address */}
         <form id="server-url-form" onSubmit={onSave} className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-              Server Address
-            </span>
+            <FieldLabel>server_address</FieldLabel>
             <button
               type="button"
               onClick={() => setShowHelp(!showHelp)}
-              className="flex items-center gap-1.5 text-xs font-medium text-white/40 hover:text-white/70 transition-colors px-2 py-1 rounded-lg hover:bg-white/5"
+              className={`flex items-center gap-1.5 rounded-sm border px-2 py-1 font-mono text-xs transition-colors ${
+                showHelp
+                  ? "border-violet-500/30 bg-violet-500/10 text-violet-300"
+                  : "border-transparent text-white/40 hover:bg-[#0d0d1a] hover:text-white/70"
+              }`}
               aria-label="Toggle help"
+              aria-expanded={showHelp}
             >
               <HelpCircle className="h-3.5 w-3.5" />
-              Help
+              --help
             </button>
           </div>
 
           {showHelp && (
-            <div className="p-3.5 rounded-xl bg-white/3 border border-white/8 space-y-2.5">
-              <p className="text-xs font-medium text-white/60">
-                Enter the full URL including http:// or https://
+            <div className="space-y-2.5 rounded-sm border border-[#16162a] bg-[#0a0a14] p-3.5">
+              <p className="font-mono text-xs text-white/60">
+                <span className="select-none text-violet-400/45">{"# "}</span>
+                enter the full URL including http:// or https://
               </p>
               <div className="flex flex-wrap gap-2">
-                <code className="text-xs bg-white/5 border border-white/8 px-2.5 py-1 rounded-lg text-purple-300">
+                <code className="rounded-sm border border-[#16162a] bg-[#06060d] px-2.5 py-1 font-mono text-xs text-violet-300/80">
                   https://jellyfin.example.com
                 </code>
-                <code className="text-xs bg-white/5 border border-white/8 px-2.5 py-1 rounded-lg text-purple-300">
+                <code className="rounded-sm border border-[#16162a] bg-[#06060d] px-2.5 py-1 font-mono text-xs text-violet-300/80">
                   http://192.168.1.100:8096
                 </code>
               </div>
@@ -128,7 +133,7 @@ export function JellyfinServerCard({
                 value={serverURL}
                 onChange={(e) => onURLChange(e.target.value)}
                 required
-                className={`pl-11 transition-colors ${
+                className={`pl-11 ${INPUT_CLASS} ${
                   serverStatus === "valid"
                     ? "border-emerald-500/30 focus:border-emerald-500/50 focus:ring-emerald-500/20"
                     : serverStatus === "invalid"
@@ -141,7 +146,7 @@ export function JellyfinServerCard({
             {serverStatus !== "idle" && (
               <p
                 id="server_url_status"
-                className={`text-xs font-medium transition-colors ${
+                className={`font-mono text-xs transition-colors ${
                   serverStatus === "valid"
                     ? "text-emerald-400"
                     : serverStatus === "invalid"
@@ -155,22 +160,13 @@ export function JellyfinServerCard({
           </div>
         </form>
 
-        {/* Divider */}
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-white/6" />
-          <span className="text-[10px] font-medium text-white/25 uppercase tracking-widest">
-            Verify Credentials
-          </span>
-          <div className="flex-1 h-px bg-white/6" />
-        </div>
+        <SettingsDivider label="verify_credentials" />
 
         {/* Credentials + actions */}
         <form onSubmit={onTest} className="space-y-4">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                Username
-              </span>
+              <FieldLabel>username</FieldLabel>
               <Input
                 id="test_username"
                 type="text"
@@ -178,12 +174,11 @@ export function JellyfinServerCard({
                 value={testUsername}
                 onChange={(e) => setTestUsername(e.target.value)}
                 required
+                className={INPUT_CLASS}
               />
             </div>
             <div className="space-y-2">
-              <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                Password
-              </span>
+              <FieldLabel>password</FieldLabel>
               <Input
                 id="test_password"
                 type="password"
@@ -191,16 +186,17 @@ export function JellyfinServerCard({
                 value={testPassword}
                 onChange={(e) => setTestPassword(e.target.value)}
                 required
+                className={INPUT_CLASS}
               />
             </div>
           </div>
 
           {testResult && (
             <div
-              className={`flex items-start gap-3 p-3.5 rounded-xl border text-sm ${
+              className={`flex items-start gap-3 rounded-sm border p-3.5 font-mono text-sm ${
                 testResult.success
-                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-400"
-                  : "bg-red-500/10 border-red-500/20 text-red-400"
+                  ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                  : "border-red-500/20 bg-red-500/10 text-red-400"
               }`}
               role="alert"
               aria-live="polite"
@@ -210,44 +206,44 @@ export function JellyfinServerCard({
               ) : (
                 <XCircle className="h-4 w-4 shrink-0 mt-0.5" />
               )}
-              <p className="font-medium">{testResult.message}</p>
+              <p>{testResult.message}</p>
             </div>
           )}
 
           {error && (
             <div
-              className="flex items-start gap-3 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
+              className="flex items-start gap-3 rounded-sm border border-red-500/20 bg-red-500/10 p-3.5 font-mono text-sm text-red-400"
               role="alert"
               aria-live="polite"
             >
               <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
-              <p className="font-medium">{error}</p>
+              <p>{error}</p>
             </div>
           )}
 
           {serverSettingsSuccess && (
             <div
-              className="flex items-start gap-3 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm"
+              className="flex items-start gap-3 rounded-sm border border-emerald-500/20 bg-emerald-500/10 p-3.5 font-mono text-sm text-emerald-400"
               role="alert"
               aria-live="polite"
             >
               <CheckCircle2 className="h-4 w-4 shrink-0 mt-0.5" />
-              <p className="font-medium">{serverSettingsSuccess}</p>
+              <p>{serverSettingsSuccess}</p>
             </div>
           )}
 
           <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
-            <Button type="submit" variant="outline" disabled={testing || !serverURL}>
+            <TerminalButton type="submit" variant="idle" disabled={testing || !serverURL}>
               {testing ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Testing...
+                  <Loader2 className="animate-spin" />
+                  testing...
                 </>
               ) : (
-                "Test Connection"
+                "test_connection"
               )}
-            </Button>
-            <Button
+            </TerminalButton>
+            <TerminalButton
               type="submit"
               form="server-url-form"
               className="flex-1"
@@ -255,13 +251,13 @@ export function JellyfinServerCard({
             >
               {loading ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
+                  <Loader2 className="animate-spin" />
+                  saving...
                 </>
               ) : (
-                "Save Settings"
+                "save_settings"
               )}
-            </Button>
+            </TerminalButton>
           </div>
         </form>
       </CardContent>

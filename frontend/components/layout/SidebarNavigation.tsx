@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { useSidebar } from "./SidebarContext";
 import { JellyticsLogo } from "./JellyticsLogo";
 import { SidebarTooltip } from "./SidebarTooltip";
+import { useBackendHealth } from "@/hooks/useBackendHealth";
 
 interface NavItem {
   href: string;
@@ -62,6 +63,7 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
   const { isCollapsed, setIsCollapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
   const isMac = useSyncExternalStore(subscribe, isMacSnapshot, () => false);
+  const backendOnline = useBackendHealth();
 
   const searchHint = isMac ? "⌘K" : "Ctrl K";
 
@@ -351,10 +353,24 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
                     <span className="text-sm text-violet-200/80 truncate">{user.username}</span>
                     <span className="ml-auto flex items-center gap-1.5">
                       <span className="relative flex h-2 w-2">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400/50" />
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-400/80" />
+                        {backendOnline && (
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400/50" />
+                        )}
+                        <span
+                          className={cn(
+                            "relative inline-flex h-2 w-2 rounded-full",
+                            backendOnline ? "bg-green-400/80" : "bg-red-500/80",
+                          )}
+                        />
                       </span>
-                      <span className="text-xs text-green-400/70 font-mono">online</span>
+                      <span
+                        className={cn(
+                          "font-mono text-xs",
+                          backendOnline ? "text-green-400/70" : "text-red-400/80",
+                        )}
+                      >
+                        {backendOnline ? "online" : "offline"}
+                      </span>
                     </span>
                   </div>
                 </div>

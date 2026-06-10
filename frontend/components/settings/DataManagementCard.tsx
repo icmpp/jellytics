@@ -1,9 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import { Database, Download, Trash2 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { ConfirmPopover } from "@/components/ui/confirm-popover";
 import { toast } from "@/hooks/useToast";
+import { SettingsCardHeader, TerminalButton } from "./SettingsPrimitives";
 import type { SyncStatus, UserPrefs } from "./types";
 
 interface Props {
@@ -15,6 +17,8 @@ interface Props {
 }
 
 export function DataManagementCard({ prefs, serverURL, syncStatus, ratings, reviews }: Props) {
+  const [confirmClearOpen, setConfirmClearOpen] = useState(false);
+
   const handleExport = async () => {
     try {
       const data = {
@@ -46,55 +50,65 @@ export function DataManagementCard({ prefs, serverURL, syncStatus, ratings, revi
   };
 
   const handleClearCache = () => {
-    if (
-      confirm("Are you sure you want to clear the sync cache? This will require a full resync.")
-    ) {
-      toast.success({
-        title: "Cache cleared",
-        description: "Sync cache has been cleared. Next sync will be a full resync.",
-      });
-    }
+    setConfirmClearOpen(false);
+    toast.success({
+      title: "Cache cleared",
+      description: "Sync cache has been cleared. Next sync will be a full resync.",
+    });
   };
 
   return (
-    <Card className="relative overflow-hidden">
-      <div className="pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full blur-3xl opacity-15 bg-purple-500" />
-      <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <Database className="h-5 w-5 text-purple-400" />
-          Data Management
-        </CardTitle>
-        <CardDescription>Export and manage your data</CardDescription>
-      </CardHeader>
+    <Card>
+      <SettingsCardHeader
+        icon={<Database className="h-5 w-5" />}
+        title="data_management"
+        description="Export and manage your data"
+      />
       <CardContent>
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="p-4 rounded-xl border border-white/8 space-y-3">
+          <div className="space-y-3 rounded-sm border border-[#16162a] bg-[#0a0a14] p-4">
             <div className="flex items-center gap-2">
-              <Download className="h-4 w-4 text-purple-400" />
-              <span className="text-sm font-medium text-white">Export Your Data</span>
+              <Download className="h-4 w-4 text-violet-400/70" />
+              <span className="font-mono text-sm font-medium text-white">export_your_data</span>
             </div>
-            <p className="text-xs text-white/50">
+            <p className="font-mono text-xs text-white/50">
               Download viewing stats, ratings, and preferences as JSON
             </p>
-            <Button variant="outline" size="sm" onClick={handleExport}>
-              Export JSON
-            </Button>
+            <TerminalButton variant="idle" onClick={handleExport} className="h-9">
+              export_json
+            </TerminalButton>
           </div>
 
-          <div className="p-4 rounded-xl border border-red-500/20 bg-red-500/[0.03] space-y-3">
+          <div className="space-y-3 rounded-sm border border-red-500/20 bg-red-500/4 p-4">
             <div className="flex items-center gap-2">
               <Trash2 className="h-4 w-4 text-red-400" />
-              <span className="text-sm font-medium text-red-400">Clear Sync Cache</span>
+              <span className="font-mono text-sm font-medium text-red-400">clear_sync_cache</span>
             </div>
-            <p className="text-xs text-white/50">Triggers a full resync on the next sync cycle</p>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleClearCache}
-              className="border-red-500/30 text-red-400 hover:bg-red-500/10"
+            <p className="font-mono text-xs text-white/50">
+              Triggers a full resync on the next sync cycle
+            </p>
+            <ConfirmPopover
+              open={confirmClearOpen}
+              onOpenChange={setConfirmClearOpen}
+              theme="terminal"
+              variant="destructive"
+              align="start"
+              side="top"
+              title="clear sync cache?"
+              description={
+                <>
+                  this forces a <span className="text-red-300">full resync</span> on the next sync
+                  cycle.
+                </>
+              }
+              confirmLabel="clear cache"
+              confirmIcon={Trash2}
+              onConfirm={handleClearCache}
             >
-              Clear Cache
-            </Button>
+              <TerminalButton variant="danger" className="h-9">
+                clear_cache
+              </TerminalButton>
+            </ConfirmPopover>
           </div>
         </div>
       </CardContent>

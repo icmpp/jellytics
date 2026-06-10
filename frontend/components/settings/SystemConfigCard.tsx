@@ -1,10 +1,16 @@
 "use client";
 
 import { Zap, Shield, Loader2 } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { SettingsCheckbox } from "./SettingsCheckbox";
+import {
+  SettingsCardHeader,
+  FieldLabel,
+  SettingsDivider,
+  INPUT_CLASS,
+  TerminalButton,
+} from "./SettingsPrimitives";
 
 export interface SyncConfig {
   sync_interval_seconds: number;
@@ -36,15 +42,15 @@ interface Props {
 }
 
 const SECURITY_LABELS: Record<string, string> = {
-  rate_limit_requests_per_minute: "Rate Limit",
-  rate_limit_burst_size: "Burst Size",
-  jwt_access_expiry_minutes: "Access Token",
-  jwt_refresh_expiry_hours: "Refresh Token",
+  rate_limit_requests_per_minute: "rate_limit",
+  rate_limit_burst_size: "burst_size",
+  jwt_access_expiry_minutes: "access_token",
+  jwt_refresh_expiry_hours: "refresh_token",
 };
 
 const SYSTEM_LABELS: Record<string, string> = {
-  log_level: "Log Level",
-  maintenance_mode: "Maintenance",
+  log_level: "log_level",
+  maintenance_mode: "maintenance",
 };
 
 function toLabel(key: string, labels: Record<string, string>): string {
@@ -85,28 +91,21 @@ export function SystemConfigCard({
   onSave,
 }: Props) {
   return (
-    <Card className="relative overflow-hidden">
-      <div className="pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full blur-3xl opacity-15 bg-purple-500" />
-      <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <Zap className="h-5 w-5 text-purple-400" />
-          System Configuration
-        </CardTitle>
-        <CardDescription>
-          Backend sync and system settings that affect the entire application
-        </CardDescription>
-      </CardHeader>
+    <Card>
+      <SettingsCardHeader
+        icon={<Zap className="h-5 w-5" />}
+        title="system_configuration"
+        description="Backend sync and system settings that affect the entire application"
+      />
       <CardContent className="space-y-6">
         {loadingSystemSettings ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
+            <Loader2 className="h-5 w-5 animate-spin text-violet-400" />
           </div>
         ) : (
           <div className="space-y-6">
             <div className="space-y-4">
-              <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                Sync Configuration
-              </span>
+              <FieldLabel>sync_configuration</FieldLabel>
 
               <SettingsCheckbox
                 checked={syncConfig.sync_enabled}
@@ -117,9 +116,7 @@ export function SystemConfigCard({
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                    Sync Interval
-                  </span>
+                  <FieldLabel>sync_interval</FieldLabel>
                   <div className="flex items-center gap-3">
                     <Input
                       type="number"
@@ -133,20 +130,19 @@ export function SystemConfigCard({
                           sync_interval_seconds: parseInt(e.target.value) || 60,
                         })
                       }
-                      className="w-32"
+                      className={`w-32 ${INPUT_CLASS}`}
                       disabled={!syncConfig.sync_enabled}
                     />
-                    <span className="text-sm text-white/40">seconds</span>
+                    <span className="font-mono text-sm text-white/40">seconds</span>
                   </div>
-                  <p className="text-xs text-white/30">
-                    10–3600s. Lower = more frequent but higher load.
+                  <p className="font-mono text-xs text-white/30">
+                    <span className="select-none text-violet-400/40">{"# "}</span>10–3600s. lower =
+                    more frequent but higher load.
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                    Worker Pool Size
-                  </span>
+                  <FieldLabel>worker_pool_size</FieldLabel>
                   <div className="flex items-center gap-3">
                     <Input
                       type="number"
@@ -159,13 +155,14 @@ export function SystemConfigCard({
                           worker_pool_size: parseInt(e.target.value) || 5,
                         })
                       }
-                      className="w-32"
+                      className={`w-32 ${INPUT_CLASS}`}
                       disabled={!syncConfig.sync_enabled}
                     />
-                    <span className="text-sm text-white/40">workers</span>
+                    <span className="font-mono text-sm text-white/40">workers</span>
                   </div>
-                  <p className="text-xs text-white/30">
-                    1–20 concurrent workers for large libraries.
+                  <p className="font-mono text-xs text-white/30">
+                    <span className="select-none text-violet-400/40">{"# "}</span>1–20 concurrent
+                    workers for large libraries.
                   </p>
                 </div>
               </div>
@@ -173,13 +170,7 @@ export function SystemConfigCard({
 
             {systemSettings?.settings && (
               <>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1 h-px bg-white/6" />
-                  <span className="text-[10px] font-medium text-white/25 uppercase tracking-widest">
-                    System Information
-                  </span>
-                  <div className="flex-1 h-px bg-white/6" />
-                </div>
+                <SettingsDivider label="system_information" />
 
                 <div className="space-y-4">
                   {systemSettings.settings.security &&
@@ -187,20 +178,16 @@ export function SystemConfigCard({
                       <div className="space-y-3">
                         <div className="flex items-center gap-1.5">
                           <Shield className="h-3.5 w-3.5 text-emerald-400/70" />
-                          <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                            Security
-                          </span>
+                          <FieldLabel>security</FieldLabel>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                           {systemSettings.settings.security.map((s) => (
                             <div
                               key={s.key}
-                              className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1.5"
+                              className="space-y-1.5 rounded-sm border border-[#16162a] bg-[#0a0a14] p-3"
                             >
-                              <div className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                                {toLabel(s.key, SECURITY_LABELS)}
-                              </div>
-                              <div className="text-sm font-semibold text-white/90">
+                              <FieldLabel>{toLabel(s.key, SECURITY_LABELS)}</FieldLabel>
+                              <div className="font-mono text-sm font-semibold text-white/90">
                                 {formatSecurityValue(s)}
                               </div>
                             </div>
@@ -213,20 +200,18 @@ export function SystemConfigCard({
                     <div className="space-y-3">
                       <div className="flex items-center gap-1.5">
                         <Zap className="h-3.5 w-3.5 text-amber-400/70" />
-                        <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                          System
-                        </span>
+                        <FieldLabel>system</FieldLabel>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                         {systemSettings.settings.system.map((s) => (
                           <div
                             key={s.key}
-                            className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1.5"
+                            className="space-y-1.5 rounded-sm border border-[#16162a] bg-[#0a0a14] p-3"
                           >
-                            <div className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                              {toLabel(s.key, SYSTEM_LABELS)}
-                            </div>
-                            <div className={`text-sm font-semibold ${systemValueColor(s)}`}>
+                            <FieldLabel>{toLabel(s.key, SYSTEM_LABELS)}</FieldLabel>
+                            <div
+                              className={`font-mono text-sm font-semibold ${systemValueColor(s)}`}
+                            >
                               {typeof s.value === "boolean"
                                 ? s.value
                                   ? "Enabled"
@@ -242,16 +227,16 @@ export function SystemConfigCard({
               </>
             )}
 
-            <Button onClick={onSave} disabled={savingSystemSettings} className="w-full">
+            <TerminalButton onClick={onSave} disabled={savingSystemSettings} className="w-full">
               {savingSystemSettings ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Saving...
+                  <Loader2 className="animate-spin" />
+                  saving...
                 </>
               ) : (
-                "Save System Settings"
+                "save_system_settings"
               )}
-            </Button>
+            </TerminalButton>
           </div>
         )}
       </CardContent>

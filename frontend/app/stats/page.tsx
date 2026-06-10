@@ -4,14 +4,7 @@ import { useState, useMemo } from "react";
 import { useStatsOverview } from "@/hooks/useStats";
 import { toast } from "@/hooks/useToast";
 import { AppLayout, PageHeader, PageContent } from "@/components/layout";
-import {
-  Download,
-  FileText,
-  FileSpreadsheet,
-  BarChart3,
-  FileJson,
-  ChevronDown,
-} from "lucide-react";
+import { Download, FileText, FileSpreadsheet, FileJson, ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { exportStatsToExcel, exportStatsToPDF } from "@/lib/export";
 import { useRatingsList } from "@/hooks/useRatings";
@@ -180,8 +173,7 @@ export default function StatsPage() {
       <PageHeader
         breadcrumb={breadcrumbItems}
         title="Statistics"
-        description="Detailed analytics and insights"
-        icon={<BarChart3 className="h-6 w-6 sm:h-7 sm:w-7 shrink-0" />}
+        description="detailed analytics and insights"
         actions={
           <Popover open={exportOpen} onOpenChange={setExportOpen}>
             <PopoverTrigger asChild>
