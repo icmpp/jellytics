@@ -3,23 +3,7 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import {
-  LayoutDashboard,
-  Tv,
-  Film,
-  BarChart3,
-  Settings,
-  LogOut,
-  History,
-  Bookmark,
-  Archive,
-  ChevronLeft,
-  ChevronRight,
-  Menu,
-  X,
-  Search,
-  FolderPlus,
-} from "lucide-react";
+import { LogOut, ChevronLeft, ChevronRight, Menu, X, Search } from "lucide-react";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
@@ -29,13 +13,7 @@ import { useSidebar } from "./SidebarContext";
 import { JellyticsLogo } from "./JellyticsLogo";
 import { SidebarTooltip } from "./SidebarTooltip";
 import { useBackendHealth } from "@/hooks/useBackendHealth";
-
-interface NavItem {
-  href: string;
-  label: string;
-  icon: React.ComponentType<{ className?: string }>;
-  idx: string;
-}
+import { NAV_ITEMS, isRouteActive } from "./nav-items";
 
 interface SidebarNavigationProps {
   onSearchClick?: () => void;
@@ -43,18 +21,6 @@ interface SidebarNavigationProps {
 
 const subscribe = () => () => {};
 const isMacSnapshot = () => /mac|iphone|ipad|ipod/i.test(navigator.platform);
-
-const navItems: NavItem[] = [
-  { href: "/dashboard", label: "dashboard", icon: LayoutDashboard, idx: "01" },
-  { href: "/shows", label: "shows", icon: Tv, idx: "02" },
-  { href: "/movies", label: "movies", icon: Film, idx: "03" },
-  { href: "/watchlist", label: "watchlist", icon: Bookmark, idx: "04" },
-  { href: "/collections", label: "collections", icon: FolderPlus, idx: "05" },
-  { href: "/history", label: "history", icon: History, idx: "06" },
-  { href: "/archive", label: "archive", icon: Archive, idx: "07" },
-  { href: "/stats", label: "statistics", icon: BarChart3, idx: "08" },
-  { href: "/settings", label: "settings", icon: Settings, idx: "09" },
-];
 
 export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
   const pathname = usePathname();
@@ -78,11 +44,7 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
     router.push("/login");
   };
 
-  const activeItem = navItems.find(
-    (item) =>
-      pathname === item.href ||
-      (item.href !== "/dashboard" && pathname?.startsWith(item.href + "/")),
-  );
+  const activeItem = NAV_ITEMS.find((item) => isRouteActive(pathname, item.href));
 
   return (
     <>
@@ -98,7 +60,7 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
       >
         {/* Terminal window chrome */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 shrink-0">
+          <div aria-hidden className="flex items-center gap-1.5 shrink-0">
             <div className="w-2.5 h-2.5 rounded-full bg-[#ef4444]/70" />
             <div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]/70" />
             <div className="w-2.5 h-2.5 rounded-full bg-[#22c55e]/70" />
@@ -221,13 +183,11 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
           )}
 
           {/* Nav */}
-          <nav className="flex-1 overflow-y-auto py-1 px-1.5">
+          <nav aria-label="primary" className="flex-1 overflow-y-auto py-1 px-1.5">
             <div className="space-y-px">
-              {navItems.map((item) => {
+              {NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
-                const isActive =
-                  pathname === item.href ||
-                  (item.href !== "/dashboard" && pathname?.startsWith(item.href + "/"));
+                const isActive = isRouteActive(pathname, item.href);
 
                 return (
                   <SidebarTooltip
@@ -236,7 +196,11 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
                     hint={item.idx}
                     enabled={isCollapsed}
                   >
-                    <Link href={item.href} onClick={() => setMobileOpen(false)}>
+                    <Link
+                      href={item.href}
+                      aria-current={isActive ? "page" : undefined}
+                      onClick={() => setMobileOpen(false)}
+                    >
                       <div
                         className={cn(
                           "group flex items-center gap-2 text-sm font-mono relative rounded-sm",
@@ -274,6 +238,7 @@ export function SidebarNavigation({ onSearchClick }: SidebarNavigationProps) {
                         {/* Prompt / dot indicator */}
                         {!isCollapsed && (
                           <span
+                            aria-hidden
                             className={cn(
                               "relative z-10 shrink-0 w-3 text-center text-xs select-none transition-colors",
                               isActive

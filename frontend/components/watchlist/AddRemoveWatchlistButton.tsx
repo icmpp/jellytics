@@ -38,7 +38,7 @@ export function AddRemoveWatchlistButton({
         showConfirmation={showConfirmation}
       >
         <BookmarkCheck
-          className={iconOnly ? "size-6 text-purple-400" : "h-4 w-4 text-purple-400"}
+          className={iconOnly ? "size-6 text-violet-300" : "h-4 w-4 text-violet-300"}
         />
         {!iconOnly && "In Watchlist"}
       </RemoveFromWatchlistButton>

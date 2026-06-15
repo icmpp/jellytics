@@ -86,7 +86,7 @@ export function AddToCollectionButton({
               className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-white/10 cursor-pointer"
             >
               {c.hasItem ? (
-                <Check className="h-4 w-4 text-purple-400 shrink-0" />
+                <Check className="h-4 w-4 text-violet-300 shrink-0" />
               ) : (
                 <span className="w-4 shrink-0" />
               )}
@@ -104,7 +104,7 @@ export function AddToCollectionButton({
               e.preventDefault();
               handleCreateCollection();
             }}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-purple-400 hover:bg-white/10 cursor-pointer"
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-violet-300 hover:bg-white/10 cursor-pointer"
           >
             <FolderPlus className="h-4 w-4" />
             Create new collection

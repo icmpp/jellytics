@@ -89,19 +89,19 @@ function DashboardHeaderActions() {
         href="https://github.com/icmpp/jellytics"
         target="_blank"
         rel="noopener noreferrer"
-        className="p-1.5 rounded-md border border-transparent text-white/30 hover:text-violet-400 hover:border-[#1e1e32] hover:bg-violet-500/5 transition-all"
+        className="p-2 rounded-md border border-[#1e1e32] bg-violet-500/5 text-white/40 hover:text-violet-400 hover:border-violet-500/35 hover:bg-violet-500/10 transition-all"
         title="GitHub"
       >
-        <GithubIcon className="h-4 w-4" />
+        <GithubIcon className="h-[18px] w-[18px]" />
       </a>
       <a
         href="https://hub.docker.com/r/icmppp/jellytics"
         target="_blank"
         rel="noopener noreferrer"
-        className="p-1.5 rounded-md border border-transparent text-white/30 hover:text-violet-400 hover:border-[#1e1e32] hover:bg-violet-500/5 transition-all"
+        className="p-2 rounded-md border border-[#1e1e32] bg-violet-500/5 text-white/40 hover:text-violet-400 hover:border-violet-500/35 hover:bg-violet-500/10 transition-all"
         title="Docker Hub"
       >
-        <DockerIcon className="h-4 w-4" />
+        <DockerIcon className="h-[18px] w-[18px]" />
       </a>
     </div>
   );

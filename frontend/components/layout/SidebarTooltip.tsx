@@ -18,29 +18,46 @@ interface SidebarTooltipProps {
   hint?: string;
   /** When false, the tooltip is disabled and children render as-is (e.g. expanded sidebar). */
   enabled?: boolean;
+  /** Where the tooltip appears relative to the trigger. Default "right" (collapsed sidebar). */
+  placement?: "right" | "bottom";
   children: ReactNode;
 }
 
 /**
  * Terminal-styled tooltip that renders in a portal with fixed positioning so it
  * escapes the sidebar's `overflow-hidden` (needed for the scanline overlay).
- * Appears to the right of the trigger — used in the collapsed sidebar.
+ * `placement="right"` (default) is used by the collapsed sidebar; `placement="bottom"`
+ * suits a horizontal toolbar (e.g. the detail-page action buttons).
  */
-export function SidebarTooltip({ label, hint, enabled = true, children }: SidebarTooltipProps) {
+export function SidebarTooltip({
+  label,
+  hint,
+  enabled = true,
+  placement = "right",
+  children,
+}: SidebarTooltipProps) {
   const triggerRef = useRef<HTMLDivElement>(null);
   const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
   const mounted = useIsClient();
+  const isBottom = placement === "bottom";
 
   const show = () => {
     const el = triggerRef.current;
     if (!el) return;
     const rect = el.getBoundingClientRect();
-    setCoords({ top: rect.top + rect.height / 2, left: rect.right + 12 });
+    setCoords(
+      isBottom
+        ? { top: rect.bottom + 10, left: rect.left + rect.width / 2 }
+        : { top: rect.top + rect.height / 2, left: rect.right + 12 },
+    );
   };
 
   const hide = () => setCoords(null);
 
   if (!enabled) return <>{children}</>;
+
+  const offscreen = isBottom ? { opacity: 0, y: -6 } : { opacity: 0, x: -6 };
+  const onscreen = isBottom ? { opacity: 1, y: 0 } : { opacity: 1, x: 0 };
 
   return (
     <div
@@ -56,12 +73,15 @@ export function SidebarTooltip({ label, hint, enabled = true, children }: Sideba
           <AnimatePresence>
             {coords && (
               <motion.div
-                initial={{ opacity: 0, x: -6 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -6 }}
+                initial={offscreen}
+                animate={onscreen}
+                exit={offscreen}
                 transition={{ duration: 0.12, ease: "easeOut" }}
                 role="tooltip"
-                className="fixed z-100 pointer-events-none -translate-y-1/2 font-mono"
+                className={
+                  "fixed z-100 pointer-events-none font-mono " +
+                  (isBottom ? "-translate-x-1/2" : "-translate-y-1/2")
+                }
                 style={{ top: coords.top, left: coords.left }}
               >
                 <div
@@ -71,15 +91,26 @@ export function SidebarTooltip({ label, hint, enabled = true, children }: Sideba
                     border: "1px solid rgba(139,92,246,0.3)",
                   }}
                 >
-                  {/* Notch pointing left toward the trigger */}
-                  <span
-                    className="absolute right-full top-1/2 -translate-y-1/2 -mr-px h-2 w-2 rotate-45"
-                    style={{
-                      background: "#0d0d1a",
-                      borderLeft: "1px solid rgba(139,92,246,0.3)",
-                      borderBottom: "1px solid rgba(139,92,246,0.3)",
-                    }}
-                  />
+                  {/* Notch pointing toward the trigger */}
+                  {isBottom ? (
+                    <span
+                      className="absolute bottom-full left-1/2 -translate-x-1/2 -mb-px h-2 w-2 rotate-45"
+                      style={{
+                        background: "#0d0d1a",
+                        borderLeft: "1px solid rgba(139,92,246,0.3)",
+                        borderTop: "1px solid rgba(139,92,246,0.3)",
+                      }}
+                    />
+                  ) : (
+                    <span
+                      className="absolute right-full top-1/2 -translate-y-1/2 -mr-px h-2 w-2 rotate-45"
+                      style={{
+                        background: "#0d0d1a",
+                        borderLeft: "1px solid rgba(139,92,246,0.3)",
+                        borderBottom: "1px solid rgba(139,92,246,0.3)",
+                      }}
+                    />
+                  )}
                   <span className="text-violet-400/70 text-xs select-none">&gt;</span>
                   <span className="text-xs text-white/85 whitespace-nowrap">{label}</span>
                   {hint && (

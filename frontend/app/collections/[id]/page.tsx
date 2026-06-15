@@ -291,16 +291,18 @@ function CollectionItemCard({
     <Link
       href={href}
       aria-label={`View details for ${item.title || "Untitled"}`}
-      className="block min-w-0 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="block min-w-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
-      {/* card-border gives the animated gradient border on hover */}
+      {/* terminal border lights up violet on hover */}
       <div
         className={cn(
-          "card-border group relative rounded-2xl p-[2px]",
+          "group relative rounded-sm border border-[#16162a] bg-[#07070d] p-px",
+          "transition-colors duration-300 hover:border-violet-500/40",
           "shadow-[0_4px_16px_-4px_rgba(0,0,0,0.5),0_1px_4px_-1px_rgba(0,0,0,0.35)]",
+          "hover:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.6),0_0_0_1px_rgba(139,92,246,0.25)]",
         )}
       >
-        <div className="relative isolate aspect-2/3 w-full cursor-pointer overflow-hidden rounded-[calc(1rem-2px)] bg-zinc-950">
+        <div className="relative isolate aspect-2/3 w-full cursor-pointer overflow-hidden rounded-[2px] bg-zinc-950">
           {/* Poster */}
           <PosterImage
             src={posterSrc}
@@ -379,8 +381,8 @@ function CollectionItemCard({
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1 px-3 pb-3 pt-10">
             <h3
               className={cn(
-                "line-clamp-2 text-[0.8125rem] font-semibold leading-snug tracking-tight text-white",
-                "transition-colors duration-200 group-hover:text-primary/90",
+                "line-clamp-2 font-mono text-[0.8125rem] font-semibold leading-snug tracking-tight text-white",
+                "transition-colors duration-200 group-hover:text-violet-300",
               )}
             >
               {item.title || "Untitled"}
