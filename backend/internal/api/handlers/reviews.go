@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"jellytics/backend/internal/api/middleware"
+	"jellytics/backend/internal/database"
 	"jellytics/backend/internal/errors"
 	"jellytics/backend/internal/models"
 	"jellytics/backend/internal/repository"
@@ -107,51 +108,39 @@ func (h *ReviewsHandler) SetReview(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var existingID int
-	var err error
-	err = h.db.QueryRowContext(r.Context(),
-		`SELECT id FROM reviews WHERE user_id = ? AND item_type = ? AND item_id = ?`,
-		userID, req.ItemType, req.ItemID).Scan(&existingID)
-
+	// Atomic upsert: UPDATE first, INSERT only if no existing row. Both run in a
+	// single transaction so concurrent SetReview calls cannot race.
 	var review models.Review
-	isUpdate := err == nil
-
-	if isUpdate {
-		_, err = h.db.ExecContext(r.Context(),
+	var isUpdate bool
+	err := database.WithTx(r.Context(), h.db, func(tx *sql.Tx) error {
+		res, err := tx.ExecContext(r.Context(),
 			`UPDATE reviews SET review_text = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
-			 WHERE id = ?`,
-			req.ReviewText, req.Notes, existingID)
+			 WHERE user_id = ? AND item_type = ? AND item_id = ?`,
+			req.ReviewText, req.Notes, userID, req.ItemType, req.ItemID)
 		if err != nil {
-			handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to update review"))
-			return
+			return errors.Wrap(err, errors.CodeDatabaseError, "Failed to update review")
 		}
 
-		err = h.db.QueryRowContext(r.Context(),
-			`SELECT id, user_id, item_type, item_id, review_text, notes, created_at, updated_at
-			 FROM reviews WHERE id = ?`,
-			existingID).Scan(
-			&review.ID, &review.UserID, &review.ItemType, &review.ItemID,
-			&review.ReviewText, &review.Notes, &review.CreatedAt, &review.UpdatedAt)
-	} else {
-		_, err = h.db.ExecContext(r.Context(),
-			`INSERT INTO reviews (user_id, item_type, item_id, review_text, notes, created_at, updated_at)
-			 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-			userID, req.ItemType, req.ItemID, req.ReviewText, req.Notes)
-		if err != nil {
-			handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to save review"))
-			return
+		if n, _ := res.RowsAffected(); n > 0 {
+			isUpdate = true
+		} else {
+			if _, err := tx.ExecContext(r.Context(),
+				`INSERT INTO reviews (user_id, item_type, item_id, review_text, notes, created_at, updated_at)
+				 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+				userID, req.ItemType, req.ItemID, req.ReviewText, req.Notes); err != nil {
+				return errors.Wrap(err, errors.CodeDatabaseError, "Failed to save review")
+			}
 		}
 
-		err = h.db.QueryRowContext(r.Context(),
+		return tx.QueryRowContext(r.Context(),
 			`SELECT id, user_id, item_type, item_id, review_text, notes, created_at, updated_at
 			 FROM reviews WHERE user_id = ? AND item_type = ? AND item_id = ?`,
 			userID, req.ItemType, req.ItemID).Scan(
 			&review.ID, &review.UserID, &review.ItemType, &review.ItemID,
 			&review.ReviewText, &review.Notes, &review.CreatedAt, &review.UpdatedAt)
-	}
-
+	})
 	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to get saved review"))
+		handleError(w, r, err)
 		return
 	}
 

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"jellytics/backend/internal/api/middleware"
+	"jellytics/backend/internal/database"
 	"jellytics/backend/internal/errors"
 	"jellytics/backend/internal/models"
 	"jellytics/backend/internal/repository"
@@ -492,29 +493,30 @@ func (h *ShowsHandler) DeleteShow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.db.QueryRowContext(r.Context(),
-		`SELECT id FROM shows WHERE id = ? AND user_id = ? AND deleted_at IS NULL`,
-		id, userID).Scan(new(int))
-	if err == sql.ErrNoRows {
-		handleError(w, r, errors.New(errors.CodeShowNotFound, "Show not found"))
-		return
-	}
-	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to get show"))
-		return
-	}
-
+	// Soft-delete the show and remove it from the watchlist atomically: if the
+	// show no longer exists (or is already archived) nothing is committed, so the
+	// watchlist row is never orphaned by a half-applied delete.
 	now := time.Now()
-	_, _ = h.db.ExecContext(r.Context(), `DELETE FROM watchlist WHERE user_id = ? AND item_type = 'show' AND item_id = ?`, userID, id)
-	result, err := h.db.ExecContext(r.Context(),
-		`UPDATE shows SET deleted_at = ?, updated_at = ? WHERE id = ? AND user_id = ?`,
-		now, now, id, userID)
+	err = database.WithTx(r.Context(), h.db, func(tx *sql.Tx) error {
+		result, err := tx.ExecContext(r.Context(),
+			`UPDATE shows SET deleted_at = ?, updated_at = ? WHERE id = ? AND user_id = ? AND deleted_at IS NULL`,
+			now, now, id, userID)
+		if err != nil {
+			return errors.Wrap(err, errors.CodeDatabaseError, "Failed to remove show")
+		}
+		if rows, _ := result.RowsAffected(); rows == 0 {
+			return errors.New(errors.CodeShowNotFound, "Show not found")
+		}
+
+		if _, err := tx.ExecContext(r.Context(),
+			`DELETE FROM watchlist WHERE user_id = ? AND item_type = 'show' AND item_id = ?`,
+			userID, id); err != nil {
+			return errors.Wrap(err, errors.CodeDatabaseError, "Failed to remove show from watchlist")
+		}
+		return nil
+	})
 	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to remove show"))
-		return
-	}
-	if rows, _ := result.RowsAffected(); rows == 0 {
-		handleError(w, r, errors.New(errors.CodeShowNotFound, "Show not found"))
+		handleError(w, r, err)
 		return
 	}
 	w.WriteHeader(http.StatusNoContent)

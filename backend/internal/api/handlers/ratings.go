@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"jellytics/backend/internal/api/middleware"
+	"jellytics/backend/internal/database"
 	"jellytics/backend/internal/errors"
 	"jellytics/backend/internal/models"
 	"jellytics/backend/internal/repository"
@@ -106,51 +107,40 @@ func (h *RatingsHandler) SetRating(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var existingID int
-	var err error
-	err = h.db.QueryRowContext(r.Context(),
-		`SELECT id FROM ratings WHERE user_id = ? AND item_type = ? AND item_id = ?`,
-		userID, req.ItemType, req.ItemID).Scan(&existingID)
-
+	// Atomic upsert: UPDATE first, INSERT only if no existing row. Wrapping both
+	// in a single transaction prevents concurrent SetRating calls from racing
+	// (SQLite serialises writers, so the read-back observes a consistent state).
 	var rating models.Rating
-	isUpdate := err == nil
-
-	if isUpdate {
-		_, err = h.db.ExecContext(r.Context(),
+	var isUpdate bool
+	err := database.WithTx(r.Context(), h.db, func(tx *sql.Tx) error {
+		res, err := tx.ExecContext(r.Context(),
 			`UPDATE ratings SET rating = ?, rated_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
-			 WHERE id = ?`,
-			req.Rating, existingID)
+			 WHERE user_id = ? AND item_type = ? AND item_id = ?`,
+			req.Rating, userID, req.ItemType, req.ItemID)
 		if err != nil {
-			handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to update rating"))
-			return
+			return errors.Wrap(err, errors.CodeDatabaseError, "Failed to update rating")
 		}
 
-		err = h.db.QueryRowContext(r.Context(),
-			`SELECT id, user_id, item_type, item_id, rating, rated_at, created_at, updated_at
-			 FROM ratings WHERE id = ?`,
-			existingID).Scan(
-			&rating.ID, &rating.UserID, &rating.ItemType, &rating.ItemID,
-			&rating.Rating, &rating.RatedAt, &rating.CreatedAt, &rating.UpdatedAt)
-	} else {
-		_, err = h.db.ExecContext(r.Context(),
-			`INSERT INTO ratings (user_id, item_type, item_id, rating, rated_at, created_at, updated_at)
-			 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-			userID, req.ItemType, req.ItemID, req.Rating)
-		if err != nil {
-			handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to save rating"))
-			return
+		if n, _ := res.RowsAffected(); n > 0 {
+			isUpdate = true
+		} else {
+			if _, err := tx.ExecContext(r.Context(),
+				`INSERT INTO ratings (user_id, item_type, item_id, rating, rated_at, created_at, updated_at)
+				 VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+				userID, req.ItemType, req.ItemID, req.Rating); err != nil {
+				return errors.Wrap(err, errors.CodeDatabaseError, "Failed to save rating")
+			}
 		}
 
-		err = h.db.QueryRowContext(r.Context(),
+		return tx.QueryRowContext(r.Context(),
 			`SELECT id, user_id, item_type, item_id, rating, rated_at, created_at, updated_at
 			 FROM ratings WHERE user_id = ? AND item_type = ? AND item_id = ?`,
 			userID, req.ItemType, req.ItemID).Scan(
 			&rating.ID, &rating.UserID, &rating.ItemType, &rating.ItemID,
 			&rating.Rating, &rating.RatedAt, &rating.CreatedAt, &rating.UpdatedAt)
-	}
-
+	})
 	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to get saved rating"))
+		handleError(w, r, err)
 		return
 	}
 

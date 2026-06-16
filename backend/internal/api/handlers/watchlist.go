@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"time"
 
 	"jellytics/backend/internal/api/middleware"
+	"jellytics/backend/internal/database"
 	"jellytics/backend/internal/errors"
 	"jellytics/backend/internal/models"
 
@@ -141,91 +141,61 @@ func (h *WatchlistHandler) AddToWatchlist(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	var existingItem models.WatchlistItem
-	var existingPosterURL sql.NullString
-	err = h.db.QueryRowContext(r.Context(),
-		`SELECT id, user_id, item_type, item_id, title, poster_url, added_at, created_at, updated_at
-		 FROM watchlist
-		 WHERE user_id = ? AND item_type = ? AND item_id = ?`,
-		userID, req.ItemType, req.ItemID).Scan(
-		&existingItem.ID, &existingItem.UserID, &existingItem.ItemType, &existingItem.ItemID,
-		&existingItem.Title, &existingPosterURL, &existingItem.AddedAt,
-		&existingItem.CreatedAt, &existingItem.UpdatedAt)
-
-	if err == nil {
-		if existingPosterURL.Valid {
-			existingItem.PosterURL = existingPosterURL.String
-		}
-		existingItem.JellyfinID = jellyfinID
-		var posterURLStr string
-		if posterURL.Valid {
-			posterURLStr = posterURL.String
-		}
-		_, err = h.db.ExecContext(r.Context(),
-			`UPDATE watchlist SET title = ?, poster_url = ?, updated_at = CURRENT_TIMESTAMP
-			 WHERE id = ?`,
-			title, posterURLStr, existingItem.ID)
-		if err == nil {
-			existingItem.Title = title
-			if posterURL.Valid {
-				existingItem.PosterURL = posterURLStr
-			}
-		}
-
-		w.WriteHeader(http.StatusOK)
-		writeJSON(w, r, existingItem)
-		return
-	}
-
 	var posterURLStr string
 	if posterURL.Valid {
 		posterURLStr = posterURL.String
 	}
 
-	result, err := h.db.ExecContext(r.Context(),
-		`INSERT INTO watchlist (user_id, item_type, item_id, title, poster_url, added_at, updated_at)
-		 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-		userID, req.ItemType, req.ItemID, title, posterURLStr)
+	// Atomic upsert: UPDATE existing row's metadata, or INSERT if absent. Running
+	// both in one transaction prevents concurrent adds from racing the
+	// existence check (the UNIQUE(user_id, item_type, item_id) constraint plus
+	// serialised writers guarantee exactly one row).
+	var item models.WatchlistItem
+	var posterURLResult sql.NullString
+	var isUpdate bool
+	err = database.WithTx(r.Context(), h.db, func(tx *sql.Tx) error {
+		res, err := tx.ExecContext(r.Context(),
+			`UPDATE watchlist SET title = ?, poster_url = ?, updated_at = CURRENT_TIMESTAMP
+			 WHERE user_id = ? AND item_type = ? AND item_id = ?`,
+			title, posterURLStr, userID, req.ItemType, req.ItemID)
+		if err != nil {
+			return errors.Wrap(err, errors.CodeDatabaseError, "Failed to update watchlist")
+		}
 
+		if n, _ := res.RowsAffected(); n > 0 {
+			isUpdate = true
+		} else {
+			if _, err := tx.ExecContext(r.Context(),
+				`INSERT INTO watchlist (user_id, item_type, item_id, title, poster_url, added_at, updated_at)
+				 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+				userID, req.ItemType, req.ItemID, title, posterURLStr); err != nil {
+				return errors.Wrap(err, errors.CodeDatabaseError, "Failed to add to watchlist")
+			}
+		}
+
+		return tx.QueryRowContext(r.Context(),
+			`SELECT id, user_id, item_type, item_id, title, poster_url, added_at, created_at, updated_at
+			 FROM watchlist
+			 WHERE user_id = ? AND item_type = ? AND item_id = ?`,
+			userID, req.ItemType, req.ItemID).Scan(
+			&item.ID, &item.UserID, &item.ItemType, &item.ItemID, &item.Title,
+			&posterURLResult, &item.AddedAt, &item.CreatedAt, &item.UpdatedAt)
+	})
 	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to add to watchlist"))
+		handleError(w, r, err)
 		return
 	}
 
-	var item models.WatchlistItem
-	var posterURLResult sql.NullString
-	itemID, _ := result.LastInsertId()
-	err = h.db.QueryRowContext(r.Context(),
-		`SELECT id, user_id, item_type, item_id, title, poster_url, added_at, created_at, updated_at
-		 FROM watchlist
-		 WHERE id = ?`,
-		itemID).Scan(
-		&item.ID, &item.UserID, &item.ItemType, &item.ItemID, &item.Title,
-		&posterURLResult, &item.AddedAt, &item.CreatedAt, &item.UpdatedAt)
-
-	if err != nil {
-		item = models.WatchlistItem{
-			ID:         int(itemID),
-			UserID:     userID,
-			ItemType:   req.ItemType,
-			ItemID:     req.ItemID,
-			JellyfinID: jellyfinID,
-			Title:      title,
-			AddedAt:    time.Now(),
-			CreatedAt:  time.Now(),
-			UpdatedAt:  time.Now(),
-		}
-		if posterURL.Valid {
-			item.PosterURL = posterURL.String
-		}
-	} else {
-		if posterURLResult.Valid {
-			item.PosterURL = posterURLResult.String
-		}
-		item.JellyfinID = jellyfinID
+	if posterURLResult.Valid {
+		item.PosterURL = posterURLResult.String
 	}
+	item.JellyfinID = jellyfinID
 
-	w.WriteHeader(http.StatusCreated)
+	if isUpdate {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(http.StatusCreated)
+	}
 	writeJSON(w, r, item)
 }
 
