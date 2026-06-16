@@ -24,8 +24,10 @@ type CollectionStore interface {
 	Delete(ctx context.Context, userID, id int) (bool, error)
 	// Owns reports whether the collection exists and belongs to the user.
 	Owns(ctx context.Context, userID, id int) (bool, error)
-	// AddItem adds an item to a collection (no-op if already present).
-	AddItem(ctx context.Context, collectionID int, itemType string, itemID int) error
+	// AddItem adds an item to a collection owned by the user (no-op if already
+	// present). The ownership guard is part of the write, so it cannot touch
+	// another user's collection even if the caller skips a pre-check.
+	AddItem(ctx context.Context, userID, collectionID int, itemType string, itemID int) error
 	// RemoveItem removes an item from a collection owned by the user, returning
 	// whether a row was removed.
 	RemoveItem(ctx context.Context, userID, collectionID int, itemType string, itemID int) (bool, error)
@@ -194,10 +196,11 @@ func (s *SQLCollectionStore) Owns(ctx context.Context, userID, id int) (bool, er
 	return true, nil
 }
 
-func (s *SQLCollectionStore) AddItem(ctx context.Context, collectionID int, itemType string, itemID int) error {
+func (s *SQLCollectionStore) AddItem(ctx context.Context, userID, collectionID int, itemType string, itemID int) error {
 	if _, err := s.db.ExecContext(ctx,
-		"INSERT OR IGNORE INTO collection_items (collection_id, item_type, item_id) VALUES (?, ?, ?)",
-		collectionID, itemType, itemID); err != nil {
+		`INSERT OR IGNORE INTO collection_items (collection_id, item_type, item_id)
+		 SELECT ?, ?, ? WHERE EXISTS (SELECT 1 FROM collections WHERE id = ? AND user_id = ?)`,
+		collectionID, itemType, itemID, collectionID, userID); err != nil {
 		return errors.Wrap(err, errors.CodeDatabaseError, "Failed to add item")
 	}
 	return nil

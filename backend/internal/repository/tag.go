@@ -19,7 +19,9 @@ type TagStore interface {
 	Owns(ctx context.Context, userID, id int) (bool, error)
 	// Name returns the tag's name, or ("", false) if it does not belong to the user.
 	Name(ctx context.Context, userID, id int) (string, bool, error)
-	AddItem(ctx context.Context, tagID int, itemType string, itemID int) error
+	// AddItem attaches a tag owned by the user to a media item. The ownership
+	// guard is part of the write, so it cannot touch another user's tag.
+	AddItem(ctx context.Context, userID, tagID int, itemType string, itemID int) error
 	RemoveItem(ctx context.Context, userID, tagID int, itemType string, itemID int) (bool, error)
 	// Items returns the media carrying a tag (resolved to titles/posters).
 	Items(ctx context.Context, userID, tagID int) ([]models.TaggedItem, error)
@@ -140,10 +142,11 @@ func (s *SQLTagStore) Name(ctx context.Context, userID, id int) (string, bool, e
 	return name, true, nil
 }
 
-func (s *SQLTagStore) AddItem(ctx context.Context, tagID int, itemType string, itemID int) error {
+func (s *SQLTagStore) AddItem(ctx context.Context, userID, tagID int, itemType string, itemID int) error {
 	if _, err := s.db.ExecContext(ctx,
-		"INSERT OR IGNORE INTO media_tags (tag_id, item_type, item_id) VALUES (?, ?, ?)",
-		tagID, itemType, itemID); err != nil {
+		`INSERT OR IGNORE INTO media_tags (tag_id, item_type, item_id)
+		 SELECT ?, ?, ? WHERE EXISTS (SELECT 1 FROM tags WHERE id = ? AND user_id = ?)`,
+		tagID, itemType, itemID, tagID, userID); err != nil {
 		return errors.Wrap(err, errors.CodeDatabaseError, "Failed to add tag to item")
 	}
 	return nil

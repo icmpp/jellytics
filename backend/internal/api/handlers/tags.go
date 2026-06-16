@@ -173,7 +173,7 @@ func (h *TagsHandler) AddItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.store.AddItem(r.Context(), tagID, req.ItemType, req.ItemID); err != nil {
+	if err := h.store.AddItem(r.Context(), userID, tagID, req.ItemType, req.ItemID); err != nil {
 		handleError(w, r, err)
 		return
 	}

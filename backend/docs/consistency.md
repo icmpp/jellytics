@@ -51,9 +51,20 @@ Cascade behaviour is part of the contract:
 - `collections` → cascade-deletes `collection_items`; `tags` → `media_tags`.
 
 Because FKs are enforced, an `INSERT` referencing a parent that was just deleted
-fails cleanly rather than creating an orphan — this is why the ownership-checked
-`INSERT OR IGNORE` flows (collection items, media tags) do not need an explicit
-transaction.
+fails cleanly rather than creating an orphan — this is why the child-table insert
+flows (collection items, media tags) do not need an explicit transaction. Those
+inserts additionally guard ownership *in the write itself*
+(`INSERT … SELECT … WHERE EXISTS (SELECT 1 FROM <parent> WHERE id = ? AND user_id = ?)`),
+so a store method cannot attach to another user's collection/tag even if a caller
+forgets the pre-check.
+
+## Isolation is enforced and tested
+
+Every store read is scoped by `user_id`, and every mutation is scoped by
+`user_id` (or guards parent ownership in the write). A mutation that matches no
+owned row returns "not found" rather than acting on another user's data — so
+"someone else's id" is indistinguishable from "no such id". This is covered by
+the cross-user tests in `internal/repository/isolation_test.go`.
 
 ## 4. `watch_history` de-duplication
 

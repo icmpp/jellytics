@@ -201,7 +201,7 @@ func (h *CollectionsHandler) AddItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.store.AddItem(r.Context(), id, req.ItemType, req.ItemID); err != nil {
+	if err := h.store.AddItem(r.Context(), userID, id, req.ItemType, req.ItemID); err != nil {
 		handleError(w, r, err)
 		return
 	}
