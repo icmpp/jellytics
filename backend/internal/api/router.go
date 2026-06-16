@@ -75,7 +75,12 @@ func NewRouterWithServices(db *sql.DB, cfg *config.Config, syncScheduler *servic
 		systemSettingsService := services.NewSystemSettingsService(db)
 		systemSettingsHandler := handlers.NewSystemSettingsHandler(systemSettingsService, syncScheduler)
 
+		webhookHandler := handlers.NewWebhookHandler(services.NewWebhookService(db, systemSettingsService))
+
 		r.Route("/images", imagesHandler.RegisterRoutes)
+		// Inbound Jellyfin webhooks authenticate via ?token=, not JWT, so they sit
+		// outside the auth group (like images).
+		r.Route("/webhooks", webhookHandler.RegisterIngestRoutes)
 
 		r.Group(func(r chi.Router) {
 			r.Use(apiMiddleware.AuthMiddleware(cfg, db))
@@ -97,6 +102,7 @@ func NewRouterWithServices(db *sql.DB, cfg *config.Config, syncScheduler *servic
 			r.Route("/collections", collectionsHandler.RegisterRoutes)
 			r.Route("/tags", tagsHandler.RegisterRoutes)
 			r.Route("/notifications", notificationsHandler.RegisterRoutes)
+			r.Route("/webhook", webhookHandler.RegisterConfigRoutes)
 		})
 	})
 
