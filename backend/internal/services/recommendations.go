@@ -25,8 +25,8 @@ func NewRecommendationService(store repository.RecommendationStore) *Recommendat
 // Affinity weights. Ratings are the strongest signal (centered so dislikes push
 // a genre down); merely having watched something is a mild positive nudge.
 const (
-	ratingNeutral  = 5.5 // ratings above this add affinity, below subtract
-	watchedWeight  = 0.5 // per watched item per genre
+	ratingNeutral = 5.5 // ratings above this add affinity, below subtract
+	watchedWeight = 0.5 // per watched item per genre
 )
 
 // Recommend returns up to limit scored recommendations for the user.

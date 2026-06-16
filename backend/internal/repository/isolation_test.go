@@ -63,10 +63,10 @@ func insertShow(t *testing.T, db *sql.DB, userID int, jellyfinID, title string) 
 
 // twoUsers seeds users A and B, each owning one movie and one show.
 type fixture struct {
-	db                 *sql.DB
-	userA, userB       int
-	movieA, movieB     int
-	showA, showB       int
+	db             *sql.DB
+	userA, userB   int
+	movieA, movieB int
+	showA, showB   int
 }
 
 func newFixture(t *testing.T) fixture {
