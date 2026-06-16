@@ -7,19 +7,18 @@ import (
 	"strconv"
 
 	"jellytics/backend/internal/api/middleware"
-	"jellytics/backend/internal/database"
 	"jellytics/backend/internal/errors"
-	"jellytics/backend/internal/models"
+	"jellytics/backend/internal/repository"
 
 	"github.com/go-chi/chi/v5"
 )
 
 type WatchlistHandler struct {
-	db *sql.DB
+	store repository.WatchlistStore
 }
 
 func NewWatchlistHandler(db *sql.DB) *WatchlistHandler {
-	return &WatchlistHandler{db: db}
+	return &WatchlistHandler{store: repository.NewSQLWatchlistStore(db)}
 }
 
 type AddWatchlistRequest struct {
@@ -34,60 +33,12 @@ func (h *WatchlistHandler) ListWatchlist(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	itemType := r.URL.Query().Get("item_type") // Optional filter: 'show' or 'movie'
-
-	query := `
-		SELECT w.id, w.user_id, w.item_type, w.item_id, w.title, w.poster_url, w.added_at, w.created_at, w.updated_at,
-			CASE 
-				WHEN w.item_type = 'show' THEN (SELECT jellyfin_id FROM shows WHERE id = w.item_id)
-				WHEN w.item_type = 'movie' THEN (SELECT jellyfin_id FROM movies WHERE id = w.item_id)
-			END as jellyfin_id
-		FROM watchlist w
-		WHERE w.user_id = ?
-	`
-
-	args := []interface{}{userID}
-
-	if itemType != "" {
-		query += " AND w.item_type = ?"
-		args = append(args, itemType)
-	}
-
 	limit, offset := parsePagination(r)
-	query += " ORDER BY w.added_at DESC LIMIT ? OFFSET ?"
-	args = append(args, limit, offset)
-
-	rows, err := h.db.QueryContext(r.Context(), query, args...)
+	items, err := h.store.List(r.Context(), userID, r.URL.Query().Get("item_type"), limit, offset)
 	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to query watchlist"))
+		handleError(w, r, err)
 		return
 	}
-	defer rows.Close()
-
-	var items []models.WatchlistItem
-	for rows.Next() {
-		var item models.WatchlistItem
-		var posterURL sql.NullString
-		var jellyfinID sql.NullString
-
-		err := rows.Scan(
-			&item.ID, &item.UserID, &item.ItemType, &item.ItemID, &item.Title,
-			&posterURL, &item.AddedAt, &item.CreatedAt, &item.UpdatedAt, &jellyfinID,
-		)
-		if err != nil {
-			continue
-		}
-
-		if posterURL.Valid {
-			item.PosterURL = posterURL.String
-		}
-		if jellyfinID.Valid {
-			item.JellyfinID = jellyfinID.String
-		}
-
-		items = append(items, item)
-	}
-
 	writeJSON(w, r, map[string]interface{}{
 		"items": items,
 		"total": len(items),
@@ -106,95 +57,25 @@ func (h *WatchlistHandler) AddToWatchlist(w http.ResponseWriter, r *http.Request
 		handleError(w, r, errors.New(errors.CodeValidationError, "Invalid request body"))
 		return
 	}
-
 	if req.ItemType != "show" && req.ItemType != "movie" {
 		handleError(w, r, errors.New(errors.CodeValidationError, "item_type must be 'show' or 'movie'"))
 		return
 	}
-
 	if req.ItemID <= 0 {
 		handleError(w, r, errors.New(errors.CodeValidationError, "item_id must be a positive integer"))
 		return
 	}
 
-	var title string
-	var posterURL sql.NullString
-	var jellyfinID string
-	var err error
-
-	if req.ItemType == "show" {
-		err = h.db.QueryRowContext(r.Context(),
-			`SELECT title, poster_url, jellyfin_id FROM shows WHERE id = ? AND user_id = ? AND deleted_at IS NULL`,
-			req.ItemID, userID).Scan(&title, &posterURL, &jellyfinID)
-	} else {
-		err = h.db.QueryRowContext(r.Context(),
-			`SELECT title, poster_url, jellyfin_id FROM movies WHERE id = ? AND user_id = ? AND deleted_at IS NULL`,
-			req.ItemID, userID).Scan(&title, &posterURL, &jellyfinID)
-	}
-
-	if err == sql.ErrNoRows {
-		handleError(w, r, errors.New(errors.CodeNotFound, "Item not found"))
-		return
-	}
-	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to verify item"))
-		return
-	}
-
-	var posterURLStr string
-	if posterURL.Valid {
-		posterURLStr = posterURL.String
-	}
-
-	// Atomic upsert: UPDATE existing row's metadata, or INSERT if absent. Running
-	// both in one transaction prevents concurrent adds from racing the
-	// existence check (the UNIQUE(user_id, item_type, item_id) constraint plus
-	// serialised writers guarantee exactly one row).
-	var item models.WatchlistItem
-	var posterURLResult sql.NullString
-	var isUpdate bool
-	err = database.WithTx(r.Context(), h.db, func(tx *sql.Tx) error {
-		res, err := tx.ExecContext(r.Context(),
-			`UPDATE watchlist SET title = ?, poster_url = ?, updated_at = CURRENT_TIMESTAMP
-			 WHERE user_id = ? AND item_type = ? AND item_id = ?`,
-			title, posterURLStr, userID, req.ItemType, req.ItemID)
-		if err != nil {
-			return errors.Wrap(err, errors.CodeDatabaseError, "Failed to update watchlist")
-		}
-
-		if n, _ := res.RowsAffected(); n > 0 {
-			isUpdate = true
-		} else {
-			if _, err := tx.ExecContext(r.Context(),
-				`INSERT INTO watchlist (user_id, item_type, item_id, title, poster_url, added_at, updated_at)
-				 VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-				userID, req.ItemType, req.ItemID, title, posterURLStr); err != nil {
-				return errors.Wrap(err, errors.CodeDatabaseError, "Failed to add to watchlist")
-			}
-		}
-
-		return tx.QueryRowContext(r.Context(),
-			`SELECT id, user_id, item_type, item_id, title, poster_url, added_at, created_at, updated_at
-			 FROM watchlist
-			 WHERE user_id = ? AND item_type = ? AND item_id = ?`,
-			userID, req.ItemType, req.ItemID).Scan(
-			&item.ID, &item.UserID, &item.ItemType, &item.ItemID, &item.Title,
-			&posterURLResult, &item.AddedAt, &item.CreatedAt, &item.UpdatedAt)
-	})
+	item, created, err := h.store.Add(r.Context(), userID, req.ItemType, req.ItemID)
 	if err != nil {
 		handleError(w, r, err)
 		return
 	}
 
-	if posterURLResult.Valid {
-		item.PosterURL = posterURLResult.String
-	}
-	item.JellyfinID = jellyfinID
-
-	if isUpdate {
-		w.WriteHeader(http.StatusOK)
-	} else {
+	if created {
 		w.WriteHeader(http.StatusCreated)
+	} else {
+		w.WriteHeader(http.StatusOK)
 	}
 	writeJSON(w, r, item)
 }
@@ -206,41 +87,21 @@ func (h *WatchlistHandler) RemoveFromWatchlist(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		handleError(w, r, errors.New(errors.CodeValidationError, "Invalid watchlist item ID"))
 		return
 	}
 
-	var itemUserID int
-	err = h.db.QueryRowContext(r.Context(),
-		`SELECT user_id FROM watchlist WHERE id = ?`,
-		id).Scan(&itemUserID)
-
-	if err == sql.ErrNoRows {
+	found, err := h.store.Remove(r.Context(), userID, id)
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+	if !found {
 		handleError(w, r, errors.New(errors.CodeNotFound, "Watchlist item not found"))
 		return
 	}
-	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to verify watchlist item"))
-		return
-	}
-
-	if itemUserID != userID {
-		handleError(w, r, errors.New(errors.CodeUnauthorized, "Unauthorized"))
-		return
-	}
-
-	_, err = h.db.ExecContext(r.Context(),
-		`DELETE FROM watchlist WHERE id = ? AND user_id = ?`,
-		id, userID)
-
-	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to remove from watchlist"))
-		return
-	}
-
 	w.WriteHeader(http.StatusNoContent)
 }
 

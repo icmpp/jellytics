@@ -54,7 +54,7 @@ func NewRouterWithServices(db *sql.DB, cfg *config.Config, syncScheduler *servic
 			r.Post("/refresh", authHandler.Refresh)
 		})
 
-		showsHandler := handlers.NewShowsHandler(db, cfg.Database.DataDir())
+		showsHandler := handlers.NewShowsHandler(db)
 		moviesHandler := handlers.NewMoviesHandlerWithDB(db, cfg.Database.DataDir())
 		statsHandler := handlers.NewStatsHandler(db)
 		syncHandler := handlers.NewSyncHandlerWithDataPath(db, cfg.Database.DataDir(), services.SyncConfigFromAppConfig(cfg.Sync))

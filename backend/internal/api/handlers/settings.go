@@ -4,22 +4,22 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
-	"time"
 
 	apiMiddleware "jellytics/backend/internal/api/middleware"
 	"jellytics/backend/internal/errors"
 	"jellytics/backend/internal/jellyfin"
+	"jellytics/backend/internal/repository"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/rs/zerolog/log"
 )
 
 type SettingsHandler struct {
-	db *sql.DB
+	users repository.UserStore
 }
 
 func NewSettingsHandler(db *sql.DB) *SettingsHandler {
-	return &SettingsHandler{db: db}
+	return &SettingsHandler{users: repository.NewSQLUserStore(db)}
 }
 
 type SettingsResponse struct {
@@ -53,17 +53,14 @@ type UpdatePreferencesRequest struct {
 func (h *SettingsHandler) GetSettings(w http.ResponseWriter, r *http.Request) {
 	userID := apiMiddleware.GetUserID(r)
 
-	var serverURL string
-	err := h.db.QueryRowContext(r.Context(),
-		"SELECT jellyfin_server_url FROM users WHERE id = ? AND deleted_at IS NULL",
-		userID).Scan(&serverURL)
+	serverURL, found, err := h.users.ServerURL(r.Context(), userID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			handleError(w, r, errors.New(errors.CodeUserNotFound, "User not found"))
-			return
-		}
 		log.Error().Err(err).Int("user_id", userID).Msg("Failed to get user settings")
-		handleError(w, r, errors.Wrap(err, errors.CodeInternalError, "Failed to get settings"))
+		handleError(w, r, err)
+		return
+	}
+	if !found {
+		handleError(w, r, errors.New(errors.CodeUserNotFound, "User not found"))
 		return
 	}
 
@@ -98,12 +95,9 @@ func (h *SettingsHandler) UpdateSettings(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	_, err := h.db.ExecContext(r.Context(),
-		"UPDATE users SET jellyfin_server_url = ?, updated_at = ? WHERE id = ?",
-		req.JellyfinServerURL, time.Now(), userID)
-	if err != nil {
+	if err := h.users.SetServerURL(r.Context(), userID, req.JellyfinServerURL); err != nil {
 		log.Error().Err(err).Int("user_id", userID).Msg("Failed to update settings")
-		handleError(w, r, errors.Wrap(err, errors.CodeInternalError, "Failed to update settings"))
+		handleError(w, r, err)
 		return
 	}
 
@@ -150,28 +144,23 @@ func (h *SettingsHandler) TestConnection(w http.ResponseWriter, r *http.Request)
 func (h *SettingsHandler) GetPreferences(w http.ResponseWriter, r *http.Request) {
 	userID := apiMiddleware.GetUserID(r)
 
-	var preferencesJSON sql.NullString
-	err := h.db.QueryRowContext(r.Context(),
-		"SELECT preferences FROM users WHERE id = ? AND deleted_at IS NULL",
-		userID).Scan(&preferencesJSON)
+	preferencesJSON, found, err := h.users.Preferences(r.Context(), userID)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			handleError(w, r, errors.New(errors.CodeUserNotFound, "User not found"))
-			return
-		}
 		log.Error().Err(err).Int("user_id", userID).Msg("Failed to get user preferences")
-		handleError(w, r, errors.Wrap(err, errors.CodeInternalError, "Failed to get preferences"))
+		handleError(w, r, err)
+		return
+	}
+	if !found {
+		handleError(w, r, errors.New(errors.CodeUserNotFound, "User not found"))
 		return
 	}
 
-	var preferences map[string]interface{}
-	if preferencesJSON.Valid && preferencesJSON.String != "" {
-		if err := json.Unmarshal([]byte(preferencesJSON.String), &preferences); err != nil {
+	preferences := make(map[string]interface{})
+	if preferencesJSON != "" {
+		if err := json.Unmarshal([]byte(preferencesJSON), &preferences); err != nil {
 			log.Warn().Err(err).Int("user_id", userID).Msg("Failed to parse preferences JSON, returning empty")
 			preferences = make(map[string]interface{})
 		}
-	} else {
-		preferences = make(map[string]interface{})
 	}
 
 	response := PreferencesResponse{
@@ -197,12 +186,9 @@ func (h *SettingsHandler) UpdatePreferences(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	_, err = h.db.ExecContext(r.Context(),
-		"UPDATE users SET preferences = ?, updated_at = ? WHERE id = ?",
-		string(preferencesJSON), time.Now(), userID)
-	if err != nil {
+	if err := h.users.SetPreferences(r.Context(), userID, string(preferencesJSON)); err != nil {
 		log.Error().Err(err).Int("user_id", userID).Msg("Failed to update preferences")
-		handleError(w, r, errors.Wrap(err, errors.CodeInternalError, "Failed to update preferences"))
+		handleError(w, r, err)
 		return
 	}
 

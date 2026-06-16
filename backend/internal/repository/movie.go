@@ -30,18 +30,18 @@ type MovieListFilter struct {
 // movieSortClauses maps whitelisted sort keys to ORDER BY fragments.
 // Any unknown/empty key falls back to the default (recently watched first).
 var movieSortClauses = map[string]string{
-	"title_asc":          "title COLLATE NOCASE ASC, id ASC",
-	"title_desc":         "title COLLATE NOCASE DESC, id DESC",
-	"year_asc":           "year IS NULL, year ASC, title COLLATE NOCASE ASC",
-	"year_desc":          "year IS NULL, year DESC, title COLLATE NOCASE ASC",
-	"added_asc":          "created_at ASC, id ASC",
-	"added_desc":         "created_at DESC, id DESC",
-	"last_watched_asc":   "last_watched_at IS NULL, last_watched_at ASC, created_at ASC",
-	"last_watched_desc":  "last_watched_at IS NULL, last_watched_at DESC, created_at DESC",
-	"runtime_asc":        "runtime_minutes IS NULL, runtime_minutes ASC, title COLLATE NOCASE ASC",
-	"runtime_desc":       "runtime_minutes IS NULL, runtime_minutes DESC, title COLLATE NOCASE ASC",
-	"progress_desc":      "completion_percentage DESC, last_watched_at DESC",
-	"progress_asc":       "completion_percentage ASC, last_watched_at DESC",
+	"title_asc":         "title COLLATE NOCASE ASC, id ASC",
+	"title_desc":        "title COLLATE NOCASE DESC, id DESC",
+	"year_asc":          "year IS NULL, year ASC, title COLLATE NOCASE ASC",
+	"year_desc":         "year IS NULL, year DESC, title COLLATE NOCASE ASC",
+	"added_asc":         "created_at ASC, id ASC",
+	"added_desc":        "created_at DESC, id DESC",
+	"last_watched_asc":  "last_watched_at IS NULL, last_watched_at ASC, created_at ASC",
+	"last_watched_desc": "last_watched_at IS NULL, last_watched_at DESC, created_at DESC",
+	"runtime_asc":       "runtime_minutes IS NULL, runtime_minutes ASC, title COLLATE NOCASE ASC",
+	"runtime_desc":      "runtime_minutes IS NULL, runtime_minutes DESC, title COLLATE NOCASE ASC",
+	"progress_desc":     "completion_percentage DESC, last_watched_at DESC",
+	"progress_asc":      "completion_percentage ASC, last_watched_at DESC",
 }
 
 const defaultMovieSort = "last_watched_at IS NULL, last_watched_at DESC, created_at DESC"
