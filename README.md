@@ -83,6 +83,9 @@ volumes:
   jellytics-data:
 ```
 
+> [!TIP]
+> Images are also published to GitHub Container Registry: swap the image line for `ghcr.io/icmpp/jellytics:latest` if you prefer GHCR. Prebuilt backend binaries (amd64/arm64) and a ready-to-run frontend bundle ship with every [GitHub release](https://github.com/icmpp/jellytics/releases) for non-Docker installs.
+
 ### 2️⃣ Fire it up
 
 ```bash

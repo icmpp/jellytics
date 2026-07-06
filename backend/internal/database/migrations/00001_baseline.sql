@@ -1,9 +1,12 @@
--- Jellystat database schema
--- Single consolidated schema file - all tables, columns, indexes and triggers.
--- Every statement uses IF NOT EXISTS / OR IGNORE so the file is safe to re-run
--- against both a brand-new database and an existing one.
-
-PRAGMA foreign_keys = ON;
+-- +goose Up
+-- Consolidated baseline schema for Jellytics.
+--
+-- This is the full schema in its final shape (all columns inline). It is the
+-- starting point for goose-managed migrations. Every table/index uses
+-- IF NOT EXISTS so applying this migration against a pre-existing database
+-- (one created by the legacy schema loader) is a safe no-op; goose then records
+-- version 1 and future migrations apply normally. Fresh databases get the full
+-- schema directly. All subsequent schema changes live in 00002_*.sql onwards.
 
 -- ─── Tables ──────────────────────────────────────────────────────────────────
 
@@ -77,25 +80,6 @@ CREATE TABLE IF NOT EXISTS episodes (
     UNIQUE(show_id, season_number, episode_number)
 );
 
-CREATE TABLE IF NOT EXISTS watch_history (
-    id                       INTEGER  PRIMARY KEY AUTOINCREMENT,
-    user_id                  INTEGER  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    show_id                  INTEGER  REFERENCES shows(id) ON DELETE CASCADE,
-    episode_id               INTEGER  REFERENCES episodes(id) ON DELETE SET NULL,
-    movie_id                 INTEGER  REFERENCES movies(id)   ON DELETE SET NULL,
-    watched_at               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    duration_watched_minutes INTEGER,
-    completion_percentage    REAL,
-    device_type              TEXT,
-    source                   TEXT,
-    jellyfin_session_id      TEXT,
-    position_ticks           BIGINT,
-    runtime_ticks            BIGINT,
-    client_name              TEXT,
-    device_name              TEXT,
-    created_at               DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-
 CREATE TABLE IF NOT EXISTS movies (
     id                        INTEGER  PRIMARY KEY AUTOINCREMENT,
     jellyfin_id               TEXT     NOT NULL,
@@ -126,6 +110,25 @@ CREATE TABLE IF NOT EXISTS movies (
     local_backdrop_path       TEXT,
     deleted_from_jellyfin     INTEGER  DEFAULT 0,
     UNIQUE(jellyfin_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS watch_history (
+    id                       INTEGER  PRIMARY KEY AUTOINCREMENT,
+    user_id                  INTEGER  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    show_id                  INTEGER  REFERENCES shows(id) ON DELETE CASCADE,
+    episode_id               INTEGER  REFERENCES episodes(id) ON DELETE SET NULL,
+    movie_id                 INTEGER  REFERENCES movies(id)   ON DELETE SET NULL,
+    watched_at               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    duration_watched_minutes INTEGER,
+    completion_percentage    REAL,
+    device_type              TEXT,
+    source                   TEXT,
+    jellyfin_session_id      TEXT,
+    position_ticks           BIGINT,
+    runtime_ticks            BIGINT,
+    client_name              TEXT,
+    device_name              TEXT,
+    created_at               DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS active_sessions (
@@ -303,6 +306,33 @@ CREATE TABLE IF NOT EXISTS system_settings (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS tags (
+    id         INTEGER  PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name       TEXT     NOT NULL,
+    color      TEXT     DEFAULT '#6366f1',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, name)
+);
+
+CREATE TABLE IF NOT EXISTS media_tags (
+    tag_id    INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
+    item_type TEXT    NOT NULL CHECK(item_type IN ('show', 'movie')),
+    item_id   INTEGER NOT NULL,
+    PRIMARY KEY (tag_id, item_type, item_id)
+);
+
+CREATE TABLE IF NOT EXISTS notifications (
+    id         INTEGER  PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type       TEXT     NOT NULL,
+    title      TEXT     NOT NULL,
+    body       TEXT,
+    data       TEXT,
+    read_at    DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
 -- ─── Default system settings ─────────────────────────────────────────────────
 
 INSERT OR IGNORE INTO system_settings (key, value, description, category, data_type) VALUES
@@ -386,36 +416,9 @@ CREATE INDEX IF NOT EXISTS idx_collections_user_id       ON collections(user_id)
 CREATE INDEX IF NOT EXISTS idx_collection_items_collection_id ON collection_items(collection_id);
 CREATE INDEX IF NOT EXISTS idx_collection_items_item    ON collection_items(item_type, item_id);
 
-CREATE TABLE IF NOT EXISTS tags (
-    id         INTEGER  PRIMARY KEY AUTOINCREMENT,
-    user_id    INTEGER  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    name       TEXT     NOT NULL,
-    color      TEXT     DEFAULT '#6366f1',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, name)
-);
-
-CREATE TABLE IF NOT EXISTS media_tags (
-    tag_id    INTEGER NOT NULL REFERENCES tags(id) ON DELETE CASCADE,
-    item_type TEXT    NOT NULL CHECK(item_type IN ('show', 'movie')),
-    item_id   INTEGER NOT NULL,
-    PRIMARY KEY (tag_id, item_type, item_id)
-);
-
 CREATE INDEX IF NOT EXISTS idx_tags_user_id    ON tags(user_id);
 CREATE INDEX IF NOT EXISTS idx_media_tags_tag  ON media_tags(tag_id);
 CREATE INDEX IF NOT EXISTS idx_media_tags_item ON media_tags(item_type, item_id);
-
-CREATE TABLE IF NOT EXISTS notifications (
-    id         INTEGER  PRIMARY KEY AUTOINCREMENT,
-    user_id    INTEGER  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    type       TEXT     NOT NULL,
-    title      TEXT     NOT NULL,
-    body       TEXT,
-    data       TEXT,
-    read_at    DATETIME,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-);
 
 CREATE INDEX IF NOT EXISTS idx_notifications_user_unread ON notifications(user_id, read_at);
 
@@ -423,7 +426,7 @@ CREATE INDEX IF NOT EXISTS idx_system_settings_category ON system_settings(categ
 
 -- ─── Triggers ────────────────────────────────────────────────────────────────
 
--- Update show statistics when an episode's watched flag changes
+-- +goose StatementBegin
 CREATE TRIGGER IF NOT EXISTS update_show_stats_on_episode_watch
 AFTER UPDATE OF watched ON episodes
 BEGIN
@@ -449,8 +452,9 @@ BEGIN
         updated_at = CURRENT_TIMESTAMP
     WHERE id = NEW.show_id;
 END;
+-- +goose StatementEnd
 
--- Update show status based on watched episode count
+-- +goose StatementBegin
 CREATE TRIGGER IF NOT EXISTS update_show_status
 AFTER UPDATE OF watched_episodes ON shows
 BEGIN
@@ -463,93 +467,55 @@ BEGIN
         updated_at = CURRENT_TIMESTAMP
     WHERE id = NEW.id;
 END;
+-- +goose StatementEnd
 
--- Auto-update updated_at timestamps
+-- +goose StatementBegin
 CREATE TRIGGER IF NOT EXISTS update_users_timestamp
 AFTER UPDATE ON users
 BEGIN
     UPDATE users SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+-- +goose StatementEnd
 
+-- +goose StatementBegin
 CREATE TRIGGER IF NOT EXISTS update_shows_timestamp
 AFTER UPDATE ON shows
 BEGIN
     UPDATE shows SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+-- +goose StatementEnd
 
+-- +goose StatementBegin
 CREATE TRIGGER IF NOT EXISTS update_episodes_timestamp
 AFTER UPDATE ON episodes
 BEGIN
     UPDATE episodes SET updated_at = CURRENT_TIMESTAMP WHERE id = NEW.id;
 END;
+-- +goose StatementEnd
 
--- ─── Idempotent column additions (existing databases) ────────────────────────
--- SQLite does not support ADD COLUMN IF NOT EXISTS before version 3.37.
--- These statements rely on the migration runner ignoring "duplicate column" errors,
--- which init.go already does. They are no-ops on a fresh database because the
--- columns are already declared in the CREATE TABLE statements above.
-
-ALTER TABLE users       ADD COLUMN jellyfin_api_key         TEXT;
-ALTER TABLE users       ADD COLUMN jellyfin_token_valid     INTEGER NOT NULL DEFAULT 1;
-ALTER TABLE shows       ADD COLUMN jellyfin_last_modified_at DATETIME;
-ALTER TABLE shows       ADD COLUMN sync_hash                 TEXT;
-ALTER TABLE shows       ADD COLUMN local_poster_path         TEXT;
-ALTER TABLE shows       ADD COLUMN deleted_from_jellyfin     INTEGER DEFAULT 0;
-ALTER TABLE movies      ADD COLUMN jellyfin_last_modified_at DATETIME;
-ALTER TABLE movies      ADD COLUMN sync_hash                 TEXT;
-ALTER TABLE movies      ADD COLUMN local_poster_path         TEXT;
-ALTER TABLE movies      ADD COLUMN local_backdrop_path       TEXT;
-ALTER TABLE movies      ADD COLUMN deleted_from_jellyfin     INTEGER DEFAULT 0;
-ALTER TABLE watch_history ADD COLUMN jellyfin_session_id     TEXT;
-ALTER TABLE watch_history ADD COLUMN position_ticks          BIGINT;
-ALTER TABLE watch_history ADD COLUMN runtime_ticks           BIGINT;
-ALTER TABLE watch_history ADD COLUMN client_name             TEXT;
-ALTER TABLE watch_history ADD COLUMN device_name             TEXT;
-ALTER TABLE watch_history ADD COLUMN movie_id                INTEGER REFERENCES movies(id) ON DELETE SET NULL;
-ALTER TABLE shows       ADD COLUMN userdata_hash              TEXT;
-ALTER TABLE movies      ADD COLUMN userdata_hash              TEXT;
-ALTER TABLE stats_snapshots ADD COLUMN average_session_duration_minutes REAL;
-
--- Normalize any pre-existing NULL flags to 0
-UPDATE movies SET deleted_from_jellyfin = 0 WHERE deleted_from_jellyfin IS NULL;
-UPDATE shows  SET deleted_from_jellyfin = 0 WHERE deleted_from_jellyfin IS NULL;
-
--- ─── Migration: make watch_history.show_id nullable ──────────────────────────
--- Existing databases were created with show_id NOT NULL, which silently blocks
--- movie entries. This recreates the table with a nullable show_id each startup
--- (idempotent via INSERT OR IGNORE on the primary key). Runtime is negligible
--- for typical personal-library sizes.
-CREATE TABLE IF NOT EXISTS _watch_history_v2 (
-    id                       INTEGER  PRIMARY KEY AUTOINCREMENT,
-    user_id                  INTEGER  NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    show_id                  INTEGER  REFERENCES shows(id) ON DELETE CASCADE,
-    episode_id               INTEGER  REFERENCES episodes(id) ON DELETE SET NULL,
-    movie_id                 INTEGER  REFERENCES movies(id)   ON DELETE SET NULL,
-    watched_at               DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    duration_watched_minutes INTEGER,
-    completion_percentage    REAL,
-    device_type              TEXT,
-    source                   TEXT,
-    jellyfin_session_id      TEXT,
-    position_ticks           BIGINT,
-    runtime_ticks            BIGINT,
-    client_name              TEXT,
-    device_name              TEXT,
-    created_at               DATETIME DEFAULT CURRENT_TIMESTAMP
-);
-INSERT OR IGNORE INTO _watch_history_v2
-    SELECT id, user_id, show_id, episode_id, movie_id, watched_at,
-           duration_watched_minutes, completion_percentage, device_type, source,
-           jellyfin_session_id, position_ticks, runtime_ticks, client_name,
-           device_name, created_at
-    FROM watch_history;
+-- +goose Down
+DROP TRIGGER IF EXISTS update_episodes_timestamp;
+DROP TRIGGER IF EXISTS update_shows_timestamp;
+DROP TRIGGER IF EXISTS update_users_timestamp;
+DROP TRIGGER IF EXISTS update_show_status;
+DROP TRIGGER IF EXISTS update_show_stats_on_episode_watch;
+DROP TABLE IF EXISTS notifications;
+DROP TABLE IF EXISTS media_tags;
+DROP TABLE IF EXISTS tags;
+DROP TABLE IF EXISTS system_settings;
+DROP TABLE IF EXISTS collection_items;
+DROP TABLE IF EXISTS collections;
+DROP TABLE IF EXISTS reviews;
+DROP TABLE IF EXISTS ratings;
+DROP TABLE IF EXISTS watchlist;
+DROP TABLE IF EXISTS sessions;
+DROP TABLE IF EXISTS sync_state;
+DROP TABLE IF EXISTS sync_logs;
+DROP TABLE IF EXISTS stats_snapshots;
+DROP TABLE IF EXISTS session_history;
+DROP TABLE IF EXISTS active_sessions;
 DROP TABLE IF EXISTS watch_history;
-ALTER TABLE _watch_history_v2 RENAME TO watch_history;
-CREATE INDEX IF NOT EXISTS idx_watch_history_user_id_watched_at    ON watch_history(user_id, watched_at);
-CREATE INDEX IF NOT EXISTS idx_watch_history_show_id_watched_at    ON watch_history(show_id, watched_at);
-CREATE INDEX IF NOT EXISTS idx_watch_history_episode_id_watched_at ON watch_history(episode_id, watched_at);
-CREATE INDEX IF NOT EXISTS idx_watch_history_watched_at            ON watch_history(watched_at);
-CREATE INDEX IF NOT EXISTS idx_watch_history_movie_id              ON watch_history(movie_id);
-CREATE INDEX IF NOT EXISTS idx_watch_history_jellyfin_session_id   ON watch_history(jellyfin_session_id);
-CREATE INDEX IF NOT EXISTS idx_watch_history_dedup                 ON watch_history(user_id, show_id, episode_id, date(watched_at));
-CREATE INDEX IF NOT EXISTS idx_watch_history_created_at            ON watch_history(created_at);
+DROP TABLE IF EXISTS movies;
+DROP TABLE IF EXISTS episodes;
+DROP TABLE IF EXISTS shows;
+DROP TABLE IF EXISTS users;

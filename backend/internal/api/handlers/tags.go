@@ -15,19 +15,15 @@ import (
 )
 
 type TagsHandler struct {
-	db         *sql.DB
+	store      repository.TagStore
 	mediaStore repository.MediaStore
 }
 
 func NewTagsHandler(db *sql.DB) *TagsHandler {
-	return &TagsHandler{db: db, mediaStore: repository.NewSQLMediaStore(db)}
-}
-
-type Tag struct {
-	ID        int    `json:"id"`
-	Name      string `json:"name"`
-	Color     string `json:"color"`
-	CreatedAt string `json:"createdAt"`
+	return &TagsHandler{
+		store:      repository.NewSQLTagStore(db),
+		mediaStore: repository.NewSQLMediaStore(db),
+	}
 }
 
 func (h *TagsHandler) List(w http.ResponseWriter, r *http.Request) {
@@ -37,29 +33,11 @@ func (h *TagsHandler) List(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	rows, err := h.db.QueryContext(r.Context(),
-		"SELECT id, name, color, created_at FROM tags WHERE user_id = ? ORDER BY name ASC",
-		userID)
+	tags, err := h.store.List(r.Context(), userID)
 	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to list tags"))
+		handleError(w, r, err)
 		return
 	}
-	defer rows.Close()
-
-	var tags []Tag
-	for rows.Next() {
-		var t Tag
-		if rows.Scan(&t.ID, &t.Name, &t.Color, &t.CreatedAt) == nil {
-			if t.Color == "" {
-				t.Color = "#6366f1"
-			}
-			tags = append(tags, t)
-		}
-	}
-	if tags == nil {
-		tags = []Tag{}
-	}
-
 	writeJSON(w, r, tags)
 }
 
@@ -74,7 +52,7 @@ func (h *TagsHandler) Create(w http.ResponseWriter, r *http.Request) {
 		Name  string `json:"name"`
 		Color string `json:"color"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || req.Name == "" {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		handleError(w, r, errors.New(errors.CodeValidationError, "name is required"))
 		return
 	}
@@ -83,32 +61,12 @@ func (h *TagsHandler) Create(w http.ResponseWriter, r *http.Request) {
 		handleError(w, r, errors.New(errors.CodeValidationError, "name is required"))
 		return
 	}
-	color := req.Color
-	if color == "" {
-		color = "#6366f1"
-	}
 
-	res, err := h.db.ExecContext(r.Context(),
-		"INSERT INTO tags (user_id, name, color) VALUES (?, ?, ?)",
-		userID, name, color)
+	t, err := h.store.Create(r.Context(), userID, name, req.Color)
 	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to create tag"))
+		handleError(w, r, err)
 		return
 	}
-	id, err := res.LastInsertId()
-	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to get new tag ID"))
-		return
-	}
-
-	var t Tag
-	if err := h.db.QueryRowContext(r.Context(),
-		"SELECT id, name, color, created_at FROM tags WHERE id = ?", id).
-		Scan(&t.ID, &t.Name, &t.Color, &t.CreatedAt); err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to fetch created tag"))
-		return
-	}
-
 	w.WriteHeader(http.StatusCreated)
 	writeJSON(w, r, t)
 }
@@ -120,8 +78,7 @@ func (h *TagsHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil || id <= 0 {
 		handleError(w, r, errors.New(errors.CodeValidationError, "Invalid tag ID"))
 		return
@@ -136,33 +93,15 @@ func (h *TagsHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var sets []string
-	var args []interface{}
-	if req.Name != nil {
-		sets = append(sets, "name = ?")
-		args = append(args, strings.TrimSpace(*req.Name))
-	}
-	if req.Color != nil {
-		sets = append(sets, "color = ?")
-		args = append(args, *req.Color)
-	}
-	if len(sets) == 0 {
-		w.WriteHeader(http.StatusNoContent)
-		return
-	}
-	args = append(args, id, userID)
-	query := "UPDATE tags SET " + strings.Join(sets, ", ") + " WHERE id = ? AND user_id = ?"
-
-	res, err := h.db.ExecContext(r.Context(), query, args...)
+	found, err := h.store.Update(r.Context(), userID, id, req.Name, req.Color)
 	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to update tag"))
+		handleError(w, r, err)
 		return
 	}
-	if rows, _ := res.RowsAffected(); rows == 0 {
+	if !found {
 		handleError(w, r, errors.New(errors.CodeNotFound, "Tag not found"))
 		return
 	}
-
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -173,23 +112,21 @@ func (h *TagsHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil || id <= 0 {
 		handleError(w, r, errors.New(errors.CodeValidationError, "Invalid tag ID"))
 		return
 	}
 
-	res, err := h.db.ExecContext(r.Context(), "DELETE FROM tags WHERE id = ? AND user_id = ?", id, userID)
+	found, err := h.store.Delete(r.Context(), userID, id)
 	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to delete tag"))
+		handleError(w, r, err)
 		return
 	}
-	if rows, _ := res.RowsAffected(); rows == 0 {
+	if !found {
 		handleError(w, r, errors.New(errors.CodeNotFound, "Tag not found"))
 		return
 	}
-
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -200,8 +137,7 @@ func (h *TagsHandler) AddItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idStr := chi.URLParam(r, "id")
-	tagID, err := strconv.Atoi(idStr)
+	tagID, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil || tagID <= 0 {
 		handleError(w, r, errors.New(errors.CodeValidationError, "Invalid tag ID"))
 		return
@@ -224,25 +160,23 @@ func (h *TagsHandler) AddItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var exists int
-	_ = h.db.QueryRowContext(r.Context(), "SELECT 1 FROM tags WHERE id = ? AND user_id = ?", tagID, userID).Scan(&exists)
-	if exists == 0 {
+	owns, err := h.store.Owns(r.Context(), userID, tagID)
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+	if !owns {
 		handleError(w, r, errors.New(errors.CodeNotFound, "Tag not found"))
 		return
 	}
-
 	if !verifyItemExists(r.Context(), h.mediaStore, w, r, req.ItemType, req.ItemID, userID) {
 		return
 	}
 
-	_, err = h.db.ExecContext(r.Context(),
-		"INSERT OR IGNORE INTO media_tags (tag_id, item_type, item_id) VALUES (?, ?, ?)",
-		tagID, req.ItemType, req.ItemID)
-	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to add tag to item"))
+	if err := h.store.AddItem(r.Context(), userID, tagID, req.ItemType, req.ItemID); err != nil {
+		handleError(w, r, err)
 		return
 	}
-
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -253,16 +187,14 @@ func (h *TagsHandler) RemoveItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idStr := chi.URLParam(r, "id")
-	tagID, err := strconv.Atoi(idStr)
+	tagID, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil || tagID <= 0 {
 		handleError(w, r, errors.New(errors.CodeValidationError, "Invalid tag ID"))
 		return
 	}
 
 	itemType := chi.URLParam(r, "itemType")
-	itemIDStr := chi.URLParam(r, "itemId")
-	itemID, err := strconv.Atoi(itemIDStr)
+	itemID, err := strconv.Atoi(chi.URLParam(r, "itemId"))
 	if err != nil || itemID <= 0 {
 		handleError(w, r, errors.New(errors.CodeValidationError, "Invalid item ID"))
 		return
@@ -272,19 +204,15 @@ func (h *TagsHandler) RemoveItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	res, err := h.db.ExecContext(r.Context(),
-		`DELETE FROM media_tags WHERE tag_id = ? AND item_type = ? AND item_id = ?
-		 AND tag_id IN (SELECT id FROM tags WHERE user_id = ?)`,
-		tagID, itemType, itemID, userID)
+	found, err := h.store.RemoveItem(r.Context(), userID, tagID, itemType, itemID)
 	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to remove tag from item"))
+		handleError(w, r, err)
 		return
 	}
-	if rows, _ := res.RowsAffected(); rows == 0 {
+	if !found {
 		handleError(w, r, errors.New(errors.CodeNotFound, "Tag not found on item"))
 		return
 	}
-
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -295,58 +223,26 @@ func (h *TagsHandler) GetItems(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	idStr := chi.URLParam(r, "id")
-	tagID, err := strconv.Atoi(idStr)
+	tagID, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil || tagID <= 0 {
 		handleError(w, r, errors.New(errors.CodeValidationError, "Invalid tag ID"))
 		return
 	}
 
-	var tagName string
-	err = h.db.QueryRowContext(r.Context(), "SELECT name FROM tags WHERE id = ? AND user_id = ?", tagID, userID).Scan(&tagName)
-	if err == sql.ErrNoRows {
+	tagName, found, err := h.store.Name(r.Context(), userID, tagID)
+	if err != nil {
+		handleError(w, r, err)
+		return
+	}
+	if !found {
 		handleError(w, r, errors.New(errors.CodeNotFound, "Tag not found"))
 		return
 	}
+
+	items, err := h.store.Items(r.Context(), userID, tagID)
 	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to get tag"))
+		handleError(w, r, err)
 		return
-	}
-
-	type Item struct {
-		ItemType  string `json:"itemType"`
-		ItemID    int    `json:"itemId"`
-		Title     string `json:"title"`
-		PosterURL string `json:"posterUrl,omitempty"`
-	}
-
-	rows, err := h.db.QueryContext(r.Context(), `
-		SELECT mt.item_type, mt.item_id, COALESCE(m.title, s.title),
-		       COALESCE(m.jellyfin_id, s.jellyfin_id)
-		FROM media_tags mt
-		LEFT JOIN movies m ON mt.item_type = 'movie' AND mt.item_id = m.id AND m.user_id = ?
-		LEFT JOIN shows s ON mt.item_type = 'show' AND mt.item_id = s.id AND s.user_id = ?
-		WHERE mt.tag_id = ? AND (m.id IS NOT NULL OR s.id IS NOT NULL)
-		ORDER BY COALESCE(m.title, s.title) ASC`, userID, userID, tagID)
-	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to list tag items"))
-		return
-	}
-	defer rows.Close()
-
-	var items []Item
-	for rows.Next() {
-		var it Item
-		var jellyfinID sql.NullString
-		if rows.Scan(&it.ItemType, &it.ItemID, &it.Title, &jellyfinID) == nil {
-			if jellyfinID.Valid && jellyfinID.String != "" {
-				it.PosterURL = "/api/v1/images/" + it.ItemType + "s/" + jellyfinID.String + "/poster"
-			}
-			items = append(items, it)
-		}
-	}
-	if items == nil {
-		items = []Item{}
 	}
 
 	writeJSON(w, r, map[string]interface{}{
@@ -363,38 +259,17 @@ func (h *TagsHandler) GetForItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	itemType := r.URL.Query().Get("item_type")
-	itemIDStr := r.URL.Query().Get("item_id")
-	itemID, err := strconv.Atoi(itemIDStr)
+	itemID, err := strconv.Atoi(r.URL.Query().Get("item_id"))
 	if err != nil || itemID <= 0 || (itemType != "movie" && itemType != "show") {
 		handleError(w, r, errors.New(errors.CodeValidationError, "item_type and item_id required"))
 		return
 	}
 
-	rows, err := h.db.QueryContext(r.Context(), `
-		SELECT t.id, t.name, t.color
-		FROM tags t
-		JOIN media_tags mt ON mt.tag_id = t.id
-		WHERE t.user_id = ? AND mt.item_type = ? AND mt.item_id = ?`, userID, itemType, itemID)
+	tags, err := h.store.ForItem(r.Context(), userID, itemType, itemID)
 	if err != nil {
-		handleError(w, r, errors.Wrap(err, errors.CodeDatabaseError, "Failed to get tags"))
+		handleError(w, r, err)
 		return
 	}
-	defer rows.Close()
-
-	var tags []Tag
-	for rows.Next() {
-		var t Tag
-		if rows.Scan(&t.ID, &t.Name, &t.Color) == nil {
-			if t.Color == "" {
-				t.Color = "#6366f1"
-			}
-			tags = append(tags, t)
-		}
-	}
-	if tags == nil {
-		tags = []Tag{}
-	}
-
 	writeJSON(w, r, tags)
 }
 

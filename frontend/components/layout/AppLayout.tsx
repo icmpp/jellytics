@@ -2,7 +2,9 @@
 
 import { SidebarNavigation } from "./SidebarNavigation";
 import { SidebarProvider, useSidebar } from "./SidebarContext";
+import { BackendErrorBanner } from "./BackendErrorBanner";
 import { GlobalSearch } from "@/components/navigation/GlobalSearch";
+import { HelpModal } from "@/components/navigation/HelpModal";
 import { useAuth } from "@/hooks/useAuth";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useRouter, usePathname } from "next/navigation";
@@ -18,8 +20,12 @@ function AppLayoutContent({ children }: AppLayoutProps) {
   const { isCollapsed } = useSidebar();
   const [isMobile, setIsMobile] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
 
-  useKeyboardShortcuts(() => setSearchOpen(true));
+  useKeyboardShortcuts({
+    onSearchOpen: () => setSearchOpen(true),
+    onHelpOpen: () => setHelpOpen((v) => !v),
+  });
 
   useEffect(() => {
     const checkMobile = () => {
@@ -31,8 +37,10 @@ function AppLayoutContent({ children }: AppLayoutProps) {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#0d0d14]">
+    <div className="min-h-screen bg-[#050508]">
+      <BackendErrorBanner />
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+      <HelpModal open={helpOpen} onClose={() => setHelpOpen(false)} />
       <SidebarNavigation onSearchClick={() => setSearchOpen(true)} />
       <main
         id="main-content"
@@ -41,7 +49,7 @@ function AppLayoutContent({ children }: AppLayoutProps) {
           isMobile
             ? "pt-[calc(3.5rem+env(safe-area-inset-top,0px)+1rem)] px-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
             : "px-0 py-0",
-          !isMobile && (isCollapsed ? "ml-[72px]" : "ml-64"),
+          !isMobile && (isCollapsed ? "ml-[60px]" : "ml-60"),
         )}
       >
         <div
@@ -86,9 +94,9 @@ export function AppLayout({ children }: AppLayoutProps) {
     return (
       <div
         className="min-h-screen flex items-center justify-center"
-        style={{ background: "linear-gradient(to bottom, #0a0a0f, #0d0d14)" }}
+        style={{ background: "#050508" }}
       >
-        <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+        <Loader2 className="h-8 w-8 animate-spin text-violet-400" />
       </div>
     );
   }

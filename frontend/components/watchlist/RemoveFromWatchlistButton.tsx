@@ -83,6 +83,7 @@ export function RemoveFromWatchlistButton({
       <ConfirmPopover
         open={open}
         onOpenChange={setOpen}
+        theme="terminal"
         title="Remove from watchlist?"
         description={
           itemTitle ? (

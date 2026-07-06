@@ -76,6 +76,7 @@ export function RemoveFromLibraryButton({
     <ConfirmPopover
       open={open}
       onOpenChange={setOpen}
+      theme="terminal"
       title="Remove from library?"
       description={
         <>

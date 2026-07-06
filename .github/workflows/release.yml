@@ -1,0 +1,119 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  # Prebuilt artifacts: static backend binaries (amd64/arm64) and the built
+  # Next.js standalone frontend bundle (pure JS, arch-independent). These are
+  # what a bare-metal/LXC install consumes instead of building from source.
+  binaries:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: backend/go.mod
+          cache-dependency-path: backend/go.sum
+
+      - name: Test backend
+        working-directory: backend
+        run: CGO_ENABLED=0 go test ./...
+
+      - name: Build backend binaries
+        working-directory: backend
+        run: |
+          mkdir -p ../dist
+          for arch in amd64 arm64; do
+            CGO_ENABLED=0 GOOS=linux GOARCH=$arch go build \
+              -trimpath \
+              -ldflags "-s -w -X main.Version=${GITHUB_REF_NAME}" \
+              -o jellytics-server cmd/server/main.go
+            tar -czf "../dist/jellytics-backend_${GITHUB_REF_NAME}_linux_${arch}.tar.gz" \
+              jellytics-server -C .. LICENSE
+            rm jellytics-server
+          done
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build frontend bundle
+        working-directory: frontend
+        env:
+          NEXT_PUBLIC_API_URL: /api/v1
+          BACKEND_URL: http://127.0.0.1:8080
+          NEXT_TELEMETRY_DISABLED: 1
+        run: |
+          npm ci
+          npm run build
+          # Mirror the runtime layout the Dockerfile assembles: standalone
+          # output at the root, with static assets and public/ overlaid.
+          mkdir -p bundle
+          cp -r .next/standalone/. bundle/
+          mkdir -p bundle/.next
+          cp -r .next/static bundle/.next/static
+          cp -r public bundle/public
+          cp ../LICENSE bundle/LICENSE
+          # sharp is only loaded by Next's image optimizer, which this app
+          # disables (images.unoptimized: true). Stripping its per-arch native
+          # binaries keeps the bundle architecture-independent.
+          rm -rf bundle/node_modules/sharp bundle/node_modules/@img
+          tar -czf "../dist/jellytics-frontend_${GITHUB_REF_NAME}.tar.gz" -C bundle .
+
+      - name: Checksums
+        working-directory: dist
+        run: sha256sum *.tar.gz > checksums.txt
+
+      - name: Create release and upload assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1 ||
+            gh release create "$GITHUB_REF_NAME" --verify-tag --generate-notes
+          gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+
+  # Multi-arch image on GHCR. Both builder stages run natively on the build
+  # host (pure-Go backend, JS frontend), so only the thin runtime stage needs
+  # QEMU for arm64.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          build-args: JELLYTICS_VERSION=${{ github.ref_name }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

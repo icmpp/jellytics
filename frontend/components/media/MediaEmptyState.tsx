@@ -1,8 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { Film, Tv, RefreshCw, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { EmptyTerminal, TerminalAction } from "./EmptyTerminal";
 import { type MediaFiltersState } from "@/hooks/useMediaFilters";
 
 interface MediaEmptyStateProps {
@@ -45,22 +44,44 @@ export function MediaEmptyState({
   onTriggerSync,
 }: MediaEmptyStateProps) {
   const isMovies = mediaType === "movies";
-  const label = isMovies ? "movies" : "shows";
+  const label = mediaType; // "movies" | "shows"
   const Icon = isMovies ? Film : Tv;
-  const filtersActive = hasActiveFilters(filters);
+  const OtherIcon = isMovies ? Tv : Film;
+  const otherLabel = isMovies ? "shows" : "movies";
 
-  if (filtersActive) {
+  // ── No results for the active filters ──────────────────────────────────────
+  if (hasActiveFilters(filters)) {
+    const command = (
+      <>
+        {label} <span className="text-violet-300/70">--filter</span>
+        {filters.statusFilter && (
+          <span className="text-violet-300/70"> --status {filters.statusFilter}</span>
+        )}
+      </>
+    );
+
     return (
-      <div className="flex flex-col items-center py-24 px-4 text-center">
-        <Icon className="h-12 w-12 text-white/15 mb-5" />
-        <p className="text-base font-medium text-white/60 mb-1.5">
-          {filters.searchFilter
-            ? `No results for "${filters.searchFilter}"`
-            : `No ${label} match your filters`}
-        </p>
-        <p className="text-sm text-white/30 mb-8">Try adjusting or clearing your filters</p>
-
-        <div className="flex flex-wrap gap-2 justify-center mb-8">
+      <EmptyTerminal
+        path={label}
+        statusLabel="no match"
+        command={command}
+        output={
+          <>
+            query returned <span className="tabular-nums text-white/70">0</span> results
+          </>
+        }
+        icon={Icon}
+        headline={
+          filters.searchFilter
+            ? `no results for "${filters.searchFilter}"`
+            : `no ${label} match your filters`
+        }
+        subtext="try adjusting or clearing your filters"
+        actions={
+          <TerminalAction icon={X} label="clear_filters" onClick={() => clearAllFilters(filters)} />
+        }
+      >
+        <div className="mt-7 flex flex-wrap justify-center gap-2">
           {filters.statusFilter && (
             <FilterPill label={filters.statusFilter} onRemove={() => filters.setStatusFilter("")} />
           )}
@@ -84,7 +105,7 @@ export function MediaEmptyState({
           )}
           {(filters.watchedFrom || filters.watchedTo) && (
             <FilterPill
-              label={`${filters.watchedFrom || "…"} to ${filters.watchedTo || "…"}`}
+              label={`${filters.watchedFrom || "…"} → ${filters.watchedTo || "…"}`}
               onRemove={() => {
                 filters.setWatchedFrom("");
                 filters.setWatchedTo("");
@@ -93,74 +114,95 @@ export function MediaEmptyState({
           )}
           {filters.tagIds && filters.tagIds.length > 0 && (
             <FilterPill
-              label={`Tags (${filters.tagIds.length})`}
+              label={`tags (${filters.tagIds.length})`}
               onRemove={() => filters.setTagIds([])}
             />
           )}
         </div>
-
-        <Button variant="outline" onClick={() => clearAllFilters(filters)} className="gap-2">
-          <X className="h-4 w-4" />
-          Clear filters
-        </Button>
-      </div>
+      </EmptyTerminal>
     );
   }
 
+  // ── Library has no items at all ────────────────────────────────────────────
   if (isEmptyLibrary) {
     return (
-      <div className="flex flex-col items-center py-24 px-4 text-center">
-        <Icon className="h-12 w-12 text-white/15 mb-5" />
-        <p className="text-base font-medium text-white/60 mb-1.5">No {label} yet</p>
-        <p className="text-sm text-white/30 mb-8">
-          {isSyncing
-            ? "Syncing your library - check back in a moment."
-            : "Sync your Jellyfin library to get started."}
-        </p>
-
-        {isSyncing ? (
-          <div className="flex items-center gap-2 text-sm text-purple-400">
-            <RefreshCw className="h-4 w-4 animate-spin" />
-            Syncing…
-          </div>
-        ) : (
-          <div className="flex items-center gap-3">
-            {onTriggerSync && (
-              <Button onClick={onTriggerSync} className="gap-2">
-                <RefreshCw className="h-4 w-4" />
-                Sync now
-              </Button>
-            )}
-            <Link href="/settings">
-              <Button variant="ghost" className="text-white/40 hover:text-white">
-                Settings
-              </Button>
-            </Link>
-          </div>
-        )}
-      </div>
+      <EmptyTerminal
+        path={label}
+        statusLabel="empty"
+        command={
+          <>
+            {label} <span className="text-violet-300/70">--list</span>
+          </>
+        }
+        output={
+          isSyncing ? (
+            <span className="text-violet-300/60">syncing library…</span>
+          ) : (
+            <>library is empty</>
+          )
+        }
+        icon={Icon}
+        headline={`no ${label} yet`}
+        subtext={
+          isSyncing
+            ? "syncing your library — check back in a moment"
+            : "sync your jellyfin library to get started"
+        }
+        actions={
+          isSyncing ? (
+            <span className="inline-flex items-center gap-2 font-mono text-xs text-violet-300">
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+              syncing…
+            </span>
+          ) : (
+            <>
+              {onTriggerSync && (
+                <TerminalAction
+                  icon={RefreshCw}
+                  label="sync_now"
+                  variant="primary"
+                  onClick={onTriggerSync}
+                />
+              )}
+              <TerminalAction href="/settings" label="settings" />
+            </>
+          )
+        }
+      />
     );
   }
 
+  // ── No items found (e.g. a status filter with no matches) ──────────────────
   return (
-    <div className="flex flex-col items-center py-24 px-4 text-center">
-      <Icon className="h-12 w-12 text-white/15 mb-5" />
-      <p className="text-base font-medium text-white/60 mb-1.5">No {label} found</p>
-      <p className="text-sm text-white/30 mb-8">Try adjusting your search or filters</p>
-
-      {filters.statusFilter ? (
-        <Button variant="outline" onClick={() => filters.setStatusFilter("")}>
-          Show all {label}
-        </Button>
-      ) : (
-        <Link href={isMovies ? "/shows" : "/movies"}>
-          <Button variant="ghost" className="gap-2 text-white/40 hover:text-white">
-            {isMovies ? <Tv className="h-4 w-4" /> : <Film className="h-4 w-4" />}
-            Browse {isMovies ? "shows" : "movies"}
-          </Button>
-        </Link>
-      )}
-    </div>
+    <EmptyTerminal
+      path={label}
+      statusLabel="empty"
+      command={
+        <>
+          {label}
+          {filters.statusFilter ? (
+            <span className="text-violet-300/70"> --status {filters.statusFilter}</span>
+          ) : (
+            <span className="text-violet-300/70"> --list</span>
+          )}
+        </>
+      }
+      output={
+        <>
+          query returned <span className="tabular-nums text-white/70">0</span> results
+        </>
+      }
+      icon={Icon}
+      headline={`no ${label} found`}
+      subtext="try adjusting your search or filters"
+      actions={
+        filters.statusFilter ? (
+          <TerminalAction label={`show_all_${label}`} onClick={() => filters.setStatusFilter("")} />
+        ) : (
+          <TerminalAction href={`/${otherLabel}`} icon={OtherIcon} label={`browse_${otherLabel}`} />
+        )
+      }
+    />
   );
 }
 
@@ -168,10 +210,10 @@ function FilterPill({ label, onRemove }: { label: string; onRemove: () => void }
   return (
     <button
       onClick={onRemove}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/[0.05] border border-white/[0.08] text-sm text-white/50 hover:text-white/80 hover:bg-white/[0.08] transition-all group"
+      className="group inline-flex items-center gap-1.5 rounded-sm border border-[#16162a] bg-[#0a0a14] px-3 py-1.5 font-mono text-xs text-white/55 transition-colors hover:border-violet-500/30 hover:bg-violet-500/10 hover:text-violet-300"
     >
       {label}
-      <X className="h-3.5 w-3.5 text-white/20 group-hover:text-white/50 transition-colors" />
+      <X className="h-3 w-3 text-white/25 transition-colors group-hover:text-violet-300/70" />
     </button>
   );
 }

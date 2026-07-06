@@ -1,7 +1,7 @@
 "use client";
 
 import { Eye } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { SettingsCheckbox } from "./SettingsCheckbox";
+import { SettingsCardHeader, FieldLabel, INPUT_CLASS } from "./SettingsPrimitives";
 import type { UserPrefs } from "./types";
 
 interface Props {
@@ -20,43 +21,47 @@ interface Props {
 
 export function DisplaySettingsCard({ prefs, setPrefs }: Props) {
   return (
-    <Card className="relative overflow-hidden">
-      <div className="pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full blur-3xl opacity-15 bg-purple-500" />
-      <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <Eye className="h-5 w-5 text-purple-400" />
-          Display Settings
-        </CardTitle>
-        <CardDescription>Customize your experience and display options</CardDescription>
-      </CardHeader>
+    <Card>
+      <SettingsCardHeader
+        icon={<Eye className="h-5 w-5" />}
+        title="display_settings"
+        description="Customize your experience and display options"
+      />
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-            Items Per Page
-          </span>
+          <FieldLabel>items_per_page</FieldLabel>
           <Select
             value={prefs.display_items_per_page.toString()}
             onValueChange={(value) =>
               setPrefs({ ...prefs, display_items_per_page: parseInt(value) })
             }
           >
-            <SelectTrigger id="items_per_page" className="w-full">
+            <SelectTrigger
+              id="items_per_page"
+              className="w-full rounded-sm border-[#16162a] bg-[#0a0a14] font-mono"
+            >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="25">25</SelectItem>
-              <SelectItem value="50">50</SelectItem>
-              <SelectItem value="100">100</SelectItem>
-              <SelectItem value="200">200</SelectItem>
+            <SelectContent className="rounded-sm border-[#16162a] bg-[#07070d] font-mono">
+              <SelectItem value="25" className="rounded-sm text-xs">
+                25
+              </SelectItem>
+              <SelectItem value="50" className="rounded-sm text-xs">
+                50
+              </SelectItem>
+              <SelectItem value="100" className="rounded-sm text-xs">
+                100
+              </SelectItem>
+              <SelectItem value="200" className="rounded-sm text-xs">
+                200
+              </SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-              Weekly Goal
-            </span>
+            <FieldLabel>weekly_goal</FieldLabel>
             <Input
               id="weekly_goal"
               type="number"
@@ -66,14 +71,15 @@ export function DisplaySettingsCard({ prefs, setPrefs }: Props) {
               onChange={(e) =>
                 setPrefs({ ...prefs, weekly_target_minutes: parseInt(e.target.value) || 0 })
               }
+              className={INPUT_CLASS}
             />
-            <p className="text-xs text-white/30">Minutes per week</p>
+            <p className="font-mono text-xs text-white/30">
+              <span className="select-none text-violet-400/40">{"# "}</span>minutes per week
+            </p>
           </div>
 
           <div className="space-y-2">
-            <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-              Monthly Goal
-            </span>
+            <FieldLabel>monthly_goal</FieldLabel>
             <Input
               id="monthly_goal"
               type="number"
@@ -83,15 +89,16 @@ export function DisplaySettingsCard({ prefs, setPrefs }: Props) {
               onChange={(e) =>
                 setPrefs({ ...prefs, monthly_target_minutes: parseInt(e.target.value) || 0 })
               }
+              className={INPUT_CLASS}
             />
-            <p className="text-xs text-white/30">Minutes per month</p>
+            <p className="font-mono text-xs text-white/30">
+              <span className="select-none text-violet-400/40">{"# "}</span>minutes per month
+            </p>
           </div>
         </div>
 
         <div className="space-y-2">
-          <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-            Default Date Range
-          </span>
+          <FieldLabel>default_date_range</FieldLabel>
           <div className="flex items-center gap-3">
             <Input
               id="default_date_range"
@@ -102,11 +109,14 @@ export function DisplaySettingsCard({ prefs, setPrefs }: Props) {
               onChange={(e) =>
                 setPrefs({ ...prefs, default_date_range_days: parseInt(e.target.value) || 30 })
               }
-              className="w-32"
+              className={`w-32 ${INPUT_CLASS}`}
             />
-            <span className="text-sm text-white/40">days</span>
+            <span className="font-mono text-sm text-white/40">days</span>
           </div>
-          <p className="text-xs text-white/30">7–365 days for chart filters</p>
+          <p className="font-mono text-xs text-white/30">
+            <span className="select-none text-violet-400/40">{"# "}</span>7–365 days for chart
+            filters
+          </p>
         </div>
 
         <SettingsCheckbox

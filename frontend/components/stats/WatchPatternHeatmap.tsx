@@ -32,8 +32,8 @@ function PatternTooltip({
 }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="rounded-xl border border-white/10 bg-[rgba(16,16,24,0.96)] px-4 py-3 shadow-xl shadow-black/50 backdrop-blur-sm">
-      <p className="text-xs font-medium text-white/55 mb-1.5">{label}</p>
+    <div className="rounded-sm border border-[#16162a] bg-[rgba(7,7,13,0.96)] px-4 py-3 font-mono shadow-xl shadow-black/50 backdrop-blur-sm">
+      <p className="mb-1.5 text-xs text-violet-300/70">{label}</p>
       <div className="flex items-baseline gap-2">
         <span className="tabular-nums text-sm font-bold text-white">{payload[0].value}</span>
         <span className="text-[11px] text-white/40">sessions</span>
@@ -78,18 +78,18 @@ export function WatchPatternHeatmap() {
   return (
     <ChartCard
       title="Watch Patterns"
-      icon={<BarChart3 className="h-5 w-5 text-purple-400" />}
+      icon={<BarChart3 className="h-5 w-5" />}
       isLoading={isLoading}
       minHeight="min-h-[260px]"
       isEmpty={isEmpty}
-      emptyMessage="No watch pattern data yet"
-      emptyDescription="Watch more content to see your patterns"
+      emptyMessage="no_watch_pattern_data_yet"
+      emptyDescription="watch more content to see your patterns"
       emptyIcon={<BarChart3 className="h-10 w-10" />}
       titleExtra={
         avgSession > 0 ? (
-          <span className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/60">
-            <Clock className="h-3 w-3" />
-            Avg session: {formatRuntime(Math.round(avgSession)) ?? "0m"}
+          <span className="flex items-center gap-1.5 rounded-sm border border-[#16162a] bg-[#0a0a14] px-2.5 py-1 font-mono text-xs text-white/60">
+            <Clock className="h-3 w-3 text-violet-400/70" />
+            avg_session: {formatRuntime(Math.round(avgSession)) ?? "0m"}
           </span>
         ) : null
       }
@@ -97,8 +97,8 @@ export function WatchPatternHeatmap() {
       {heatmapData && (
         <div className="grid sm:grid-cols-2 gap-6">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.12em] text-white/40 mb-3">
-              By Hour of Day
+            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+              <span className="text-violet-400/45 select-none">{"# "}</span>by_hour_of_day
             </p>
             <div className="h-52">
               <ResponsiveContainer width="100%" height="100%">
@@ -138,7 +138,7 @@ export function WatchPatternHeatmap() {
                     {heatmapData.byHour.map((entry, index) => (
                       <Cell
                         key={index}
-                        fill={`rgba(168, 85, 247, ${0.25 + entry.intensity * 0.75})`}
+                        fill={`rgba(139, 92, 246, ${0.25 + entry.intensity * 0.75})`}
                       />
                     ))}
                   </Bar>
@@ -147,8 +147,8 @@ export function WatchPatternHeatmap() {
             </div>
           </div>
           <div>
-            <p className="text-[11px] uppercase tracking-[0.12em] text-white/40 mb-3">
-              By Day of Week
+            <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+              <span className="text-violet-400/45 select-none">{"# "}</span>by_day_of_week
             </p>
             <div className="h-52">
               <ResponsiveContainer width="100%" height="100%">
@@ -187,7 +187,7 @@ export function WatchPatternHeatmap() {
                     {heatmapData.byDow.map((entry, index) => (
                       <Cell
                         key={index}
-                        fill={`rgba(168, 85, 247, ${0.25 + entry.intensity * 0.75})`}
+                        fill={`rgba(139, 92, 246, ${0.25 + entry.intensity * 0.75})`}
                       />
                     ))}
                   </Bar>

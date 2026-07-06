@@ -19,6 +19,7 @@ yarn-error.log*
 
 # Go (backend)
 bin/
+backend/server
 *.exe
 *.test
 coverage.out

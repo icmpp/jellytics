@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useMemo, useCallback, memo } from "react";
+import { useState, useMemo, useCallback, useId, memo } from "react";
 import { useWatchHistory, type WatchHistoryItem } from "@/hooks/useWatchHistory";
 import { AppLayout, PageHeader, PageContent } from "@/components/layout";
+import { EmptyTerminal, TerminalAction } from "@/components/media";
+import { motion } from "framer-motion";
 import {
   Select,
   SelectContent,
@@ -21,6 +23,7 @@ import {
   History,
   LayoutList,
   Loader2,
+  Filter,
   X,
   ExternalLink,
   PlayCircle,
@@ -29,18 +32,191 @@ import {
 import { format, formatDistanceToNow, isToday, isYesterday, parseISO } from "date-fns";
 import Link from "next/link";
 import Image from "next/image";
-import { cn, formatRuntime, resolvePosterUrl, PROGRESS_BAR_CLASS } from "@/lib/utils";
+import { cn, formatRuntime, resolvePosterUrl } from "@/lib/utils";
 import { HistoryCalendar } from "@/components/history/HistoryCalendar";
 
 function formatDateHeader(dateStr: string): string {
   const date = parseISO(dateStr);
-  if (isToday(date)) return "Today";
-  if (isYesterday(date)) return "Yesterday";
+  if (isToday(date)) return "today";
+  if (isYesterday(date)) return "yesterday";
   const now = new Date();
   if (date.getFullYear() === now.getFullYear()) {
-    return format(date, "EEE, MMM d");
+    return format(date, "EEE, MMM d").toLowerCase();
   }
-  return format(date, "EEE, MMM d, yyyy");
+  return format(date, "EEE, MMM d, yyyy").toLowerCase();
+}
+
+/** Terminal date-group divider — mirrors the watchlist "# suggested" rule. */
+function DateGroupHeader({ label, count }: { label: string; count: number }) {
+  return (
+    <div className="mb-4 flex items-center gap-2.5 font-mono">
+      <span className="whitespace-nowrap text-xs text-violet-300/70">
+        <span className="select-none text-violet-400/45">{"# "}</span>
+        {label}
+      </span>
+      <span className="whitespace-nowrap text-[11px] tabular-nums text-white/30">
+        {count} {count === 1 ? "item" : "items"}
+      </span>
+      <div
+        className="h-px flex-1"
+        style={{ background: "linear-gradient(90deg, #16162a 60%, transparent)" }}
+      />
+    </div>
+  );
+}
+
+/** Terminal summary strip — totals for the currently filtered history. */
+function HistoryStats({ items }: { items: WatchHistoryItem[] }) {
+  const stats = useMemo(() => {
+    let minutes = 0;
+    let episodes = 0;
+    for (const it of items) {
+      minutes += it.totalWatchTime ?? it.duration ?? 0;
+      if (it.type === "episode") episodes += 1;
+    }
+    return { total: items.length, minutes, episodes, movies: items.length - episodes };
+  }, [items]);
+
+  const cells: { label: string; value: string }[] = [
+    { label: "entries", value: stats.total.toLocaleString() },
+    { label: "watch_time", value: formatRuntime(stats.minutes) ?? "0m" },
+    { label: "episodes", value: stats.episodes.toLocaleString() },
+    { label: "movies", value: stats.movies.toLocaleString() },
+  ];
+
+  return (
+    <div className="mb-6 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+      {cells.map((c) => (
+        <div
+          key={c.label}
+          className="rounded-sm border border-[#16162a] bg-[#0a0a14] px-4 py-3 font-mono transition-colors hover:border-violet-500/25"
+        >
+          <p className="text-[11px] text-violet-300/45">
+            <span className="select-none text-violet-400/40">{"# "}</span>
+            {c.label}
+          </p>
+          <p className="mt-1 text-xl font-semibold tabular-nums text-white/90">{c.value}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Two-segment list/calendar toggle styled like StatusSegmented. */
+function ViewModeSegmented({
+  value,
+  onChange,
+}: {
+  value: ViewMode;
+  onChange: (v: ViewMode) => void;
+}) {
+  const layoutId = useId();
+  const segments: { value: ViewMode; label: string; icon: typeof LayoutList }[] = [
+    { value: "list", label: "list", icon: LayoutList },
+    { value: "calendar", label: "calendar", icon: CalendarDays },
+  ];
+
+  return (
+    <div
+      role="tablist"
+      aria-label="View mode"
+      className="inline-flex h-11 items-stretch overflow-hidden rounded-sm border border-[#16162a] bg-[#06060d]"
+    >
+      {segments.map((seg) => {
+        const active = value === seg.value;
+        const Icon = seg.icon;
+        return (
+          <button
+            key={seg.value}
+            type="button"
+            role="tab"
+            aria-selected={active}
+            onClick={() => onChange(seg.value)}
+            className={cn(
+              "group relative flex items-center gap-1.5 whitespace-nowrap border-r border-[#16162a] px-3 sm:px-4 text-xs font-mono transition-colors last:border-r-0",
+              active ? "text-violet-300/90" : "text-white/40 hover:text-white/70",
+            )}
+          >
+            {active && (
+              <motion.span
+                layoutId={layoutId}
+                className="absolute inset-0 z-0 bg-[#07070d]"
+                style={{ boxShadow: "inset 0 1.5px 0 #8b5cf6" }}
+                transition={{ type: "spring", stiffness: 500, damping: 38 }}
+              />
+            )}
+            <Icon
+              className={cn(
+                "relative z-10 h-3.5 w-3.5 shrink-0",
+                active ? "text-violet-400 phosphor-glow" : "text-violet-400/35",
+              )}
+            />
+            <span className="relative z-10">
+              {seg.label}
+              {active && <span className="cursor-blink ml-px text-violet-400/80">_</span>}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Terminal-styled select, mirroring the library's SortSelect. */
+function TerminalSelect<T extends string>({
+  value,
+  onChange,
+  options,
+  icon: Icon,
+  ariaLabel,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: string }[];
+  icon: typeof Filter;
+  ariaLabel: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const current = options.find((o) => o.value === value) ?? options[0];
+
+  return (
+    <Select
+      open={open}
+      onOpenChange={setOpen}
+      value={value}
+      onValueChange={(v) => onChange(v as T)}
+    >
+      <SelectTrigger
+        aria-label={ariaLabel}
+        className={cn(
+          "h-11 w-auto min-w-[130px] shrink-0 rounded-sm font-mono",
+          "focus:ring-0 focus:border-violet-500/30 focus:bg-violet-500/10",
+          "data-[state=open]:ring-0 data-[state=open]:border-violet-500/30 data-[state=open]:bg-violet-500/10 data-[state=open]:text-violet-300 data-[state=open]:[&_svg]:text-violet-300/70",
+          open
+            ? "border-violet-500/30 bg-violet-500/10 text-violet-300 hover:bg-violet-500/15"
+            : "border-[#16162a] bg-[#0a0a14] hover:bg-[#0d0d1a]",
+        )}
+      >
+        <div className="flex min-w-0 items-center gap-2">
+          <Icon className="h-4 w-4 shrink-0 text-white/40" />
+          <SelectValue>
+            <span className="truncate">{current.label}</span>
+          </SelectValue>
+        </div>
+      </SelectTrigger>
+      <SelectContent
+        align="end"
+        collisionPadding={8}
+        className="max-w-[220px] rounded-sm border-[#16162a] bg-[#07070d] font-mono"
+      >
+        {options.map((o) => (
+          <SelectItem key={o.value} value={o.value} className="rounded-sm text-xs">
+            {o.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 }
 
 function DetailSheet({ item, onClose }: { item: WatchHistoryItem | null; onClose: () => void }) {
@@ -56,18 +232,35 @@ function DetailSheet({ item, onClose }: { item: WatchHistoryItem | null; onClose
   return (
     <>
       <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-sm min-w-0 bg-[#0d0d14] border-l border-white/[0.08] shadow-2xl flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.08]">
-          <h2 className="text-sm font-semibold text-white">Watch Details</h2>
-          <button onClick={onClose} className="text-white/40 hover:text-white transition-colors">
-            <X className="h-5 w-5" />
+      <div className="fixed right-0 top-0 bottom-0 z-50 flex w-full min-w-0 max-w-sm flex-col overflow-hidden border-l border-[#16162a] bg-[#07070d] font-mono shadow-2xl">
+        {/* Terminal chrome header */}
+        <div
+          className="flex items-center justify-between border-b border-[#16162a] px-5 py-3.5"
+          style={{ background: "#06060d" }}
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="flex shrink-0 items-center gap-1.5">
+              <div className="h-2 w-2 rounded-full bg-[#ef4444]/70" />
+              <div className="h-2 w-2 rounded-full bg-[#f59e0b]/70" />
+              <div className="h-2 w-2 rounded-full bg-[#22c55e]/70" />
+            </div>
+            <span className="text-xs text-violet-400/70">
+              <span className="select-none text-white/30">{"# "}</span>watch details
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            className="rounded-sm p-1 text-white/40 transition-colors hover:bg-[#0d0d1a] hover:text-white"
+            aria-label="Close"
+          >
+            <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+        <div className="flex-1 space-y-5 overflow-y-auto p-5">
           <div className="flex gap-4">
             {resolvePosterUrl(item.posterUrl) && (
-              <div className="relative w-20 aspect-[2/3] rounded-xl overflow-hidden shrink-0">
+              <div className="relative aspect-2/3 w-20 shrink-0 overflow-hidden rounded-sm border border-[#16162a]">
                 <Image
                   src={resolvePosterUrl(item.posterUrl)!}
                   alt={item.title}
@@ -77,20 +270,20 @@ function DetailSheet({ item, onClose }: { item: WatchHistoryItem | null; onClose
                 />
               </div>
             )}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 mb-1">
-                <div className="p-1 rounded bg-purple-500/20">
+            <div className="min-w-0 flex-1">
+              <div className="mb-1.5 flex items-center gap-1.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded-sm border border-violet-500/15 bg-violet-500/5">
                   {item.type === "episode" ? (
-                    <Tv className="h-3 w-3 text-purple-400" />
+                    <Tv className="h-3 w-3 text-violet-400/70" />
                   ) : (
-                    <Film className="h-3 w-3 text-purple-400" />
+                    <Film className="h-3 w-3 text-violet-400/70" />
                   )}
-                </div>
-                <span className="text-xs text-white/40 capitalize">
-                  {item.type === "episode" ? "Show" : "Movie"}
+                </span>
+                <span className="text-xs lowercase text-white/40">
+                  {item.type === "episode" ? "show" : "movie"}
                 </span>
               </div>
-              <h3 className="font-semibold text-white text-base leading-tight mb-1">
+              <h3 className="mb-1 text-base font-semibold leading-tight text-white">
                 {item.title}
               </h3>
               {item.showTitle && <p className="text-sm text-white/50">{item.showTitle}</p>}
@@ -99,49 +292,50 @@ function DetailSheet({ item, onClose }: { item: WatchHistoryItem | null; onClose
 
           <div className="space-y-3">
             <InfoRow
-              label="Last Watched"
+              label="last watched"
               value={format(parseISO(item.watchedAt), "PPP p")}
               icon={<Calendar className="h-3.5 w-3.5" />}
             />
             {item.firstWatchedAt && item.firstWatchedAt !== item.watchedAt && (
               <InfoRow
-                label="First Watched"
+                label="first watched"
                 value={format(parseISO(item.firstWatchedAt), "PPP")}
                 icon={<Clock className="h-3.5 w-3.5" />}
               />
             )}
             {item.totalWatchTime !== undefined && item.totalWatchTime > 0 && (
               <InfoRow
-                label="Total Watch Time"
+                label="total watch time"
                 value={formatRuntime(item.totalWatchTime) ?? "—"}
                 icon={<Clock className="h-3.5 w-3.5" />}
               />
             )}
             {item.watchCount !== undefined && item.watchCount > 0 && (
               <InfoRow
-                label={item.type === "episode" ? "Episodes Watched" : "Times Watched"}
+                label={item.type === "episode" ? "episodes watched" : "times watched"}
                 value={item.watchCount.toString()}
                 icon={<PlayCircle className="h-3.5 w-3.5" />}
               />
             )}
             {item.completionPercentage !== undefined && item.completionPercentage > 0 && (
               <InfoRow
-                label="Completion"
-                value={`${item.completionPercentage}%`}
+                label="completion"
+                value={`${Math.round(item.completionPercentage)}%`}
                 icon={<CheckCircle2 className="h-3.5 w-3.5" />}
               />
             )}
             {item.status && (
               <div className="flex items-center justify-between">
-                <span className="text-xs text-white/40">Status</span>
+                <span className="text-xs lowercase text-white/40">status</span>
                 <span
-                  className={`text-xs px-2 py-0.5 rounded-full border ${
+                  className={cn(
+                    "rounded-sm border px-2 py-0.5 text-xs lowercase",
                     item.status === "watched"
-                      ? "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"
+                      ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
                       : item.status === "watching"
-                        ? "border-blue-500/30 text-blue-400 bg-blue-500/10"
-                        : "border-white/10 text-white/40 bg-white/5"
-                  }`}
+                        ? "border-blue-500/30 bg-blue-500/10 text-blue-400"
+                        : "border-[#16162a] bg-[#0a0a14] text-white/40",
+                  )}
                 >
                   {item.status}
                 </span>
@@ -150,28 +344,24 @@ function DetailSheet({ item, onClose }: { item: WatchHistoryItem | null; onClose
           </div>
 
           {item.completionPercentage !== undefined && item.completionPercentage > 0 && (
-            <div>
-              <div className={PROGRESS_BAR_CLASS}>
-                <div
-                  className="h-full bg-purple-500 rounded-full"
-                  style={{
-                    width: `${Math.min(item.completionPercentage, 100)}%`,
-                  }}
-                />
-              </div>
+            <div className="h-1 w-full overflow-hidden rounded-full bg-black/40 ring-1 ring-inset ring-white/6">
+              <div
+                className="h-full rounded-full bg-violet-500"
+                style={{ width: `${Math.min(item.completionPercentage, 100)}%` }}
+              />
             </div>
           )}
         </div>
 
         {detailHref && (
-          <div className="p-5 border-t border-white/[0.08]">
+          <div className="border-t border-[#16162a] p-5">
             <Link
               href={detailHref}
               onClick={onClose}
-              className="flex items-center justify-center gap-2 w-full h-11 rounded-xl bg-white/[0.06] border border-white/[0.10] text-sm font-medium text-white/70 hover:text-white hover:bg-white/[0.10] transition-all"
+              className="flex h-11 w-full items-center justify-center gap-2 rounded-sm border border-[#16162a] bg-[#0a0a14] text-sm text-white/70 transition-colors hover:border-violet-500/30 hover:bg-violet-500/10 hover:text-violet-300"
             >
               <ExternalLink className="h-4 w-4" />
-              View Full Details
+              view full details
             </Link>
           </div>
         )}
@@ -183,11 +373,11 @@ function DetailSheet({ item, onClose }: { item: WatchHistoryItem | null; onClose
 function InfoRow({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between">
-      <div className="flex items-center gap-1.5 text-xs text-white/40">
+      <div className="flex items-center gap-1.5 text-xs lowercase text-white/40">
         {icon}
         {label}
       </div>
-      <span className="text-xs text-white/70 font-medium">{value}</span>
+      <span className="text-xs font-medium text-white/70">{value}</span>
     </div>
   );
 }
@@ -199,93 +389,127 @@ const HistoryItemCard = memo(function HistoryItemCard({
   item: WatchHistoryItem;
   onSelect: (item: WatchHistoryItem) => void;
 }) {
+  const removed = item.removedFromLibrary;
+  const posterSrc = resolvePosterUrl(item.posterUrl);
+  const watched = parseISO(item.watchedAt);
+  const absTime = format(watched, "h:mm a").toLowerCase();
+  const relTime = formatDistanceToNow(watched, { addSuffix: true });
+  const durationLabel = item.duration
+    ? `${Math.floor(item.duration / 60)}h ${item.duration % 60}m`
+    : null;
+  const pct =
+    typeof item.completionPercentage === "number" && item.completionPercentage > 0
+      ? Math.round(Math.min(item.completionPercentage, 100))
+      : null;
+
   return (
     <button onClick={() => onSelect(item)} className="group w-full text-left">
       <div
-        className={`rounded-2xl backdrop-blur-xl border transition-all p-5 ${
-          item.removedFromLibrary
-            ? "bg-white/[0.02] border-amber-500/20 hover:bg-white/[0.04] hover:border-amber-500/30 opacity-90"
-            : "bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06] hover:border-white/[0.12]"
-        }`}
+        className={cn(
+          "flex items-stretch gap-3.5 rounded-sm border p-3.5 font-mono transition-colors",
+          removed
+            ? "border-amber-500/25 bg-amber-500/3 hover:border-amber-500/40 hover:bg-amber-500/6"
+            : "border-[#16162a] bg-[#0a0a14] hover:border-violet-500/30 hover:bg-[#0d0d1a]",
+        )}
       >
-        <div className="flex items-center gap-5">
-          {resolvePosterUrl(item.posterUrl) && (
-            <div className="relative w-16 h-24 flex-shrink-0 rounded-xl overflow-hidden shadow-lg shadow-black/20">
-              <Image
-                src={resolvePosterUrl(item.posterUrl)!}
-                alt={item.title}
-                fill
-                className="object-cover"
-                sizes="64px"
-              />
-            </div>
+        {/* Leading thumb — poster, or a type-icon fallback so every row keeps a left anchor */}
+        <div
+          className={cn(
+            "relative h-18 w-12 shrink-0 overflow-hidden rounded-sm border",
+            removed ? "border-amber-500/20" : "border-[#16162a]",
           )}
-
-          <div className="flex-1 min-w-0 space-y-3">
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2.5">
-                <div className="p-1.5 rounded-lg bg-purple-500/20 flex-shrink-0">
-                  {item.type === "episode" ? (
-                    <Tv className="h-3.5 w-3.5 text-purple-400" />
-                  ) : (
-                    <Film className="h-3.5 w-3.5 text-purple-400" />
-                  )}
-                </div>
-                <h3
-                  className={`font-semibold text-sm truncate transition-colors ${
-                    item.removedFromLibrary
-                      ? "text-white/70 group-hover:text-amber-400/90"
-                      : "text-white group-hover:text-purple-400"
-                  }`}
-                >
-                  {item.title}
-                </h3>
-                {item.removedFromLibrary && (
-                  <span title="Removed from library">
-                    <Archive className="h-3.5 w-3.5 text-amber-400/70 flex-shrink-0" aria-hidden />
-                  </span>
-                )}
-              </div>
-
-              {(item.showTitle ||
-                (item.seasonNumber !== undefined && item.episodeNumber !== undefined)) && (
-                <div className="flex items-center gap-2 pl-9">
-                  {item.showTitle && (
-                    <p className="text-sm text-white/50 truncate">{item.showTitle}</p>
-                  )}
-                  {item.seasonNumber !== undefined && item.episodeNumber !== undefined && (
-                    <>
-                      {item.showTitle && <span className="text-white/20">·</span>}
-                      <p className="text-sm text-white/40 flex-shrink-0">
-                        S{item.seasonNumber} E{item.episodeNumber}
-                      </p>
-                    </>
-                  )}
-                </div>
+        >
+          {posterSrc ? (
+            <Image src={posterSrc} alt={item.title} fill className="object-cover" sizes="48px" />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center bg-[#06060d]">
+              {item.type === "episode" ? (
+                <Tv
+                  className={cn("h-5 w-5", removed ? "text-amber-400/50" : "text-violet-400/40")}
+                />
+              ) : (
+                <Film
+                  className={cn("h-5 w-5", removed ? "text-amber-400/50" : "text-violet-400/40")}
+                />
               )}
-            </div>
+            </span>
+          )}
+        </div>
 
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-1.5 text-xs text-white/40">
-                <Clock className="h-3.5 w-3.5" />
-                <span>
-                  {formatDistanceToNow(parseISO(item.watchedAt), {
-                    addSuffix: true,
-                  })}
-                </span>
-              </div>
-              {item.duration && (
-                <>
-                  <span className="text-white/20">·</span>
-                  <span className="text-xs text-white/40">
-                    {Math.floor(item.duration / 60)}h {item.duration % 60}m
-                  </span>
-                </>
+        {/* Title → subtitle → meta, flush-left for a single clean reading column */}
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+          <div className="flex items-center gap-2">
+            <h3
+              className={cn(
+                "truncate text-sm font-semibold transition-colors",
+                removed
+                  ? "text-white/70 group-hover:text-amber-400/90"
+                  : "text-white/90 group-hover:text-violet-300",
               )}
-            </div>
+            >
+              {item.title}
+            </h3>
+            {removed && (
+              <span title="Removed from library" className="shrink-0">
+                <Archive className="h-3.5 w-3.5 text-amber-400/70" aria-hidden />
+              </span>
+            )}
           </div>
 
-          <ChevronRight className="h-5 w-5 text-white/20 group-hover:text-purple-400 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
+          {(item.showTitle ||
+            (item.seasonNumber !== undefined && item.episodeNumber !== undefined)) && (
+            <p className="truncate text-xs text-white/50">
+              {item.showTitle}
+              {item.seasonNumber !== undefined && item.episodeNumber !== undefined && (
+                <span className="tabular-nums text-white/35">
+                  {item.showTitle ? " · " : ""}S{item.seasonNumber} E{item.episodeNumber}
+                </span>
+              )}
+            </p>
+          )}
+
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-white/40">
+            <span
+              className={cn(
+                "flex items-center gap-1",
+                removed ? "text-amber-400/60" : "text-violet-300/55",
+              )}
+            >
+              {item.type === "episode" ? <Tv className="h-3 w-3" /> : <Film className="h-3 w-3" />}
+              {item.type === "episode" ? "show" : "movie"}
+            </span>
+            {durationLabel && (
+              <>
+                <span className="text-white/20">·</span>
+                <span className="tabular-nums">{durationLabel}</span>
+              </>
+            )}
+            {pct !== null && (
+              <>
+                <span className="text-white/20">·</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-1 w-12 overflow-hidden rounded-full bg-black/40 ring-1 ring-inset ring-white/6">
+                    <span
+                      className="block h-full rounded-full bg-violet-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </span>
+                  <span className="text-[10px] tabular-nums text-white/40">{pct}%</span>
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* When + affordance, centered against the row height */}
+        <div className="flex shrink-0 items-center gap-2.5 self-center sm:gap-3">
+          <div className="flex flex-col items-end gap-0.5 text-right">
+            <span className="text-xs tabular-nums text-white/55">{absTime}</span>
+            <span className="hidden text-[11px] tabular-nums text-white/30 sm:block">
+              {relTime}
+            </span>
+          </div>
+          <ChevronRight className="h-5 w-5 text-white/20 transition-all group-hover:translate-x-0.5 group-hover:text-violet-400" />
         </div>
       </div>
     </button>
@@ -293,6 +517,19 @@ const HistoryItemCard = memo(function HistoryItemCard({
 });
 
 type ViewMode = "list" | "calendar";
+
+const TYPE_OPTIONS: { value: "all" | "episode" | "movie"; label: string }[] = [
+  { value: "all", label: "all_items" },
+  { value: "episode", label: "episodes" },
+  { value: "movie", label: "movies" },
+];
+
+const TIME_OPTIONS: { value: "all" | "today" | "week" | "month"; label: string }[] = [
+  { value: "all", label: "all_time" },
+  { value: "today", label: "today" },
+  { value: "week", label: "this_week" },
+  { value: "month", label: "this_month" },
+];
 
 export default function HistoryPage() {
   const [filter, setFilter] = useState<"all" | "episode" | "movie">("all");
@@ -369,113 +606,86 @@ export default function HistoryPage() {
       <PageHeader
         breadcrumb={breadcrumbItems}
         title="Watch History"
-        description="Your viewing timeline"
-        icon={<History className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
+        description="your viewing timeline"
         actions={
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
-            <div
-              className="grid h-11 w-full max-w-56 shrink-0 grid-cols-2 overflow-hidden rounded-xl border border-white/8 bg-white/3 shadow-none sm:w-auto sm:min-w-50 sm:max-w-none"
-              role="group"
-              aria-label="View mode"
-            >
-              <button
-                type="button"
-                onClick={() => setViewMode("list")}
-                className={cn(
-                  "flex min-h-0 min-w-0 items-center justify-center gap-2 border-r border-white/10 px-3 text-sm font-medium transition-colors outline-none",
-                  "focus-visible:z-10 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:ring-purple-500/30 focus-visible:ring-inset",
-                  viewMode === "list"
-                    ? "bg-purple-500/20 text-purple-400"
-                    : "text-white/50 hover:bg-white/5 hover:text-white",
-                )}
-                aria-pressed={viewMode === "list"}
-              >
-                <LayoutList className="h-4 w-4 shrink-0" />
-                List
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode("calendar")}
-                className={cn(
-                  "flex min-h-0 min-w-0 items-center justify-center gap-2 px-3 text-sm font-medium transition-colors outline-none",
-                  "focus-visible:z-10 focus-visible:bg-white/5 focus-visible:ring-2 focus-visible:ring-purple-500/30 focus-visible:ring-inset",
-                  viewMode === "calendar"
-                    ? "bg-purple-500/20 text-purple-400"
-                    : "text-white/50 hover:bg-white/5 hover:text-white",
-                )}
-                aria-pressed={viewMode === "calendar"}
-              >
-                <CalendarDays className="h-4 w-4 shrink-0" />
-                Calendar
-              </button>
-            </div>
-            <Select
+            <ViewModeSegmented value={viewMode} onChange={setViewMode} />
+            <TerminalSelect
               value={filter}
-              onValueChange={(value: "all" | "episode" | "movie") => setFilter(value)}
-            >
-              <SelectTrigger className="w-[140px] h-11">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Items</SelectItem>
-                <SelectItem value="episode">Episodes</SelectItem>
-                <SelectItem value="movie">Movies</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
+              onChange={setFilter}
+              options={TYPE_OPTIONS}
+              icon={Filter}
+              ariaLabel="Filter by type"
+            />
+            <TerminalSelect
               value={timeRange}
-              onValueChange={(value: "all" | "today" | "week" | "month") => setTimeRange(value)}
-            >
-              <SelectTrigger className="w-[140px] h-11">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Time</SelectItem>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="week">This Week</SelectItem>
-                <SelectItem value="month">This Month</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={setTimeRange}
+              options={TIME_OPTIONS}
+              icon={Calendar}
+              ariaLabel="Filter by time range"
+            />
           </div>
         }
       />
       <PageContent>
         {isLoading && (
-          <div className="flex items-center justify-center py-16">
-            <div className="flex items-center gap-3 text-white/40">
-              <Loader2 className="h-6 w-6 animate-spin text-purple-400" />
-              <span>Loading watch history...</span>
+          <div className="flex items-center justify-center py-20 font-mono">
+            <div className="flex items-center gap-2.5 text-xs text-violet-300/60">
+              <Loader2 className="h-4 w-4 animate-spin text-violet-400" />
+              <span>
+                <span className="select-none text-violet-400/60">$ </span>loading watch history...
+              </span>
             </div>
           </div>
         )}
 
         {!isLoading && isError && (
-          <div className="text-center py-16">
-            <History className="h-16 w-16 text-white/20 mx-auto mb-4" />
-            <p className="text-white/60 text-lg mb-2">Failed to load watch history</p>
-            <p className="text-sm text-white/40 mb-4">Something went wrong. Please try again.</p>
-            <button
-              onClick={() => refetch()}
-              className="px-4 py-2 rounded-xl bg-purple-500/20 text-purple-400 hover:bg-purple-500/30 transition-colors text-sm font-medium"
-            >
-              Retry
-            </button>
+          <div className="flex flex-col items-center py-20 text-center font-mono">
+            <History className="mb-5 h-10 w-10 text-violet-400/30" />
+            <p className="mb-1.5 text-base text-white/70">
+              <span className="select-none text-red-400/70">{"! "}</span>failed to load watch
+              history
+            </p>
+            <p className="mb-5 text-xs text-violet-300/45">
+              <span className="select-none text-violet-400/45">{"# "}</span>something went wrong,
+              please try again
+            </p>
+            <TerminalAction label="retry" onClick={() => refetch()} />
           </div>
         )}
 
         {!isLoading && !isError && filteredHistory.length === 0 && (
-          <div className="text-center py-16">
-            <History className="h-16 w-16 text-white/20 mx-auto mb-4" />
-            <p className="text-white/60 text-lg mb-2">No watch history found</p>
-            <p className="text-sm text-white/40">
-              Try adjusting your filters or start watching some content
-            </p>
-          </div>
+          <EmptyTerminal
+            path="history"
+            statusLabel="empty"
+            command={
+              <>
+                history <span className="text-violet-300/70">--list</span>
+              </>
+            }
+            output={
+              <>
+                query returned <span className="tabular-nums text-white/70">0</span> entries
+              </>
+            }
+            icon={History}
+            headline="no watch history found"
+            subtext="try adjusting your filters or start watching some content"
+            actions={
+              <>
+                <TerminalAction href="/movies" icon={Film} label="browse_movies" />
+                <TerminalAction href="/shows" icon={Tv} label="browse_shows" />
+              </>
+            }
+          />
+        )}
+
+        {!isLoading && !isError && filteredHistory.length > 0 && (
+          <HistoryStats items={filteredHistory} />
         )}
 
         {!isLoading && filteredHistory.length > 0 && viewMode === "calendar" && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
             <HistoryCalendar
               items={filteredHistory}
               selectedDate={calendarSelectedDate}
@@ -484,20 +694,10 @@ export default function HistoryPage() {
             <div className="space-y-4">
               {calendarSelectedDate ? (
                 <>
-                  <div className="flex items-center gap-4 -ml-0.5">
-                    <div className="flex items-center gap-2.5">
-                      <Calendar className="h-4 w-4 text-purple-400 opacity-70" />
-                      <h2 className="text-sm font-medium text-white/70">
-                        {formatDateHeader(calendarSelectedDate)}
-                      </h2>
-                      <span className="text-white/30">·</span>
-                      <span className="text-sm text-white/40">
-                        {calendarFilteredItems.length}{" "}
-                        {calendarFilteredItems.length === 1 ? "item" : "items"}
-                      </span>
-                    </div>
-                    <div className="flex-1 h-px bg-linear-to-r from-white/8 to-transparent" />
-                  </div>
+                  <DateGroupHeader
+                    label={formatDateHeader(calendarSelectedDate)}
+                    count={calendarFilteredItems.length}
+                  />
                   <div className="grid gap-3">
                     {calendarFilteredItems.map((item) => (
                       <HistoryItemCard key={item.id} item={item} onSelect={handleSelectItem} />
@@ -505,8 +705,11 @@ export default function HistoryPage() {
                   </div>
                 </>
               ) : (
-                <div className="flex items-center justify-center h-full min-h-[200px] rounded-2xl border border-white/6 bg-white/2">
-                  <p className="text-sm text-white/30">Select a day to see what you watched</p>
+                <div className="flex h-full min-h-[200px] items-center justify-center rounded-sm border border-[#16162a] bg-[#0a0a14] font-mono">
+                  <p className="text-xs text-violet-300/40">
+                    <span className="select-none text-violet-400/40">{"# "}</span>select a day to
+                    see what you watched
+                  </p>
                 </div>
               )}
             </div>
@@ -519,20 +722,7 @@ export default function HistoryPage() {
               const items = grouped[dateKey];
               return (
                 <div key={dateKey} className="space-y-4">
-                  <div className="flex items-center gap-4 -ml-0.5">
-                    <div className="flex items-center gap-2.5">
-                      <Calendar className="h-4 w-4 text-purple-400 opacity-70" />
-                      <h2 className="text-sm font-medium text-white/70">
-                        {formatDateHeader(dateKey)}
-                      </h2>
-                      <span className="text-white/30">·</span>
-                      <span className="text-sm text-white/40">
-                        {items.length} {items.length === 1 ? "item" : "items"}
-                      </span>
-                    </div>
-                    <div className="flex-1 h-px bg-gradient-to-r from-white/[0.08] to-transparent" />
-                  </div>
-
+                  <DateGroupHeader label={formatDateHeader(dateKey)} count={items.length} />
                   <div className="grid gap-3">
                     {items.map((item) => (
                       <HistoryItemCard key={item.id} item={item} onSelect={handleSelectItem} />

@@ -3,16 +3,8 @@
 import { useState, useMemo } from "react";
 import { useStatsOverview } from "@/hooks/useStats";
 import { toast } from "@/hooks/useToast";
-import { Button } from "@/components/ui/button";
 import { AppLayout, PageHeader, PageContent } from "@/components/layout";
-import {
-  Download,
-  FileText,
-  FileSpreadsheet,
-  BarChart3,
-  FileJson,
-  ChevronDown,
-} from "lucide-react";
+import { Download, FileText, FileSpreadsheet, FileJson, ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { exportStatsToExcel, exportStatsToPDF } from "@/lib/export";
 import { useRatingsList } from "@/hooks/useRatings";
@@ -181,57 +173,62 @@ export default function StatsPage() {
       <PageHeader
         breadcrumb={breadcrumbItems}
         title="Statistics"
-        description="Detailed analytics and insights"
-        icon={<BarChart3 className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
+        description="detailed analytics and insights"
         actions={
           <Popover open={exportOpen} onOpenChange={setExportOpen}>
             <PopoverTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Download className="h-4 w-4" />
-                Export
-                <ChevronDown className="h-4 w-4 opacity-50" />
-              </Button>
+              <button
+                type="button"
+                className={`inline-flex h-11 items-center gap-2 rounded-sm border px-3 font-mono text-xs transition-colors ${
+                  exportOpen
+                    ? "border-violet-500/30 bg-violet-500/10 text-violet-300"
+                    : "border-[#16162a] bg-[#0a0a14] text-white/70 hover:bg-[#0d0d1a]"
+                }`}
+              >
+                <Download className="h-4 w-4 shrink-0" />
+                export
+                <ChevronDown
+                  className={`h-4 w-4 opacity-50 transition-transform ${exportOpen ? "rotate-180" : ""}`}
+                />
+              </button>
             </PopoverTrigger>
             <PopoverContent
               align="end"
               side="bottom"
-              className="w-[min(18rem,calc(100vw-2rem))] p-2"
+              className="w-[min(18rem,calc(100vw-2rem))] rounded-sm border-[#16162a] bg-[#07070d] p-2 font-mono"
             >
               <div className="space-y-1">
-                <p className="px-3 py-2 text-xs font-medium text-white/40 uppercase tracking-wider">
-                  Export Format
+                <p className="px-2 py-1.5 text-[10px] text-violet-300/55 uppercase tracking-[0.15em]">
+                  <span className="text-violet-400/45 select-none">{"# "}</span>
+                  export_format
                 </p>
                 <ExportButton
-                  label="JSON"
-                  description="Full data export"
-                  icon={<FileJson className="h-4 w-4 text-amber-400" />}
-                  iconBg="bg-amber-500/20 group-hover:bg-amber-500/30"
+                  label="json"
+                  description="full data export"
+                  icon={<FileJson className="h-4 w-4 text-amber-400/80" />}
                   onClick={exportJSON}
                   loading={exporting === "json"}
                 />
                 <ExportButton
-                  label="CSV"
-                  description="Spreadsheet compatible"
-                  icon={<FileText className="h-4 w-4 text-emerald-400" />}
-                  iconBg="bg-emerald-500/20 group-hover:bg-emerald-500/30"
+                  label="csv"
+                  description="spreadsheet compatible"
+                  icon={<FileText className="h-4 w-4 text-emerald-400/80" />}
                   onClick={exportCSV}
                   loading={exporting === "csv"}
                   disabled={!trends}
                 />
                 <ExportButton
-                  label="Excel"
-                  description="Multi-sheet workbook"
-                  icon={<FileSpreadsheet className="h-4 w-4 text-green-400" />}
-                  iconBg="bg-green-500/20 group-hover:bg-green-500/30"
+                  label="excel"
+                  description="multi-sheet workbook"
+                  icon={<FileSpreadsheet className="h-4 w-4 text-green-400/80" />}
                   onClick={exportExcel}
                   loading={exporting === "excel"}
                   disabled={!overview || !trends || !genres}
                 />
                 <ExportButton
-                  label="PDF"
-                  description="Print-ready report"
-                  icon={<FileText className="h-4 w-4 text-red-400" />}
-                  iconBg="bg-red-500/20 group-hover:bg-red-500/30"
+                  label="pdf"
+                  description="print-ready report"
+                  icon={<FileText className="h-4 w-4 text-red-400/80" />}
                   onClick={exportPDF}
                   loading={exporting === "pdf"}
                 />
@@ -269,7 +266,6 @@ function ExportButton({
   label,
   description,
   icon,
-  iconBg,
   onClick,
   loading,
   disabled,
@@ -277,7 +273,6 @@ function ExportButton({
   label: string;
   description: string;
   icon: React.ReactNode;
-  iconBg: string;
   onClick: () => void;
   loading: boolean;
   disabled?: boolean;
@@ -286,15 +281,23 @@ function ExportButton({
     <button
       onClick={onClick}
       disabled={loading || disabled}
-      className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-white/6 transition-colors text-left group disabled:opacity-50 disabled:cursor-not-allowed"
+      className="group w-full flex items-center gap-3 rounded-sm border border-transparent px-2 py-2 text-left transition-colors hover:border-[#16162a] hover:bg-[#0d0d1a] disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-transparent disabled:hover:bg-transparent"
     >
-      <div className={`p-2 rounded-lg transition-colors ${iconBg}`}>{icon}</div>
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border border-[#16162a] bg-[#0a0a14]">
+        {icon}
+      </span>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white">{label}</p>
-        <p className="text-xs text-white/40">{description}</p>
+        <p className="text-xs text-white/80 group-hover:text-violet-300">
+          <span className="text-violet-400/45 select-none">{"> "}</span>
+          {label}
+        </p>
+        <p className="text-[10px] text-white/35">
+          <span className="text-violet-400/30 select-none">{"# "}</span>
+          {description}
+        </p>
       </div>
       {loading && (
-        <div className="h-4 w-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+        <div className="h-3.5 w-3.5 shrink-0 animate-spin rounded-full border-2 border-violet-400 border-t-transparent" />
       )}
     </button>
   );

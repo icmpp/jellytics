@@ -37,6 +37,7 @@ interface MediaLibraryPageProps<T> {
 export function MediaLibraryPage<T>({
   mediaType,
   title,
+  description,
   itemLabel,
   filters,
   isLoading,
@@ -53,7 +54,6 @@ export function MediaLibraryPage<T>({
   getItemId,
 }: MediaLibraryPageProps<T>) {
   const router = useRouter();
-  const breadcrumbItems = [{ icon: "home" as const, href: "/dashboard" }, { label: title }];
 
   // Infinite scroll sentinel
   const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -87,10 +87,10 @@ export function MediaLibraryPage<T>({
   return (
     <AppLayout>
       {/* Sticky header: breadcrumb + title + filters */}
-      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] md:top-0 z-10 -mx-4 px-4 md:-mx-8 md:px-8 pt-4 pb-4 bg-[#0d0d14] border-b border-white/6">
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] md:top-0 z-10 -mx-4 px-4 md:-mx-8 md:px-8 pt-5 pb-5 bg-[#050508]">
         <PageHeader
-          breadcrumb={breadcrumbItems}
           title={title}
+          description={description}
           sticky={false}
           actions={<RefetchingIndicator isFetching={isFetching} isLoading={isLoading} />}
         />
@@ -119,6 +119,13 @@ export function MediaLibraryPage<T>({
             onShuffle={items.length > 0 ? handleShuffle : undefined}
           />
         </div>
+        <div
+          className="absolute bottom-0 left-0 right-0 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(139,92,246,0.25) 0%, #1e1e32 22%, transparent 65%)",
+          }}
+        />
       </div>
 
       {/* Scrollable content */}

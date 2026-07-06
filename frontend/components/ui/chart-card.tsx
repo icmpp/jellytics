@@ -39,13 +39,15 @@ export function ChartCard({
 
         {isLoading ? (
           <div className={`${minHeight} flex items-center justify-center`}>
-            <Loader2 className="h-8 w-8 animate-spin text-purple-400" />
+            <Loader2 className="h-8 w-8 animate-spin text-violet-400" />
           </div>
         ) : isEmpty ? (
           <div className={`${minHeight} flex flex-col items-center justify-center text-center`}>
             {emptyIcon && <div className="text-white/15 mb-3">{emptyIcon}</div>}
-            <p className="text-sm font-medium text-white/60">{emptyMessage}</p>
-            {emptyDescription && <p className="text-xs text-white/40 mt-1">{emptyDescription}</p>}
+            <p className="text-xs font-mono text-white/40">{emptyMessage}</p>
+            {emptyDescription && (
+              <p className="text-[10px] font-mono text-white/25 mt-1">{emptyDescription}</p>
+            )}
           </div>
         ) : (
           <div className="flex flex-col flex-1 min-h-0">{children}</div>

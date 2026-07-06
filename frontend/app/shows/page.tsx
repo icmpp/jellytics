@@ -91,7 +91,11 @@ function ShowsPageContent() {
     <MediaLibraryPage
       mediaType="shows"
       title="Shows"
-      description="Your TV show library"
+      description={
+        noFiltersActive && total > 0
+          ? `${total.toLocaleString()} ${total === 1 ? "show" : "shows"} in your library`
+          : "browse your tv shows"
+      }
       itemLabel="show"
       filters={filters}
       isLoading={isLoading}

@@ -5,9 +5,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { api, APIError } from "@/lib/api";
 import { toast } from "@/hooks/useToast";
-import { Settings as SettingsIcon, Save, Loader2 } from "lucide-react";
+import { Save, Loader2 } from "lucide-react";
 import { AppLayout, PageHeader, PageContent } from "@/components/layout";
-import { Button } from "@/components/ui/button";
+import { TerminalButton, SectionComment } from "@/components/settings/SettingsPrimitives";
 import { usePreferences, useUpdatePreferences } from "@/hooks/usePreferences";
 import { useTags, useCreateTag, useDeleteTag } from "@/hooks/useTags";
 import { useRatingsList } from "@/hooks/useRatings";
@@ -335,88 +335,99 @@ export default function SettingsPage() {
       <PageHeader
         breadcrumb={breadcrumbItems}
         title="Settings"
-        description="Manage your Jellyfin server connection and preferences"
-        icon={<SettingsIcon className="h-6 w-6 sm:h-7 sm:w-7 text-purple-400 shrink-0" />}
+        description="manage your jellyfin server connection and preferences"
         actions={
-          <Button
+          <TerminalButton
             onClick={handleSavePreferences}
             disabled={updatePreferences.isPending || loadingPreferences}
           >
             {updatePreferences.isPending ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Saving...
+                <Loader2 className="animate-spin" />
+                saving...
               </>
             ) : (
               <>
-                <Save className="h-4 w-4" />
-                Save
+                <Save />
+                save
               </>
             )}
-          </Button>
+          </TerminalButton>
         }
       />
       <PageContent>
-        <section className="grid gap-6 lg:grid-cols-2">
-          <JellyfinServerCard
-            serverURL={serverURL}
-            onURLChange={handleURLChange}
-            serverStatus={serverStatus}
-            testUsername={testUsername}
-            setTestUsername={setTestUsername}
-            testPassword={testPassword}
-            setTestPassword={setTestPassword}
-            loading={loading}
-            testing={testing}
-            error={error}
-            serverSettingsSuccess={serverSettingsSuccess}
-            testResult={testResult}
-            showHelp={showHelp}
-            setShowHelp={setShowHelp}
-            onSave={handleSave}
-            onTest={handleTestConnection}
+        <div className="space-y-3">
+          <SectionComment label="connection" />
+          <section className="grid gap-6 lg:grid-cols-2">
+            <JellyfinServerCard
+              serverURL={serverURL}
+              onURLChange={handleURLChange}
+              serverStatus={serverStatus}
+              testUsername={testUsername}
+              setTestUsername={setTestUsername}
+              testPassword={testPassword}
+              setTestPassword={setTestPassword}
+              loading={loading}
+              testing={testing}
+              error={error}
+              serverSettingsSuccess={serverSettingsSuccess}
+              testResult={testResult}
+              showHelp={showHelp}
+              setShowHelp={setShowHelp}
+              onSave={handleSave}
+              onTest={handleTestConnection}
+            />
+            <SyncManagementCard
+              syncStatus={syncStatus}
+              syncing={syncing}
+              loadingSyncStatus={loadingSyncStatus}
+              serverURL={serverURL}
+              onSync={handleManualSync}
+              onRefreshStatus={loadSyncStatus}
+            />
+          </section>
+        </div>
+
+        <div className="space-y-3">
+          <SectionComment label="preferences" />
+          <section className="grid gap-6 lg:grid-cols-2">
+            <TagsCard
+              tags={tags}
+              createTag={createTag}
+              deleteTag={deleteTag}
+              newTagName={newTagName}
+              setNewTagName={setNewTagName}
+            />
+            <div className="space-y-6">
+              <SyncPreferencesCard prefs={prefs} setPrefs={setPrefs} />
+              <DisplaySettingsCard prefs={prefs} setPrefs={setPrefs} />
+              <NotificationsCard prefs={prefs} setPrefs={setPrefs} />
+            </div>
+          </section>
+        </div>
+
+        <div className="space-y-3">
+          <SectionComment label="system" />
+          <SystemConfigCard
+            syncConfig={syncConfig}
+            setSyncConfig={setSyncConfig}
+            systemSettings={systemSettings}
+            loadingSystemSettings={loadingSystemSettings}
+            savingSystemSettings={savingSystemSettings}
+            onSave={handleSaveSystemSettings}
           />
-          <SyncManagementCard
+        </div>
+
+        <div className="space-y-3">
+          <SectionComment label="data" />
+          <DataManagementCard
+            prefs={prefs}
+            serverURL={serverURL}
             syncStatus={syncStatus}
-            syncing={syncing}
-            loadingSyncStatus={loadingSyncStatus}
-            serverURL={serverURL}
-            onSync={handleManualSync}
-            onRefreshStatus={loadSyncStatus}
+            ratings={ratings}
+            reviews={reviews}
           />
-        </section>
-
-        <section className="grid gap-6 lg:grid-cols-2">
-          <TagsCard
-            tags={tags}
-            createTag={createTag}
-            deleteTag={deleteTag}
-            newTagName={newTagName}
-            setNewTagName={setNewTagName}
-          />
-          <div className="space-y-6">
-            <SyncPreferencesCard prefs={prefs} setPrefs={setPrefs} />
-            <DisplaySettingsCard prefs={prefs} setPrefs={setPrefs} />
-            <NotificationsCard prefs={prefs} setPrefs={setPrefs} />
-          </div>
-        </section>
-
-        <SystemConfigCard
-          syncConfig={syncConfig}
-          setSyncConfig={setSyncConfig}
-          systemSettings={systemSettings}
-          loadingSystemSettings={loadingSystemSettings}
-          savingSystemSettings={savingSystemSettings}
-          onSave={handleSaveSystemSettings}
-        />
-
-        <DataManagementCard
-          prefs={prefs}
-          serverURL={serverURL}
-          syncStatus={syncStatus}
-          ratings={ratings}
-          reviews={reviews}
-        />
+        </div>
       </PageContent>
     </AppLayout>
   );

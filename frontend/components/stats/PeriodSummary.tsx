@@ -5,77 +5,71 @@ import { usePeriodSummary } from "@/hooks/useStats";
 import { formatRuntime } from "@/lib/utils";
 import { CalendarDays, Clock, Tv, Film, PlayCircle, CheckCircle2, Sparkles } from "lucide-react";
 import { ChartCard } from "@/components/ui/chart-card";
+import { StatSegmented } from "@/components/stats/StatSegmented";
 
 export function PeriodSummary() {
   const [period, setPeriod] = useState<"month" | "year">("month");
   const { data, isLoading } = usePeriodSummary(period);
 
-  const periodLabel = period === "month" ? "This Month" : "This Year";
+  const periodLabel = period === "month" ? "this_month" : "this_year";
 
   return (
     <ChartCard
       title="Period Summary"
-      icon={<CalendarDays className="h-5 w-5 text-purple-400" />}
+      icon={<CalendarDays className="h-5 w-5" />}
       isLoading={isLoading}
       minHeight="min-h-[160px]"
       isEmpty={!data}
-      emptyMessage={`No data for ${periodLabel.toLowerCase()} yet`}
+      emptyMessage={`no_data_for_${periodLabel}_yet`}
       emptyIcon={<CalendarDays className="h-10 w-10" />}
       titleExtra={
-        <div className="flex rounded-full border border-white/10 bg-white/5 p-0.5">
-          {(["month", "year"] as const).map((p) => (
-            <button
-              key={p}
-              type="button"
-              onClick={() => setPeriod(p)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-all duration-200 ${
-                period === p
-                  ? "bg-purple-500/30 text-purple-100 shadow-sm shadow-purple-500/20"
-                  : "text-white/50 hover:text-white/80"
-              }`}
-            >
-              {p === "month" ? "Month" : "Year"}
-            </button>
-          ))}
-        </div>
+        <StatSegmented
+          value={period}
+          onChange={setPeriod}
+          options={[
+            { value: "month", label: "month" },
+            { value: "year", label: "year" },
+          ]}
+        />
       }
     >
       {data && (
         <>
-          <p className="text-[11px] uppercase tracking-[0.12em] text-white/40 mb-3">
+          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+            <span className="text-violet-400/45 select-none">{"# "}</span>
             {periodLabel}
           </p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
             <Stat
-              label="Watch Time"
+              label="watch_time"
               value={formatRuntime(data.total_watch_minutes) ?? "—"}
-              icon={<Clock className="h-3.5 w-3.5 text-purple-400" />}
+              icon={<Clock className="h-3.5 w-3.5 text-violet-400/70" />}
             />
             <Stat
-              label="Episodes"
+              label="episodes"
               value={data.episodes_watched.toString()}
-              icon={<Tv className="h-3.5 w-3.5 text-blue-400" />}
+              icon={<Tv className="h-3.5 w-3.5 text-blue-400/70" />}
             />
             <Stat
-              label="Movies"
+              label="movies"
               value={data.movies_watched.toString()}
-              icon={<Film className="h-3.5 w-3.5 text-cyan-400" />}
+              icon={<Film className="h-3.5 w-3.5 text-cyan-400/70" />}
             />
             <Stat
-              label="Shows Started"
+              label="shows_started"
               value={data.shows_started.toString()}
-              icon={<PlayCircle className="h-3.5 w-3.5 text-emerald-400" />}
+              icon={<PlayCircle className="h-3.5 w-3.5 text-emerald-400/70" />}
             />
             <Stat
-              label="Shows Completed"
+              label="shows_completed"
               value={data.shows_completed.toString()}
-              icon={<CheckCircle2 className="h-3.5 w-3.5 text-amber-400" />}
+              icon={<CheckCircle2 className="h-3.5 w-3.5 text-amber-400/70" />}
             />
             {data.top_genre && (
               <Stat
-                label="Top Genre"
+                label="top_genre"
                 value={data.top_genre}
-                icon={<Sparkles className="h-3.5 w-3.5 text-pink-400" />}
+                icon={<Sparkles className="h-3.5 w-3.5 text-pink-400/70" />}
               />
             )}
           </div>
@@ -87,12 +81,14 @@ export function PeriodSummary() {
 
 function Stat({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="group rounded-xl border border-white/8 bg-white/3 p-3 transition-colors duration-200 hover:border-white/12 hover:bg-white/5">
+    <div className="group rounded-sm border border-[#16162a] bg-[#0a0a14] p-3 transition-colors duration-200 hover:border-violet-500/25 hover:bg-[#0d0d1a]">
       <div className="mb-1.5 flex items-center gap-1.5">
         {icon}
-        <p className="text-[11px] uppercase tracking-[0.12em] text-white/40">{label}</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55 truncate">
+          {label}
+        </p>
       </div>
-      <p className="text-lg font-bold text-white tabular-nums truncate">{value}</p>
+      <p className="font-mono text-lg font-bold text-white tabular-nums truncate">{value}</p>
     </div>
   );
 }

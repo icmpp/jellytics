@@ -86,15 +86,18 @@ async function request<T>(
       headers,
     });
   } catch (err) {
-    if (err instanceof Error) {
-      throw new APIError(
-        "NETWORK_ERROR",
-        `Failed to connect to API: ${err.message}`,
-        undefined,
-        undefined,
+    const message =
+      err instanceof Error
+        ? `Failed to connect to API: ${err.message}`
+        : "Failed to connect to API";
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("jellytics:backend-error", {
+          detail: { message },
+        }),
       );
     }
-    throw new APIError("NETWORK_ERROR", "Failed to connect to API", undefined, undefined);
+    throw new APIError("NETWORK_ERROR", message, undefined, undefined);
   }
 
   if (!response.ok) {
@@ -117,6 +120,17 @@ async function request<T>(
 
     const errorCode = error.error?.code || `HTTP_${response.status}`;
     const isTokenError = TOKEN_ERROR_CODES.includes(errorCode);
+
+    if (response.status >= 500 && typeof window !== "undefined") {
+      window.dispatchEvent(
+        new CustomEvent("jellytics:backend-error", {
+          detail: {
+            status: response.status,
+            message: error.error?.message || `Server error ${response.status}`,
+          },
+        }),
+      );
+    }
 
     if (
       isTokenError &&

@@ -16,7 +16,7 @@ export interface ArchiveItem {
   removedAt?: string;
 }
 
-interface ArchiveResponse {
+export interface ArchiveResponse {
   movies: ArchiveItem[];
   shows: ArchiveItem[];
 }

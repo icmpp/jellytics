@@ -1,7 +1,11 @@
 "use client";
 
+import React from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { toast } from "@/hooks/useToast";
+import { ToastAction } from "@/components/ui/toast";
+import type { ArchiveResponse } from "@/hooks/useArchive";
 
 export interface Movie {
   id: number;
@@ -136,9 +140,52 @@ export function useDeleteMovie() {
 
 export function useRestoreMovie() {
   const queryClient = useQueryClient();
+
+  // Undo a restore by re-archiving (the inverse of restore — archive is reversible).
+  const reArchive = async (movieId: number) => {
+    try {
+      await api.delete(`/movies/${movieId}`);
+      queryClient.invalidateQueries({ queryKey: ["movies"] });
+      queryClient.invalidateQueries({ queryKey: ["archive"] });
+    } catch (err) {
+      console.error("Failed to undo restore:", err);
+      toast.error({ title: "Error", description: "Failed to undo. Please try again." });
+    }
+  };
+
   return useMutation({
     mutationFn: (movieId: number) => api.post(`/movies/${movieId}/restore`),
-    onSuccess: () => {
+    onMutate: async (movieId) => {
+      await queryClient.cancelQueries({ queryKey: ["archive"] });
+      const previousArchive = queryClient.getQueryData<ArchiveResponse>(["archive"]);
+      const removedItem = previousArchive?.movies.find((m) => m.id === movieId);
+      if (previousArchive) {
+        queryClient.setQueryData<ArchiveResponse>(["archive"], {
+          ...previousArchive,
+          movies: previousArchive.movies.filter((m) => m.id !== movieId),
+        });
+      }
+      return { previousArchive, removedItem };
+    },
+    onError: (error, _movieId, context) => {
+      if (context?.previousArchive) {
+        queryClient.setQueryData<ArchiveResponse>(["archive"], context.previousArchive);
+      }
+      console.error("Failed to restore from archive:", error);
+      toast.error({ title: "Error", description: "Failed to restore. Please try again." });
+    },
+    onSuccess: (_data, movieId, context) => {
+      toast.success({
+        title: "Restored to library",
+        description: `"${context?.removedItem?.title ?? "Item"}" has been restored to your library.`,
+        action: React.createElement(
+          ToastAction,
+          { altText: "Undo restore", onClick: () => reArchive(movieId) },
+          "Undo",
+        ),
+      });
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["movies"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
       queryClient.invalidateQueries({ queryKey: ["history"] });

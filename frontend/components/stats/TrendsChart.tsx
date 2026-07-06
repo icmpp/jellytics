@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, memo, useCallback } from "react";
 import { useTrends } from "@/hooks/useStats";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ChartCard } from "@/components/ui/chart-card";
@@ -73,39 +72,43 @@ const ComparisonView = memo(function ComparisonView({
 
   return (
     <div className="mt-5 grid grid-cols-2 md:grid-cols-4 gap-3">
-      <div className="rounded-xl border border-white/8 bg-white/3 p-3">
-        <p className="text-[11px] uppercase tracking-[0.12em] text-white/40 mb-1.5">
-          Watch Time Change
+      <div className="rounded-sm border border-[#16162a] bg-[#0a0a14] p-3 transition-colors hover:border-violet-500/25">
+        <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+          <span className="text-violet-400/45">{"// "}</span>watch_time_change
         </p>
         <p
-          className={`text-xl font-bold tabular-nums ${watchTimeChange >= 0 ? "text-emerald-400" : "text-red-400"}`}
+          className={`font-mono text-xl font-bold tabular-nums ${watchTimeChange >= 0 ? "text-emerald-400" : "text-red-400"}`}
         >
           {watchTimeChange >= 0 ? "+" : ""}
           {watchTimeChange.toFixed(1)}%
         </p>
       </div>
-      <div className="rounded-xl border border-white/8 bg-white/3 p-3">
-        <p className="text-[11px] uppercase tracking-[0.12em] text-white/40 mb-1.5">
-          Shows Watched Change
+      <div className="rounded-sm border border-[#16162a] bg-[#0a0a14] p-3 transition-colors hover:border-violet-500/25">
+        <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+          <span className="text-violet-400/45">{"// "}</span>shows_watched_change
         </p>
         <p
-          className={`text-xl font-bold tabular-nums ${showsChange >= 0 ? "text-emerald-400" : "text-red-400"}`}
+          className={`font-mono text-xl font-bold tabular-nums ${showsChange >= 0 ? "text-emerald-400" : "text-red-400"}`}
         >
           {showsChange >= 0 ? "+" : ""}
           {showsChange.toFixed(1)}%
         </p>
       </div>
-      <div className="rounded-xl border border-white/8 bg-white/3 p-3">
-        <p className="text-[11px] uppercase tracking-[0.12em] text-white/40 mb-1.5">
-          Current Avg (h/day)
+      <div className="rounded-sm border border-[#16162a] bg-[#0a0a14] p-3 transition-colors hover:border-violet-500/25">
+        <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+          <span className="text-violet-400/45">{"// "}</span>current_avg_h_day
         </p>
-        <p className="text-xl font-bold text-white tabular-nums">{currentAvg.toFixed(1)}</p>
+        <p className="font-mono text-xl font-bold text-white tabular-nums">
+          {currentAvg.toFixed(1)}
+        </p>
       </div>
-      <div className="rounded-xl border border-white/8 bg-white/3 p-3">
-        <p className="text-[11px] uppercase tracking-[0.12em] text-white/40 mb-1.5">
-          Last Year Avg (h/day)
+      <div className="rounded-sm border border-[#16162a] bg-[#0a0a14] p-3 transition-colors hover:border-violet-500/25">
+        <p className="mb-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-violet-300/55">
+          <span className="text-violet-400/45">{"// "}</span>last_year_avg_h_day
         </p>
-        <p className="text-xl font-bold text-white tabular-nums">{lastYearAvg.toFixed(1)}</p>
+        <p className="font-mono text-xl font-bold text-white tabular-nums">
+          {lastYearAvg.toFixed(1)}
+        </p>
       </div>
     </div>
   );
@@ -186,22 +189,25 @@ export function TrendsChart() {
   return (
     <ChartCard
       title="Trends Over Time"
-      icon={<TrendingUp className="h-5 w-5 text-purple-400" />}
+      icon={<TrendingUp className="h-5 w-5" />}
       isLoading={isLoading}
       minHeight="min-h-[400px]"
       isEmpty={chartData.length === 0 && !isLoading}
-      emptyMessage="No trend data yet"
-      emptyDescription="Watch some content to start seeing trends"
+      emptyMessage="no_trend_data_yet"
+      emptyDescription="watch some content to start seeing trends"
       emptyIcon={<TrendingUp className="h-10 w-10" />}
       titleExtra={
-        <Button
-          variant="outline"
-          size="sm"
+        <button
+          type="button"
           onClick={() => setShowComparison(!showComparison)}
-          className={showComparison ? "bg-purple-500/20 border-purple-500/30" : ""}
+          className={`rounded-sm border px-2.5 py-1 text-xs font-mono transition-colors ${
+            showComparison
+              ? "border-violet-500/30 bg-violet-500/10 text-violet-300"
+              : "border-[#16162a] bg-[#0a0a14] text-white/50 hover:bg-[#0d0d1a] hover:text-white/80"
+          }`}
         >
-          {showComparison ? "Hide" : "Show"} Comparison
-        </Button>
+          {showComparison ? "hide" : "show"}_comparison
+        </button>
       }
     >
       <div className="flex flex-wrap justify-center gap-1.5 sm:gap-2 mb-5">
@@ -210,10 +216,10 @@ export function TrendsChart() {
             key={days}
             type="button"
             onClick={() => handleRangeSelect(days)}
-            className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
+            className={`rounded-sm border px-3 py-1.5 text-xs font-mono transition-colors ${
               daysRange === days
-                ? "bg-purple-500/30 text-purple-100 shadow-sm shadow-purple-500/20 border border-purple-500/30"
-                : "text-white/50 hover:text-white/80 border border-white/10 bg-white/5"
+                ? "border-violet-500/30 bg-violet-500/10 text-violet-300"
+                : "border-[#16162a] bg-[#0a0a14] text-white/50 hover:bg-[#0d0d1a] hover:text-white/80"
             }`}
           >
             {days}d
@@ -222,23 +228,23 @@ export function TrendsChart() {
         <button
           type="button"
           onClick={() => setShowCustomPicker(!showCustomPicker)}
-          className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 flex items-center gap-1 ${
+          className={`flex items-center gap-1 rounded-sm border px-3 py-1.5 text-xs font-mono transition-colors ${
             daysRange === "custom"
-              ? "bg-purple-500/30 text-purple-100 shadow-sm shadow-purple-500/20 border border-purple-500/30"
-              : "text-white/50 hover:text-white/80 border border-white/10 bg-white/5"
+              ? "border-violet-500/30 bg-violet-500/10 text-violet-300"
+              : "border-[#16162a] bg-[#0a0a14] text-white/50 hover:bg-[#0d0d1a] hover:text-white/80"
           }`}
         >
           <Calendar className="h-3 w-3" />
-          Custom
+          custom
         </button>
       </div>
 
       {showCustomPicker && (
-        <div className="mb-5 p-4 rounded-xl bg-white/3 border border-white/8 space-y-4">
+        <div className="mb-5 space-y-4 rounded-sm border border-[#16162a] bg-[#0a0a14] p-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="start-date" className="text-sm font-medium text-white/60">
-                Start Date
+              <Label htmlFor="start-date" className="font-mono text-xs text-violet-300/55">
+                <span className="text-violet-400/45 select-none">{"# "}</span>start_date
               </Label>
               <Input
                 id="start-date"
@@ -249,12 +255,12 @@ export function TrendsChart() {
                   setDaysRange("custom");
                 }}
                 max={customEndDate}
-                className="h-10"
+                className="h-10 font-mono"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="end-date" className="text-sm font-medium text-white/60">
-                End Date
+              <Label htmlFor="end-date" className="font-mono text-xs text-violet-300/55">
+                <span className="text-violet-400/45 select-none">{"# "}</span>end_date
               </Label>
               <Input
                 id="end-date"
@@ -266,28 +272,30 @@ export function TrendsChart() {
                 }}
                 min={customStartDate}
                 max={format(new Date(), "yyyy-MM-dd")}
-                className="h-10"
+                className="h-10 font-mono"
               />
             </div>
           </div>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-white/40">
-              {customDays > 0 ? `${customDays} days selected` : "Invalid date range"}
+            <p className="font-mono text-xs text-white/40">
+              {customDays > 0 ? `${customDays} days selected` : "invalid date range"}
             </p>
-            <Button
-              size="sm"
+            <button
+              type="button"
               onClick={handleApplyCustom}
               disabled={customDays <= 0 || customDays > 365}
+              className="rounded-sm border border-violet-500/30 bg-violet-500/10 px-3 py-1.5 font-mono text-xs text-violet-300 transition-colors hover:bg-violet-500/15 disabled:cursor-not-allowed disabled:opacity-40"
             >
-              Apply
-            </Button>
+              apply
+            </button>
           </div>
         </div>
       )}
 
       {daysRange === "custom" && !showCustomPicker && (
-        <div className="mb-5 text-sm text-white/40">
-          Showing data from {format(new Date(customStartDate), "MMM dd, yyyy")} to{" "}
+        <div className="mb-5 font-mono text-xs text-white/40">
+          <span className="text-violet-400/45 select-none">{"# "}</span>
+          showing {format(new Date(customStartDate), "MMM dd, yyyy")} to{" "}
           {format(new Date(customEndDate), "MMM dd, yyyy")} ({customDays} days)
         </div>
       )}
@@ -305,7 +313,7 @@ export function TrendsChart() {
             >
               <defs>
                 <linearGradient id="trendsPurpleGradient" x1="0" y1="0" x2="1" y2="0">
-                  <stop offset="0%" stopColor="#a855f7" />
+                  <stop offset="0%" stopColor="#a78bfa" />
                   <stop offset="100%" stopColor="#8b5cf6" />
                 </linearGradient>
                 <linearGradient id="trendsBlueGradient" x1="0" y1="0" x2="1" y2="0">
@@ -354,11 +362,11 @@ export function TrendsChart() {
                 stroke="url(#trendsPurpleGradient)"
                 name="Watch Time (h)"
                 strokeWidth={isMobile ? 2 : 3}
-                dot={{ fill: "#a855f7", r: isMobile ? 2 : 4, strokeWidth: 0 }}
+                dot={{ fill: "#8b5cf6", r: isMobile ? 2 : 4, strokeWidth: 0 }}
                 activeDot={{
                   r: isMobile ? 4 : 6,
-                  fill: "#a855f7",
-                  stroke: "rgba(168, 85, 247, 0.3)",
+                  fill: "#8b5cf6",
+                  stroke: "rgba(139, 92, 246, 0.3)",
                   strokeWidth: isMobile ? 6 : 8,
                 }}
               />

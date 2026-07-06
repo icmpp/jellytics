@@ -7,6 +7,7 @@ import { AppLayout } from "@/components/layout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/loading-skeleton";
+import { EmptyTerminal, TerminalAction } from "@/components/media/EmptyTerminal";
 import {
   ArrowLeft,
   Archive,
@@ -21,12 +22,17 @@ import {
   Percent,
   Film as FilmIcon,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
 import { AddRemoveWatchlistButton } from "@/components/watchlist/AddRemoveWatchlistButton";
 import { AddToCollectionButton } from "@/components/collections";
 import { AddTagButton, TagBadge } from "@/components/media";
+import {
+  DETAIL_ACTION_BTN,
+  DETAIL_ACTION_BTN_PRIMARY,
+  DETAIL_ACTION_BTN_DANGER,
+} from "@/components/media/detail-action-button";
 import { RemoveFromLibraryButton } from "@/components/library/RemoveFromLibraryButton";
+import { SidebarTooltip } from "@/components/layout/SidebarTooltip";
 import { Breadcrumb } from "@/components/navigation";
 import {
   getShowPosterUrl,
@@ -60,32 +66,32 @@ function SeasonSection({
   const pct = episodes.length > 0 ? Math.round((watched / episodes.length) * 100) : 0;
 
   return (
-    <div className="rounded-xl border border-white/8 overflow-hidden">
+    <div className="rounded-sm border border-[#16162a] overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3.5 min-h-[48px] bg-white/2 hover:bg-white/5 active:bg-white/8 transition-colors text-left touch-manipulation tap-target"
+        className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3.5 min-h-[48px] bg-[#0a0a14] hover:bg-[#0d0d1a] active:bg-[#0d0d1a] transition-colors text-left touch-manipulation tap-target font-mono"
       >
         {open ? (
-          <ChevronDown className="h-4 w-4 text-white/40 shrink-0" />
+          <ChevronDown className="h-4 w-4 text-violet-400/60 shrink-0" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-white/40 shrink-0" />
+          <ChevronRight className="h-4 w-4 text-violet-400/35 shrink-0" />
         )}
-        <span className="flex-1 text-sm font-medium text-white">
-          {seasonNumber === 0 ? "Specials" : `Season ${seasonNumber}`}
+        <span className="flex-1 text-sm text-violet-100">
+          {seasonNumber === 0 ? "specials" : `season_${seasonNumber}`}
         </span>
-        <span className="text-xs text-white/40 shrink-0">
+        <span className="text-xs text-white/40 shrink-0 tabular-nums">
           {watched}/{episodes.length}
         </span>
-        <div className="w-12 sm:w-16 bg-white/10 rounded-full h-1.5 shrink-0">
+        <div className="w-12 sm:w-16 bg-[#16162a] rounded-sm h-1.5 shrink-0 overflow-hidden">
           <div
-            className="h-full rounded-full bg-purple-500 transition-all"
+            className="h-full rounded-sm bg-[#8b5cf6] transition-all"
             style={{ width: `${pct}%` }}
           />
         </div>
       </button>
 
       {open && (
-        <div className="divide-y divide-white/5">
+        <div className="divide-y divide-[#16162a]">
           {episodes
             .sort((a, b) => (a.episode_number ?? 0) - (b.episode_number ?? 0))
             .map((episode) => (
@@ -120,14 +126,14 @@ function EpisodeRow({
       : null;
 
   return (
-    <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3.5 min-h-[44px] sm:min-h-0 hover:bg-white/3 transition-colors active:bg-white/5">
+    <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-3.5 min-h-[44px] sm:min-h-0 hover:bg-[#0d0d1a] transition-colors active:bg-[#0d0d1a] font-mono">
       <div className="w-12 sm:w-14 shrink-0 text-center">
-        <span className="text-xs font-medium text-white/50 bg-white/5 px-2 py-0.5 rounded">
-          E{episode.episode_number}
+        <span className="text-xs text-violet-300/70 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-sm tabular-nums">
+          e{episode.episode_number}
         </span>
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-white truncate">{episode.title || "Untitled"}</p>
+        <p className="text-sm text-white/90 truncate">{episode.title || "untitled"}</p>
         <div className="flex items-center gap-3 mt-0.5">
           {episode.duration_minutes && (
             <span className="text-xs text-white/35 flex items-center gap-1">
@@ -142,8 +148,8 @@ function EpisodeRow({
           )}
         </div>
         {completion !== undefined && completion > 0 && completion < 100 && (
-          <div className="mt-1.5 w-full bg-white/10 rounded-full h-1 overflow-hidden">
-            <div className="h-full bg-blue-500 rounded-full" style={{ width: `${completion}%` }} />
+          <div className="mt-1.5 w-full bg-[#16162a] rounded-sm h-1 overflow-hidden">
+            <div className="h-full bg-[#8b5cf6] rounded-sm" style={{ width: `${completion}%` }} />
           </div>
         )}
       </div>
@@ -153,7 +159,7 @@ function EpisodeRow({
             href={playUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="p-1.5 rounded-lg bg-blue-500/20 border border-blue-500/40 text-blue-300 hover:bg-blue-500/30 hover:text-blue-200 transition-colors"
+            className="p-1.5 rounded-sm bg-violet-500/10 border border-violet-500/30 text-violet-300 hover:bg-violet-500/20 hover:text-violet-200 transition-colors"
             aria-label={
               completion !== undefined && completion > 0
                 ? `Resume episode ${episode.episode_number}`
@@ -164,18 +170,18 @@ function EpisodeRow({
           </a>
         )}
         {episode.watched ? (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-500/15 text-emerald-400 text-xs border border-emerald-500/25">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-sm bg-emerald-500/10 text-emerald-400 text-xs border border-emerald-500/25">
             <CheckCircle2 className="h-3 w-3" />
-            Watched
+            watched
           </div>
         ) : completion !== undefined && completion > 0 ? (
-          <div className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-blue-500/15 text-blue-400 text-xs border border-blue-500/25">
+          <div className="flex items-center gap-1 px-2 py-0.5 rounded-sm bg-violet-500/10 text-violet-300 text-xs border border-violet-500/25 tabular-nums">
             <PlayCircle className="h-3 w-3" />
             {completion}%
           </div>
         ) : (
-          <div className="px-2 py-0.5 rounded-lg bg-white/4 text-white/35 text-xs border border-white/[0.07]">
-            Pending
+          <div className="px-2 py-0.5 rounded-sm bg-[#0a0a14] text-white/35 text-xs border border-[#16162a]">
+            pending
           </div>
         )}
       </div>
@@ -249,19 +255,23 @@ export default function ShowDetailPage() {
   if (error || !data?.show) {
     return (
       <AppLayout>
-        <div className="text-center py-16">
-          <Tv className="h-16 w-16 text-white/20 mx-auto mb-4" />
-          <p className="text-red-400 text-lg mb-2">Show not found</p>
-          <p className="text-white/40 text-sm mb-6">
-            The show you&apos;re looking for doesn&apos;t exist.
-          </p>
-          <Link href="/shows">
-            <Button variant="outline">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Shows
-            </Button>
-          </Link>
-        </div>
+        <EmptyTerminal
+          path={`shows/${params.id}`}
+          command={`cat show --id=${params.id}`}
+          output="error: not found"
+          icon={Tv}
+          headline="show not found"
+          subtext="the show you're looking for doesn't exist or was removed."
+          statusLabel="404"
+          actions={
+            <TerminalAction
+              href="/shows"
+              icon={ArrowLeft}
+              label="back to shows"
+              variant="primary"
+            />
+          }
+        />
       </AppLayout>
     );
   }
@@ -278,15 +288,24 @@ export default function ShowDetailPage() {
 
   return (
     <AppLayout>
-      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] md:top-0 z-10 -mx-4 px-4 md:-mx-8 md:px-8 h-[72px] flex items-center bg-app-shell border-b border-white/6">
-        <Breadcrumb items={breadcrumbItems} />
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] md:top-0 z-10 -mx-4 px-4 md:-mx-8 md:px-8 h-[64px] flex items-center bg-[#050508]">
+        <div className="-ml-1.5">
+          <Breadcrumb items={breadcrumbItems} />
+        </div>
+        <div
+          className="absolute bottom-0 left-0 right-0 h-px"
+          style={{
+            background:
+              "linear-gradient(90deg, rgba(139,92,246,0.25) 0%, #1e1e32 22%, transparent 65%)",
+          }}
+        />
       </div>
 
       <div className="mt-4 md:mt-8 space-y-4 md:space-y-6">
         {show.removed_from_library && (
-          <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm">
+          <div className="flex items-center gap-2 px-4 py-3 rounded-sm bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm font-mono">
             <Archive className="h-4 w-4 shrink-0" />
-            <span>Removed from library. Viewing preserved data.</span>
+            <span># removed from library — viewing preserved data</span>
           </div>
         )}
 
@@ -316,76 +335,114 @@ export default function ShowDetailPage() {
             <div className="min-w-0">
               <div className="flex flex-wrap items-start gap-3 sm:gap-4 mb-4">
                 <div className="flex-1 min-w-0">
-                  <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-3 wrap-break-word">
-                    {show.title}
-                  </h1>
-                  <div className="flex flex-wrap items-center gap-3 text-white/50">
+                  <div className="flex items-center gap-3 min-w-0 mb-2 sm:mb-3">
+                    <span
+                      className="text-violet-400 text-base font-mono shrink-0 select-none phosphor-glow"
+                      aria-hidden="true"
+                    >
+                      {">"}
+                    </span>
+                    <h1 className="text-2xl sm:text-3xl font-mono font-semibold text-white wrap-break-word leading-tight">
+                      {show.title}
+                    </h1>
+                    <span className="cursor-blink text-violet-400/60 text-2xl leading-tight shrink-0 select-none">
+                      _
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 font-mono text-sm text-white/50">
                     {show.year && (
-                      <div className="flex items-center gap-1.5">
-                        <Calendar className="h-4 w-4" />
-                        <span>{show.year}</span>
-                      </div>
+                      <>
+                        <div className="flex items-center gap-1.5">
+                          <Calendar className="h-3.5 w-3.5 text-violet-400/50" />
+                          <span className="tabular-nums">{show.year}</span>
+                        </div>
+                        <span aria-hidden className="text-white/15">
+                          ·
+                        </span>
+                      </>
                     )}
                     <div className="flex items-center gap-1.5">
                       {show.status === "watched" ? (
-                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                        <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
                       ) : show.status === "watching" ? (
-                        <PlayCircle className="h-4 w-4 text-blue-400" />
+                        <PlayCircle className="h-3.5 w-3.5 text-violet-300" />
                       ) : (
-                        <Tv className="h-4 w-4" />
+                        <Tv className="h-3.5 w-3.5 text-violet-400/50" />
                       )}
-                      <span>{watchStatusText}</span>
+                      <span className="text-white/70">{watchStatusText}</span>
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-wrap items-center gap-1.5">
+                <div className="flex flex-wrap items-center gap-1.5 shrink-0">
                   {settings?.jellyfin_server_url && show.jellyfin_id && (
-                    <a
-                      href={buildJellyfinItemUrl(
-                        settings.jellyfin_server_url,
-                        show.jellyfin_id,
-                        settings.jellyfin_server_id,
-                        "show",
-                      )}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <SidebarTooltip
+                      placement="bottom"
+                      label={
+                        show.status === "watching" || (show.watched_episodes ?? 0) > 0
+                          ? "resume in jellyfin"
+                          : "play in jellyfin"
+                      }
                     >
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        aria-label={
-                          show.status === "watching" || (show.watched_episodes ?? 0) > 0
-                            ? "Resume in Jellyfin"
-                            : "Play in Jellyfin"
-                        }
+                      <a
+                        href={buildJellyfinItemUrl(
+                          settings.jellyfin_server_url,
+                          show.jellyfin_id,
+                          settings.jellyfin_server_id,
+                          "show",
+                        )}
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
-                        <PlayCircle className="size-6" />
-                      </Button>
-                    </a>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className={DETAIL_ACTION_BTN_PRIMARY}
+                          aria-label={
+                            show.status === "watching" || (show.watched_episodes ?? 0) > 0
+                              ? "Resume in Jellyfin"
+                              : "Play in Jellyfin"
+                          }
+                        >
+                          <PlayCircle />
+                        </Button>
+                      </a>
+                    </SidebarTooltip>
                   )}
                   {!show.removed_from_library && (
                     <>
-                      <AddRemoveWatchlistButton
-                        itemType="show"
-                        itemId={showId}
-                        variant="outline"
-                        size="icon"
-                        iconOnly
-                      />
-                      <AddToCollectionButton
-                        itemType="show"
-                        itemId={showId}
-                        variant="outline"
-                        size="icon"
-                        iconOnly
-                      />
-                      <AddTagButton
-                        itemType="show"
-                        itemId={showId}
-                        variant="outline"
-                        size="icon"
-                        iconOnly
-                      />
+                      <SidebarTooltip placement="bottom" label="watchlist">
+                        <AddRemoveWatchlistButton
+                          itemType="show"
+                          itemId={showId}
+                          variant="outline"
+                          size="icon"
+                          iconOnly
+                          className={DETAIL_ACTION_BTN}
+                        />
+                      </SidebarTooltip>
+                      <SidebarTooltip placement="bottom" label="add to collection">
+                        <AddToCollectionButton
+                          itemType="show"
+                          itemId={showId}
+                          variant="outline"
+                          size="icon"
+                          iconOnly
+                          className={DETAIL_ACTION_BTN}
+                        />
+                      </SidebarTooltip>
+                      <SidebarTooltip placement="bottom" label="add tag">
+                        <AddTagButton
+                          itemType="show"
+                          itemId={showId}
+                          variant="outline"
+                          size="icon"
+                          iconOnly
+                          className={DETAIL_ACTION_BTN}
+                        />
+                      </SidebarTooltip>
+                      <span aria-hidden className="mx-0.5 h-6 w-px bg-[#16162a]" />
+                      {/* No tooltip — it's the rightmost button and a "remove from library"
+                          label overflows the viewport edge; the icon is self-explanatory. */}
                       <RemoveFromLibraryButton
                         itemType="show"
                         itemId={showId}
@@ -393,7 +450,7 @@ export default function ShowDetailPage() {
                         variant="outline"
                         size="icon"
                         iconOnly
-                        className="text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/30"
+                        className={DETAIL_ACTION_BTN_DANGER}
                       />
                     </>
                   )}
@@ -419,9 +476,10 @@ export default function ShowDetailPage() {
                   {genres.map((genre) => (
                     <span
                       key={genre}
-                      className="px-3 py-1 rounded-full text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                      className="px-2.5 py-1 rounded-sm text-xs font-mono bg-[#0a0a14] text-violet-300/80 border border-[#16162a]"
                     >
-                      {genre}
+                      <span className="select-none text-violet-400/40">#</span>
+                      {genre.toLowerCase()}
                     </span>
                   ))}
                 </div>
@@ -434,7 +492,9 @@ export default function ShowDetailPage() {
               )}
 
               <div className="mb-6">
-                <label className="text-sm font-medium text-white/40 mb-3 block">Your Rating</label>
+                <label className="text-[10px] font-mono tracking-[0.12em] uppercase text-violet-300/55 mb-3 block select-none">
+                  <span className="text-violet-400/45">{"//"} </span>rating
+                </label>
                 <RatingStars
                   rating={rating?.rating || null}
                   onRatingChange={(newRating) => {
@@ -454,60 +514,70 @@ export default function ShowDetailPage() {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mb-6">
-                <Card className="hover:bg-white/5 transition-colors">
+                <Card className="hover:bg-violet-500/5 transition-colors">
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="p-2 rounded-lg bg-purple-500/20 border border-purple-500/30 shrink-0">
-                        <Eye className="h-4 w-4 text-purple-400" />
+                      <div className="p-2 rounded-sm bg-violet-500/10 border border-violet-500/30 shrink-0">
+                        <Eye className="h-4 w-4 text-violet-300" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-lg sm:text-xl font-bold text-white">
+                        <div className="text-lg sm:text-xl font-mono font-semibold text-white">
                           {show.watched_episodes}
                         </div>
-                        <div className="text-xs text-white/40">Watched</div>
+                        <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
+                          {"//"} watched
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-                <Card className="hover:bg-white/5 transition-colors">
+                <Card className="hover:bg-violet-500/5 transition-colors">
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="p-2 rounded-lg bg-blue-500/20 border border-blue-500/30 shrink-0">
-                        <FilmIcon className="h-4 w-4 text-blue-400" />
+                      <div className="p-2 rounded-sm bg-violet-500/10 border border-violet-500/30 shrink-0">
+                        <FilmIcon className="h-4 w-4 text-violet-300" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-lg sm:text-xl font-bold text-white">
+                        <div className="text-lg sm:text-xl font-mono font-semibold text-white">
                           {show.total_episodes || 0}
                         </div>
-                        <div className="text-xs text-white/40">Total</div>
+                        <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
+                          {"//"} total
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-                <Card className="hover:bg-white/5 transition-colors">
+                <Card className="hover:bg-violet-500/5 transition-colors">
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="p-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 shrink-0">
-                        <Percent className="h-4 w-4 text-emerald-400" />
+                      <div className="p-2 rounded-sm bg-violet-500/10 border border-violet-500/30 shrink-0">
+                        <Percent className="h-4 w-4 text-violet-300" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-lg sm:text-xl font-bold text-white">{progress}%</div>
-                        <div className="text-xs text-white/40">Complete</div>
+                        <div className="text-lg sm:text-xl font-mono font-semibold text-white">
+                          {progress}%
+                        </div>
+                        <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
+                          {"//"} complete
+                        </div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-                <Card className="hover:bg-white/5 transition-colors">
+                <Card className="hover:bg-violet-500/5 transition-colors">
                   <CardContent className="p-3 sm:p-4">
                     <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="p-2 rounded-lg bg-amber-500/20 border border-amber-500/30 shrink-0">
-                        <Clock className="h-4 w-4 text-amber-400" />
+                      <div className="p-2 rounded-sm bg-violet-500/10 border border-violet-500/30 shrink-0">
+                        <Clock className="h-4 w-4 text-violet-300" />
                       </div>
                       <div className="min-w-0">
-                        <div className="text-lg sm:text-xl font-bold text-white">
+                        <div className="text-lg sm:text-xl font-mono font-semibold text-white">
                           {Math.round(show.total_watch_time_minutes / 60)}
                         </div>
-                        <div className="text-xs text-white/40">Hours</div>
+                        <div className="text-[9px] sm:text-[10px] font-mono text-violet-300/65 uppercase tracking-[0.12em] select-none">
+                          {"//"} hours
+                        </div>
                       </div>
                     </div>
                   </CardContent>
@@ -517,27 +587,28 @@ export default function ShowDetailPage() {
               {(show.total_episodes && show.total_episodes > 0) ||
               show.first_watched_at ||
               show.last_watched_at ? (
-                <div className="mb-6 p-3 sm:p-4 rounded-xl bg-white/3 border border-white/8">
+                <div className="mb-6 p-3 sm:p-4 rounded-sm bg-[#07070d] border border-[#16162a] font-mono">
                   <div className="flex flex-wrap items-center justify-between gap-2 text-sm mb-2">
                     <span className="text-white/50">
+                      <span className="select-none text-violet-400/45">{"// "}</span>
                       {show.last_watched_at ? (
-                        <>Last watched {new Date(show.last_watched_at).toLocaleDateString()}</>
+                        <>last_watched {new Date(show.last_watched_at).toLocaleDateString()}</>
                       ) : show.first_watched_at ? (
-                        <>First watched {new Date(show.first_watched_at).toLocaleDateString()}</>
+                        <>first_watched {new Date(show.first_watched_at).toLocaleDateString()}</>
                       ) : (
-                        "Episode Progress"
+                        "episode_progress"
                       )}
                     </span>
                     {show.total_episodes && show.total_episodes > 0 && (
-                      <span className="font-medium text-white shrink-0">
+                      <span className="text-violet-200 shrink-0 tabular-nums">
                         {show.watched_episodes}/{show.total_episodes} · {progress}%
                       </span>
                     )}
                   </div>
                   {show.total_episodes && show.total_episodes > 0 && (
-                    <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
+                    <div className="w-full bg-[#16162a] rounded-sm h-2 overflow-hidden">
                       <div
-                        className="h-full bg-linear-to-r from-purple-500 to-purple-400 transition-all"
+                        className="h-full bg-linear-to-r from-[#8b5cf6] to-violet-400 transition-all"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -566,14 +637,16 @@ export default function ShowDetailPage() {
                 {epList.length > 0 ? (
                   <>
                     {nextEpisode && show.status !== "watched" && (
-                      <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                        <div className="p-2 rounded-lg bg-blue-500/20">
-                          <PlayCircle className="h-5 w-5 text-blue-400" />
+                      <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-sm bg-violet-500/10 border border-violet-500/20 font-mono">
+                        <div className="p-2 rounded-sm bg-violet-500/15">
+                          <PlayCircle className="h-5 w-5 text-violet-300" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-xs text-blue-400/70 mb-0.5">Next to watch</p>
-                          <p className="text-sm font-medium text-white truncate">
-                            S{nextEpisode.season_number}E{nextEpisode.episode_number}
+                          <p className="text-xs text-violet-300/70 mb-0.5">
+                            <span className="select-none text-violet-400/45"># </span>next_to_watch
+                          </p>
+                          <p className="text-sm text-white/90 truncate tabular-nums">
+                            s{nextEpisode.season_number}e{nextEpisode.episode_number}
                             {nextEpisode.title ? ` — ${nextEpisode.title}` : ""}
                           </p>
                         </div>
@@ -582,9 +655,15 @@ export default function ShowDetailPage() {
 
                     <Card>
                       <CardHeader>
-                        <CardTitle className="text-white flex items-center gap-2">
-                          <Tv className="h-5 w-5 text-purple-400" />
-                          Episodes ({epList.length})
+                        <CardTitle className="text-white flex items-center gap-2 font-mono">
+                          <Tv className="h-5 w-5 text-violet-400" />
+                          <span className="text-violet-400/50 text-sm select-none">
+                            {"//"}
+                          </span>{" "}
+                          episodes
+                          <span className="text-violet-300/40 text-sm font-normal">
+                            ({epList.length})
+                          </span>
                         </CardTitle>
                       </CardHeader>
                       <CardContent className="space-y-4">
@@ -608,9 +687,10 @@ export default function ShowDetailPage() {
                 ) : (
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-white flex items-center gap-2">
-                        <Tv className="h-5 w-5 text-purple-400" />
-                        Episodes
+                      <CardTitle className="text-white flex items-center gap-2 font-mono">
+                        <Tv className="h-5 w-5 text-violet-400" />
+                        <span className="text-violet-400/50 text-sm select-none">{"//"}</span>{" "}
+                        episodes
                       </CardTitle>
                     </CardHeader>
                     <CardContent>

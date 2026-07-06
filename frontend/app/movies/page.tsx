@@ -94,7 +94,11 @@ function MoviesPageContent() {
     <MediaLibraryPage
       mediaType="movies"
       title="Movies"
-      description="Your movie library"
+      description={
+        noFiltersActive && total > 0
+          ? `${total.toLocaleString()} ${total === 1 ? "movie" : "movies"} in your library`
+          : "browse your movie collection"
+      }
       itemLabel="movie"
       filters={filters}
       isLoading={isLoading}

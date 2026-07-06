@@ -67,19 +67,19 @@ export function RatingStars({
               onMouseEnter={() => handleMouseEnter(value)}
               disabled={!interactive}
               className={cn(
-                "rounded-lg p-1.5 bg-white/[0.03] border border-white/[0.08] transition-all duration-200",
+                "rounded-sm p-1.5 bg-[#0a0a14] border border-[#16162a] transition-all duration-200",
                 interactive &&
-                  "cursor-pointer hover:scale-110 hover:bg-white/[0.08] hover:border-purple-500/30",
+                  "cursor-pointer hover:scale-110 hover:bg-[#0d0d1a] hover:border-violet-500/40",
                 !interactive && "cursor-default",
-                isFilled && "bg-purple-500/20 border-purple-500/30",
+                isFilled && "bg-violet-500/15 border-violet-500/30",
               )}
             >
               <Star
                 className={cn(
                   sizeClasses[size],
                   "transition-colors duration-200",
-                  isFilled ? "fill-purple-400 text-purple-400" : "fill-white/10 text-white/30",
-                  interactive && !isFilled && "hover:fill-purple-400/50 hover:text-purple-400/50",
+                  isFilled ? "fill-violet-400 text-violet-400" : "fill-white/10 text-white/25",
+                  interactive && !isFilled && "hover:fill-violet-400/50 hover:text-violet-400/50",
                 )}
               />
             </button>
@@ -87,8 +87,8 @@ export function RatingStars({
         })}
       </div>
       {showValue && (
-        <span className="text-sm text-white/40 ml-1 shrink-0">
-          {rating !== null ? `${rating}/${maxRating}` : "Not rated"}
+        <span className="ml-1 shrink-0 font-mono text-xs tabular-nums text-violet-300/70">
+          {rating !== null ? `${rating}/${maxRating}` : "not_rated"}
         </span>
       )}
     </div>

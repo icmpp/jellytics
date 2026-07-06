@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { AppLayout, PageHeader, PageContent } from "@/components/layout";
 import { MediaGridSkeleton } from "@/components/ui/media-grid-skeleton";
@@ -14,6 +14,8 @@ interface SimpleMediaGridPageProps<T> {
   description: string;
   icon?: React.ReactNode;
   actions?: React.ReactNode;
+  /** Full-width toolbar rendered above the grid (e.g. search + filters). */
+  toolbar?: React.ReactNode;
   isLoading: boolean;
   isError?: boolean;
   isFetching?: boolean;
@@ -39,6 +41,7 @@ export function SimpleMediaGridPage<T>({
   description,
   icon,
   actions,
+  toolbar,
   isLoading,
   isError = false,
   errorContent,
@@ -53,13 +56,35 @@ export function SimpleMediaGridPage<T>({
 }: SimpleMediaGridPageProps<T>) {
   return (
     <AppLayout>
-      <PageHeader
-        breadcrumb={breadcrumb}
-        title={title}
-        description={description}
-        icon={icon}
-        actions={actions}
-      />
+      {toolbar ? (
+        // Sticky header block (header + toolbar), matching MediaLibraryPage.
+        <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top,0px))] md:top-0 z-10 -mx-4 px-4 md:-mx-8 md:px-8 pt-5 pb-5 bg-[#050508]">
+          <PageHeader
+            breadcrumb={breadcrumb}
+            title={title}
+            description={description}
+            icon={icon}
+            actions={actions}
+            sticky={false}
+          />
+          <div className="mt-3">{toolbar}</div>
+          <div
+            className="absolute bottom-0 left-0 right-0 h-px"
+            style={{
+              background:
+                "linear-gradient(90deg, rgba(139,92,246,0.25) 0%, #1e1e32 22%, transparent 65%)",
+            }}
+          />
+        </div>
+      ) : (
+        <PageHeader
+          breadcrumb={breadcrumb}
+          title={title}
+          description={description}
+          icon={icon}
+          actions={actions}
+        />
+      )}
       <PageContent>
         {isLoading && (skeletonContent ?? <MediaGridSkeleton count={skeletonCount} />)}
 

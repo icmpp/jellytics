@@ -53,21 +53,23 @@ export const MediaCard = memo(function MediaCard({
     <Link
       href={href}
       aria-label={`View details for ${title}`}
-      className="block min-w-0 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="block min-w-0 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
       {/*
-        Outer wrapper: holds the rotating gradient background.
-        The 2 px padding gap is where the gradient shows through as the border.
-        On hover the gradient spins; at rest it's a plain subtle border.
+        Outer wrapper: terminal border that lights up violet on hover.
+        At rest it's a flat #16162a hairline; on hover the border + glow turn violet.
       */}
       <div
         className={cn(
-          "card-border group relative rounded-2xl p-[2px]",
+          "group relative rounded-sm border border-[#16162a] bg-[#07070d] p-px",
+          "transition-colors duration-300 group-hover:border-violet-500/40",
+          "hover:border-violet-500/40",
           "shadow-[0_4px_16px_-4px_rgba(0,0,0,0.5),0_1px_4px_-1px_rgba(0,0,0,0.35)]",
+          "hover:shadow-[0_8px_32px_-4px_rgba(0,0,0,0.6),0_0_0_1px_rgba(139,92,246,0.25)]",
         )}
       >
-        {/* Inner card — masks the gradient background, leaving only the 2 px border gap */}
-        <div className="relative isolate aspect-2/3 w-full cursor-pointer overflow-hidden rounded-[calc(1rem-2px)] bg-zinc-950">
+        {/* Inner card */}
+        <div className="relative isolate aspect-2/3 w-full cursor-pointer overflow-hidden rounded-[2px] bg-zinc-950">
           {/* Poster */}
           <PosterImage src={posterUrl} alt={`Poster for ${title}`} type={itemType} />
 
@@ -103,8 +105,8 @@ export const MediaCard = memo(function MediaCard({
 
             <h3
               className={cn(
-                "line-clamp-2 text-[0.8125rem] font-semibold leading-snug tracking-tight text-white",
-                "transition-colors duration-200 group-hover:text-primary/90",
+                "line-clamp-2 font-mono text-[0.8125rem] font-semibold leading-snug tracking-tight text-white",
+                "transition-colors duration-200 group-hover:text-violet-300",
               )}
             >
               {title}

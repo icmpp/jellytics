@@ -1,8 +1,8 @@
 "use client";
 
 import { RefreshCw, Loader2, AlertCircle } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { SettingsCardHeader, FieldLabel, TerminalButton } from "./SettingsPrimitives";
 import type { SyncStatus } from "./types";
 
 interface Props {
@@ -23,52 +23,47 @@ export function SyncManagementCard({
   onRefreshStatus,
 }: Props) {
   return (
-    <Card className="relative overflow-hidden flex flex-col">
-      <div className="pointer-events-none absolute -top-8 -right-8 h-28 w-28 rounded-full blur-3xl opacity-15 bg-purple-500" />
-      <CardHeader>
-        <CardTitle className="text-white flex items-center gap-2">
-          <RefreshCw className="h-5 w-5 text-purple-400" />
-          Sync Management
-        </CardTitle>
-        <CardDescription>Trigger syncs and monitor your last sync status</CardDescription>
-      </CardHeader>
+    <Card className="flex flex-col">
+      <SettingsCardHeader
+        icon={<RefreshCw className="h-5 w-5" />}
+        title="sync_management"
+        description="Trigger syncs and monitor your last sync status"
+      />
       <CardContent className="flex flex-col gap-6 flex-1">
         {/* Manual sync */}
         <div className="flex items-center justify-between gap-4">
           <div className="space-y-0.5">
-            <span className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-              Manual Sync
-            </span>
-            <p className="text-sm text-white/60">
+            <FieldLabel>manual_sync</FieldLabel>
+            <p className="font-mono text-sm text-white/60">
               Trigger an immediate sync with your Jellyfin library
             </p>
           </div>
-          <Button onClick={onSync} disabled={syncing || !serverURL} className="shrink-0">
+          <TerminalButton onClick={onSync} disabled={syncing || !serverURL} className="shrink-0">
             {syncing ? (
               <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Syncing...
+                <Loader2 className="animate-spin" />
+                syncing...
               </>
             ) : (
               <>
-                <RefreshCw className="h-4 w-4" />
-                Sync Now
+                <RefreshCw />
+                sync_now
               </>
             )}
-          </Button>
+          </TerminalButton>
         </div>
 
-        {/* Divider */}
+        {/* Divider with refresh control */}
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-white/6" />
+          <div className="h-px flex-1 bg-[#16162a]" />
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-medium text-white/25 uppercase tracking-widest">
-              Last Sync
+            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-violet-400/40">
+              last_sync
             </span>
             <button
               onClick={onRefreshStatus}
               disabled={loadingSyncStatus}
-              className="p-1 rounded-lg text-white/30 hover:text-white/60 hover:bg-white/5 transition-colors disabled:opacity-50"
+              className="rounded-sm p-1 text-white/30 transition-colors hover:bg-[#0d0d1a] hover:text-white/60 disabled:opacity-50"
               aria-label="Refresh sync status"
             >
               {loadingSyncStatus ? (
@@ -78,50 +73,48 @@ export function SyncManagementCard({
               )}
             </button>
           </div>
-          <div className="flex-1 h-px bg-white/6" />
+          <div className="h-px flex-1 bg-[#16162a]" />
         </div>
 
         {/* Status content */}
         <div className="flex-1 flex flex-col justify-center">
           {loadingSyncStatus ? (
             <div className="flex items-center justify-center py-6">
-              <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
+              <Loader2 className="h-5 w-5 animate-spin text-violet-400" />
             </div>
           ) : syncStatus ? (
             <div className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
-                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1.5">
-                  <div className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                    Status
-                  </div>
-                  <div
-                    className={`inline-flex items-center text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      syncStatus.status === "success"
-                        ? "text-emerald-400 bg-emerald-500/10"
+                <div className="space-y-1.5 rounded-sm border border-[#16162a] bg-[#0a0a14] p-3">
+                  <FieldLabel>status</FieldLabel>
+                  <div>
+                    <span
+                      className={`inline-flex items-center rounded-sm px-2 py-0.5 font-mono text-xs font-semibold ${
+                        syncStatus.status === "success"
+                          ? "text-emerald-400 bg-emerald-500/10"
+                          : syncStatus.status === "failed"
+                            ? "text-red-400 bg-red-500/10"
+                            : syncStatus.status === "in_progress"
+                              ? "text-amber-400 bg-amber-500/10"
+                              : "text-white/40 bg-white/5"
+                      }`}
+                    >
+                      {syncStatus.status === "success"
+                        ? "success"
                         : syncStatus.status === "failed"
-                          ? "text-red-400 bg-red-500/10"
+                          ? "failed"
                           : syncStatus.status === "in_progress"
-                            ? "text-amber-400 bg-amber-500/10"
-                            : "text-white/40 bg-white/5"
-                    }`}
-                  >
-                    {syncStatus.status === "success"
-                      ? "Success"
-                      : syncStatus.status === "failed"
-                        ? "Failed"
-                        : syncStatus.status === "in_progress"
-                          ? "In Progress"
-                          : syncStatus.status === "never"
-                            ? "Never"
-                            : "Unknown"}
+                            ? "in_progress"
+                            : syncStatus.status === "never"
+                              ? "never"
+                              : "unknown"}
+                    </span>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1.5">
-                  <div className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                    Last Sync
-                  </div>
-                  <div className="text-sm font-medium text-white">
+                <div className="space-y-1.5 rounded-sm border border-[#16162a] bg-[#0a0a14] p-3">
+                  <FieldLabel>last_sync</FieldLabel>
+                  <div className="font-mono text-sm font-medium text-white">
                     {syncStatus.last_sync_at
                       ? new Date(syncStatus.last_sync_at).toLocaleString(undefined, {
                           month: "short",
@@ -133,20 +126,16 @@ export function SyncManagementCard({
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1.5">
-                  <div className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                    Items Synced
-                  </div>
-                  <div className="text-sm font-medium text-white tabular-nums">
+                <div className="space-y-1.5 rounded-sm border border-[#16162a] bg-[#0a0a14] p-3">
+                  <FieldLabel>items_synced</FieldLabel>
+                  <div className="font-mono text-sm font-medium text-white tabular-nums">
                     {syncStatus.items_synced ?? 0}
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.06] space-y-1.5">
-                  <div className="text-[10px] font-medium text-white/40 uppercase tracking-widest">
-                    Duration
-                  </div>
-                  <div className="text-sm font-medium text-white tabular-nums">
+                <div className="space-y-1.5 rounded-sm border border-[#16162a] bg-[#0a0a14] p-3">
+                  <FieldLabel>duration</FieldLabel>
+                  <div className="font-mono text-sm font-medium text-white tabular-nums">
                     {syncStatus.duration_seconds !== null &&
                     syncStatus.duration_seconds !== undefined
                       ? `${syncStatus.duration_seconds.toFixed(1)}s`
@@ -156,9 +145,9 @@ export function SyncManagementCard({
               </div>
 
               {syncStatus.items_failed > 0 && (
-                <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <div className="flex items-center gap-2 rounded-sm border border-amber-500/20 bg-amber-500/10 px-3 py-2">
                   <AlertCircle className="h-3.5 w-3.5 text-amber-400 shrink-0" />
-                  <span className="text-xs font-medium text-amber-400">
+                  <span className="font-mono text-xs font-medium text-amber-400">
                     {syncStatus.items_failed} item{syncStatus.items_failed !== 1 ? "s" : ""} failed
                     to sync
                   </span>
@@ -168,7 +157,9 @@ export function SyncManagementCard({
           ) : (
             <div className="flex flex-col items-center justify-center gap-2 py-6">
               <RefreshCw className="h-5 w-5 text-white/15" />
-              <p className="text-xs text-white/25">No sync data yet — run a sync to see results</p>
+              <p className="font-mono text-xs text-white/25">
+                no sync data yet — run a sync to see results
+              </p>
             </div>
           )}
         </div>

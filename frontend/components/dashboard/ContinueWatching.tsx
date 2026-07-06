@@ -2,12 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, PlayCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useMovies } from "@/hooks/useMovies";
 import { useShows } from "@/hooks/useShows";
 import { PosterImage } from "@/components/ui/poster-image";
-import { SectionHeader } from "@/components/layout";
-import { Card, CardContent } from "@/components/ui/card";
 import { getMoviePosterUrl, getShowPosterUrl } from "@/lib/utils";
 
 interface ContinueItem {
@@ -20,7 +18,7 @@ interface ContinueItem {
   episodesLeft?: number;
 }
 
-export function ContinueWatching() {
+export function ContinueWatchingContent() {
   const { data: moviesData } = useMovies({ status: "watching" });
   const { data: showsData } = useShows({ status: "watching" });
   const rowRef = useRef<HTMLDivElement>(null);
@@ -93,88 +91,83 @@ export function ContinueWatching() {
   };
 
   return (
-    <Card>
-      <div className="pointer-events-none absolute -top-10 -right-10 h-32 w-32 rounded-full blur-3xl opacity-10 bg-blue-500" />
-      <CardContent>
-        <SectionHeader
-          icon={<PlayCircle className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400" />}
-          iconBg="bg-blue-500/15 border border-blue-500/25"
-          title="Continue Watching"
-        />
-        {top.length === 0 ? (
-          <div className="min-h-[220px] flex flex-col items-center justify-center text-center">
-            <PlayCircle className="h-10 w-10 text-white/15 mb-3" />
-            <p className="text-sm font-medium text-white/60">Nothing in progress</p>
-            <p className="text-xs text-white/40 mt-1">
-              Start watching a movie or show to pick up here
-            </p>
-          </div>
-        ) : (
-          <div className="relative">
-            <div
-              ref={rowRef}
-              className="flex gap-4 sm:gap-5 overflow-x-auto pb-2 scrollbar-none snap-x snap-proximity"
-            >
-              {top.map((item) => (
-                <Link
-                  key={`${item.type}-${item.id}`}
-                  href={item.type === "movie" ? `/movies/${item.id}` : `/shows/${item.id}`}
-                  className="group shrink-0 w-36 sm:w-40 md:w-44 snap-start"
-                >
-                  <div className="relative aspect-2/3 rounded-xl overflow-hidden bg-white/4 border border-white/8 mb-2">
-                    <PosterImage
-                      src={item.posterUrl}
-                      alt={item.title}
-                      type={item.type}
-                      sizes="176px"
-                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+    <>
+      {top.length === 0 ? (
+        <div className="min-h-[220px] flex flex-col items-center justify-center text-center gap-1">
+          <p className="text-xs font-mono text-white/35 select-none">nothing_in_progress</p>
+          <p className="text-[10px] font-mono text-white/20 select-none">
+            start watching a movie or show to pick up here
+          </p>
+        </div>
+      ) : (
+        <div className="relative">
+          <div
+            ref={rowRef}
+            className="flex gap-3 sm:gap-4 overflow-x-auto pb-2 scrollbar-none snap-x snap-proximity"
+          >
+            {top.map((item) => (
+              <Link
+                key={`${item.type}-${item.id}`}
+                href={item.type === "movie" ? `/movies/${item.id}` : `/shows/${item.id}`}
+                className="group shrink-0 w-36 sm:w-40 md:w-44 snap-start"
+              >
+                <div className="relative aspect-2/3 rounded-sm overflow-hidden bg-[#0a0a12] border border-[#16162a] mb-2">
+                  <PosterImage
+                    src={item.posterUrl}
+                    alt={item.title}
+                    type={item.type}
+                    sizes="176px"
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-x-0 bottom-0 h-[3px] bg-black/60">
+                    <div
+                      className="h-full bg-violet-500/80 transition-all"
+                      style={{ width: `${item.progress}%` }}
                     />
-                    <div className="absolute inset-x-0 bottom-0 h-1.5 bg-black/40">
-                      <div
-                        className="h-full bg-blue-500 transition-all"
-                        style={{ width: `${item.progress}%` }}
-                      />
-                    </div>
                   </div>
-                  <p className="text-sm text-white/80 truncate group-hover:text-white transition-colors leading-tight">
-                    {item.title}
+                </div>
+                <p className="text-xs font-mono text-white/50 truncate group-hover:text-white/80 transition-colors leading-tight">
+                  {item.title}
+                </p>
+                {item.episodesLeft !== undefined && (
+                  <p className="text-[10px] font-mono text-white/25 mt-0.5">
+                    {item.episodesLeft} ep left
                   </p>
-                  {item.episodesLeft !== undefined && (
-                    <p className="text-xs text-white/40 mt-1">{item.episodesLeft} ep left</p>
-                  )}
-                  {item.type === "movie" && item.progress > 0 && (
-                    <p className="text-xs text-white/40 mt-1">{item.progress}% watched</p>
-                  )}
-                </Link>
-              ))}
-            </div>
-            <button
-              type="button"
-              onClick={() => scrollRow("left")}
-              aria-label="Scroll continue watching left"
-              className={`hidden lg:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-sm transition ${
-                canScrollLeft
-                  ? "text-white/80 hover:text-white hover:bg-black/80"
-                  : "pointer-events-none opacity-0"
-              }`}
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollRow("right")}
-              aria-label="Scroll continue watching right"
-              className={`hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-black/60 backdrop-blur-sm transition ${
-                canScrollRight
-                  ? "text-white/80 hover:text-white hover:bg-black/80"
-                  : "pointer-events-none opacity-0"
-              }`}
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
+                )}
+                {item.type === "movie" && item.progress > 0 && (
+                  <p className="text-[10px] font-mono text-white/25 mt-0.5">
+                    {item.progress}% watched
+                  </p>
+                )}
+              </Link>
+            ))}
           </div>
-        )}
-      </CardContent>
-    </Card>
+          <button
+            type="button"
+            onClick={() => scrollRow("left")}
+            aria-label="Scroll continue watching left"
+            className={`hidden lg:flex absolute left-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 items-center justify-center rounded-sm border border-[#16162a] bg-[#07070d] transition-colors ${
+              canScrollLeft
+                ? "text-white/45 hover:text-white/80 hover:border-violet-500/25"
+                : "pointer-events-none opacity-0"
+            }`}
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={() => scrollRow("right")}
+            aria-label="Scroll continue watching right"
+            className={`hidden lg:flex absolute right-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 items-center justify-center rounded-sm border border-[#16162a] bg-[#07070d] transition-colors ${
+              canScrollRight
+                ? "text-white/45 hover:text-white/80 hover:border-violet-500/25"
+                : "pointer-events-none opacity-0"
+            }`}
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+    </>
   );
 }
