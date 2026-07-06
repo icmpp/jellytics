@@ -6,8 +6,8 @@ import (
 	"embed"
 	"fmt"
 
-	_ "github.com/mattn/go-sqlite3"
 	"github.com/pressly/goose/v3"
+	_ "modernc.org/sqlite"
 )
 
 //go:embed migrations/*.sql
@@ -15,7 +15,12 @@ var migrationsFS embed.FS
 
 // Initialize opens the SQLite database at path with WAL mode, foreign keys, and 30s busy timeout.
 func Initialize(path string) (*sql.DB, error) {
-	db, err := sql.Open("sqlite3", path+"?_foreign_keys=1&_journal_mode=WAL&_busy_timeout=30000")
+	// modernc's _pragma DSN options run on every new pool connection, which is
+	// required for the per-connection pragmas (foreign_keys, busy_timeout).
+	// _time_format=sqlite binds time.Time params as "2006-01-02 15:04:05.999999999-07:00"
+	// — parseable by SQLite's date() functions and identical to what
+	// mattn/go-sqlite3 wrote, so pre-existing databases keep working.
+	db, err := sql.Open("sqlite", path+"?_pragma=foreign_keys(1)&_pragma=journal_mode(WAL)&_pragma=busy_timeout(30000)&_time_format=sqlite")
 	if err != nil {
 		return nil, fmt.Errorf("failed to open database: %w", err)
 	}
