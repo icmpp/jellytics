@@ -14,7 +14,7 @@ require (
 	github.com/rs/zerolog v1.32.0
 	go.opentelemetry.io/otel v1.43.0
 	go.opentelemetry.io/otel/exporters/stdout/stdouttrace v1.42.0
-	go.opentelemetry.io/otel/sdk v1.42.0
+	go.opentelemetry.io/otel/sdk v1.43.0
 	go.opentelemetry.io/otel/trace v1.43.0
 	golang.org/x/time v0.14.0
 	modernc.org/sqlite v1.53.0
