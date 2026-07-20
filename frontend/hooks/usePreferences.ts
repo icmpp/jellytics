@@ -5,8 +5,6 @@ import { api } from "@/lib/api";
 import { toast } from "@/hooks/useToast";
 
 export interface UserPreferences {
-  sync_interval_minutes?: number;
-  auto_sync?: boolean;
   display_items_per_page?: number;
   default_date_range_days?: number;
   show_completion_percentage?: boolean;

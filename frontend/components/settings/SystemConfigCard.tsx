@@ -118,26 +118,27 @@ export function SystemConfigCard({
                 <div className="space-y-2">
                   <FieldLabel>sync_interval</FieldLabel>
                   <div className="flex items-center gap-3">
+                    {/* Displayed in minutes for readability; stored as seconds. */}
                     <Input
                       type="number"
-                      min="10"
-                      max="3600"
-                      step="10"
-                      value={syncConfig.sync_interval_seconds}
+                      min="1"
+                      max="1440"
+                      step="1"
+                      value={Math.round(syncConfig.sync_interval_seconds / 60)}
                       onChange={(e) =>
                         setSyncConfig({
                           ...syncConfig,
-                          sync_interval_seconds: parseInt(e.target.value) || 60,
+                          sync_interval_seconds: (parseInt(e.target.value) || 5) * 60,
                         })
                       }
                       className={`w-32 ${INPUT_CLASS}`}
                       disabled={!syncConfig.sync_enabled}
                     />
-                    <span className="font-mono text-sm text-white/40">seconds</span>
+                    <span className="font-mono text-sm text-white/40">minutes</span>
                   </div>
                   <p className="font-mono text-xs text-white/30">
-                    <span className="select-none text-violet-400/40">{"# "}</span>10–3600s. lower =
-                    more frequent but higher load.
+                    <span className="select-none text-violet-400/40">{"# "}</span>1–1440 min. lower
+                    = more frequent but higher load.
                   </p>
                 </div>
 

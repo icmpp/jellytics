@@ -45,6 +45,7 @@ function MoviesPageContent() {
       watchedFrom: filters.watchedFrom || undefined,
       watchedTo: filters.watchedTo || undefined,
       tags: filters.tagIds.length > 0 ? filters.tagIds : undefined,
+      archived: filters.archived || undefined,
       sort: filters.sort || undefined,
     }),
     [
@@ -56,6 +57,7 @@ function MoviesPageContent() {
       filters.watchedFrom,
       filters.watchedTo,
       filters.tagIds,
+      filters.archived,
       filters.sort,
     ],
   );
@@ -75,7 +77,8 @@ function MoviesPageContent() {
       !filters.yearTo &&
       !filters.watchedFrom &&
       !filters.watchedTo &&
-      filters.tagIds.length === 0,
+      filters.tagIds.length === 0 &&
+      !filters.archived,
     [
       filters.statusFilter,
       filters.searchFilter,
@@ -85,6 +88,7 @@ function MoviesPageContent() {
       filters.watchedFrom,
       filters.watchedTo,
       filters.tagIds,
+      filters.archived,
     ],
   );
 

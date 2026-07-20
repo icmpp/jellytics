@@ -32,6 +32,7 @@ func parseShowFilter(r *http.Request) repository.ShowListFilter {
 		WatchedFrom: r.URL.Query().Get("watched_from"),
 		WatchedTo:   r.URL.Query().Get("watched_to"),
 		TagIDs:      parseTagIDs(r.URL.Query().Get("tags")),
+		Archived:    r.URL.Query().Get("archived"),
 		Sort:        r.URL.Query().Get("sort"),
 	}
 }

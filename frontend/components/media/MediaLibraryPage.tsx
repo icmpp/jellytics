@@ -105,6 +105,7 @@ export function MediaLibraryPage<T>({
             watchedFrom={filters.watchedFrom}
             watchedTo={filters.watchedTo}
             tagIds={filters.tagIds}
+            archived={filters.archived}
             sort={filters.sort}
             onStatusChange={filters.setStatusFilter}
             onSearchChange={filters.setSearchFilter}
@@ -114,6 +115,7 @@ export function MediaLibraryPage<T>({
             onWatchedFromChange={filters.setWatchedFrom}
             onWatchedToChange={filters.setWatchedTo}
             onTagIdsChange={filters.setTagIds}
+            onArchivedChange={filters.setArchived}
             onSortChange={filters.setSort}
             onApplyAll={filters.applyAll}
             onShuffle={items.length > 0 ? handleShuffle : undefined}

@@ -14,6 +14,7 @@ import {
   Film,
   CalendarDays,
   Tag,
+  Archive,
   Bookmark,
   Plus,
   ChevronDown,
@@ -42,6 +43,7 @@ export interface MediaFiltersProps {
   watchedFrom?: string;
   watchedTo?: string;
   tagIds?: number[];
+  archived?: string;
   sort: string;
   onStatusChange: (status: string) => void;
   onSearchChange: (search: string) => void;
@@ -51,6 +53,7 @@ export interface MediaFiltersProps {
   onWatchedFromChange: (date: string) => void;
   onWatchedToChange: (date: string) => void;
   onTagIdsChange?: (tagIds: number[]) => void;
+  onArchivedChange?: (archived: string) => void;
   onSortChange: (sort: string) => void;
   onApplyAll?: (partial: Partial<MediaFiltersSnapshot>) => void;
   onShuffle?: () => void;
@@ -66,6 +69,7 @@ export function MediaFilters({
   watchedFrom,
   watchedTo,
   tagIds = [],
+  archived = "",
   sort,
   onStatusChange,
   onSearchChange,
@@ -75,6 +79,7 @@ export function MediaFilters({
   onWatchedFromChange,
   onWatchedToChange,
   onTagIdsChange,
+  onArchivedChange,
   onSortChange,
   onApplyAll,
   onShuffle,
@@ -113,6 +118,7 @@ export function MediaFilters({
     watchedFrom: watchedFrom || undefined,
     watchedTo: watchedTo || undefined,
     tags: tagIds.length > 0 ? tagIds : undefined,
+    archived: archived || undefined,
   });
 
   const label = mediaType === "movies" ? "Movies" : "Shows";
@@ -136,10 +142,17 @@ export function MediaFilters({
     watchedFrom,
     watchedTo,
     tagIds.length > 0,
+    !!archived,
   ].filter(Boolean).length;
 
   const hasActiveFilters =
-    !!genre || !!yearFrom || !!yearTo || !!watchedFrom || !!watchedTo || tagIds.length > 0;
+    !!genre ||
+    !!yearFrom ||
+    !!yearTo ||
+    !!watchedFrom ||
+    !!watchedTo ||
+    tagIds.length > 0 ||
+    !!archived;
 
   const sliderValue: [number, number] = [yearFrom ?? YEAR_MIN, yearTo ?? currentYear];
 
@@ -156,6 +169,7 @@ export function MediaFilters({
     onWatchedFromChange("");
     onWatchedToChange("");
     onTagIdsChange?.([]);
+    onArchivedChange?.("");
     setSearchValue("");
     onSearchChange("");
   };
@@ -174,6 +188,7 @@ export function MediaFilters({
     watchedFrom,
     watchedTo,
     tagIds,
+    archived,
     sort,
   };
 
@@ -197,6 +212,7 @@ export function MediaFilters({
       yearLabel ? { key: "year", val: yearLabel } : null,
       watchedLabel ? { key: "watched", val: watchedLabel } : null,
       tagIds.length > 0 ? { key: "tags", val: String(tagIds.length) } : null,
+      archived ? { key: "archived", val: archived } : null,
       sort ? { key: "sort", val: sort } : null,
     ] as ({ key: string; val: string } | null)[]
   ).filter((t): t is { key: string; val: string } => t !== null);
@@ -359,6 +375,10 @@ export function MediaFilters({
 
             {onTagIdsChange && tags.length > 0 && (
               <TagsPill tagIds={tagIds} tagOptions={tagOptions} onChange={onTagIdsChange} />
+            )}
+
+            {onArchivedChange && (
+              <ArchivedPill value={archived} onChange={onArchivedChange} label={label} />
             )}
           </div>
 
@@ -678,6 +698,78 @@ function TagsPill({
           placeholder="Search tags..."
           triggerPlaceholder="Select tags..."
         />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+// ─── Archived pill ────────────────────────────────────────────────────────────
+
+const ARCHIVED_OPTIONS: { value: string; label: string; hint: string }[] = [
+  { value: "", label: "all", hint: "show everything" },
+  { value: "only", label: "only archived", hint: "removed from Jellyfin" },
+  { value: "active", label: "hide archived", hint: "in Jellyfin only" },
+];
+
+function ArchivedPill({
+  value,
+  onChange,
+  label,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  label: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const hasValue = !!value;
+  const active = ARCHIVED_OPTIONS.find((o) => o.value === value) ?? ARCHIVED_OPTIONS[0];
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button className={cn(PILL_BASE, hasValue ? PILL_ACTIVE : PILL_IDLE)}>
+          <Archive
+            className={cn(
+              "h-3.5 w-3.5 shrink-0 transition-transform",
+              !hasValue && "group-hover:translate-x-0.5",
+            )}
+          />
+          <span>{hasValue ? active.label : "archived"}</span>
+          {hasValue ? (
+            <PillClear
+              onClear={(e) => {
+                e.stopPropagation();
+                onChange("");
+              }}
+            />
+          ) : (
+            <ChevronDown className="h-3.5 w-3.5 opacity-40" />
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-52 p-1.5 rounded-sm border-[#16162a] bg-[#07070d]">
+        <div className="px-2 pb-1.5 pt-1 text-[10px] font-mono uppercase tracking-wider text-violet-400/50">
+          archived {label.toLowerCase()}
+        </div>
+        {ARCHIVED_OPTIONS.map((opt) => (
+          <button
+            key={opt.value || "all"}
+            type="button"
+            onClick={() => {
+              onChange(opt.value);
+              setOpen(false);
+            }}
+            className={cn(
+              "flex w-full flex-col gap-0.5 rounded-sm px-3 py-1.5 text-left transition-colors",
+              value === opt.value
+                ? "bg-violet-500/10 text-violet-200"
+                : "text-white/60 hover:bg-[#0d0d1a] hover:text-white/85",
+            )}
+          >
+            <span className="font-mono text-xs">{opt.label}</span>
+            <span className="text-[10px] text-white/35">{opt.hint}</span>
+          </button>
+        ))}
       </PopoverContent>
     </Popover>
   );

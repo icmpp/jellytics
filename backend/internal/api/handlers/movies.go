@@ -83,6 +83,7 @@ func movieFilterFromRequest(r *http.Request, userID, limit, offset int) reposito
 		WatchedFrom: r.URL.Query().Get("watched_from"),
 		WatchedTo:   r.URL.Query().Get("watched_to"),
 		TagIDs:      parseTagIDs(r.URL.Query().Get("tags")),
+		Archived:    r.URL.Query().Get("archived"),
 		Sort:        r.URL.Query().Get("sort"),
 		UserID:      userID,
 		Limit:       limit,

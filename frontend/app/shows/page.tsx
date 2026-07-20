@@ -42,6 +42,7 @@ function ShowsPageContent() {
       watchedFrom: filters.watchedFrom || undefined,
       watchedTo: filters.watchedTo || undefined,
       tags: filters.tagIds.length > 0 ? filters.tagIds : undefined,
+      archived: filters.archived || undefined,
       sort: filters.sort || undefined,
     }),
     [
@@ -53,6 +54,7 @@ function ShowsPageContent() {
       filters.watchedFrom,
       filters.watchedTo,
       filters.tagIds,
+      filters.archived,
       filters.sort,
     ],
   );
@@ -72,7 +74,8 @@ function ShowsPageContent() {
       !filters.yearTo &&
       !filters.watchedFrom &&
       !filters.watchedTo &&
-      filters.tagIds.length === 0,
+      filters.tagIds.length === 0 &&
+      !filters.archived,
     [
       filters.statusFilter,
       filters.searchFilter,
@@ -82,6 +85,7 @@ function ShowsPageContent() {
       filters.watchedFrom,
       filters.watchedTo,
       filters.tagIds,
+      filters.archived,
     ],
   );
 

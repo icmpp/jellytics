@@ -62,11 +62,16 @@ func (s *SyncScheduler) UpdateIntervalsWithSignal(ctx context.Context, signalRec
 	}
 	fullSec := s.settingsService.GetInt(ctx, "sync_interval_seconds", 300)
 	sessSec := s.settingsService.GetInt(ctx, "sessions_sync_interval_seconds", 90)
+	workers := s.settingsService.GetInt(ctx, "sync_worker_pool_size", 5)
 	enabled := s.settingsService.GetBool(ctx, "sync_enabled", true)
+	if workers < 1 {
+		workers = 1
+	}
 
 	s.mu.Lock()
 	s.interval = time.Duration(fullSec) * time.Second
 	s.sessionsInterval = time.Duration(sessSec) * time.Second
+	s.workerPoolSize = workers
 	s.fullSyncEnabled = enabled
 	s.mu.Unlock()
 
@@ -76,7 +81,7 @@ func (s *SyncScheduler) UpdateIntervalsWithSignal(ctx context.Context, signalRec
 		default:
 		}
 	}
-	log.Debug().Int("full_sync_seconds", fullSec).Int("sessions_seconds", sessSec).Bool("enabled", enabled).Msg("Sync intervals updated")
+	log.Debug().Int("full_sync_seconds", fullSec).Int("sessions_seconds", sessSec).Int("workers", workers).Bool("enabled", enabled).Msg("Sync intervals updated")
 }
 
 func (s *SyncScheduler) Start(ctx context.Context) {
@@ -123,6 +128,7 @@ func (s *SyncScheduler) SyncAllUsers(ctx context.Context) {
 func (s *SyncScheduler) syncSessionsOnly(ctx context.Context) {
 	s.mu.RLock()
 	enabled := s.fullSyncEnabled
+	workers := s.workerPoolSize
 	s.mu.RUnlock()
 	if !enabled {
 		return
@@ -148,7 +154,7 @@ func (s *SyncScheduler) syncSessionsOnly(ctx context.Context) {
 	}
 
 	sessionsService := NewSessionsService(s.db)
-	sem := make(chan struct{}, s.workerPoolSize)
+	sem := make(chan struct{}, workers)
 	var wg sync.WaitGroup
 	for _, userID := range userIDs {
 		wg.Add(1)
@@ -165,6 +171,14 @@ func (s *SyncScheduler) syncSessionsOnly(ctx context.Context) {
 }
 
 func (s *SyncScheduler) syncAllUsers(ctx context.Context) {
+	s.mu.RLock()
+	enabled := s.fullSyncEnabled
+	workers := s.workerPoolSize
+	s.mu.RUnlock()
+	if !enabled {
+		log.Debug().Msg("Background sync disabled; skipping full sync cycle")
+		return
+	}
 
 	rows, err := s.db.QueryContext(ctx, "SELECT id FROM users WHERE deleted_at IS NULL")
 	if err != nil {
@@ -198,7 +212,7 @@ func (s *SyncScheduler) syncAllUsers(ctx context.Context) {
 	}
 	sessionsService := NewSessionsService(s.db)
 
-	sem := make(chan struct{}, s.workerPoolSize)
+	sem := make(chan struct{}, workers)
 	var wg sync.WaitGroup
 
 	syncStartTime := time.Now()

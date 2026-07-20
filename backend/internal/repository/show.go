@@ -22,9 +22,12 @@ type ShowListFilter struct {
 	WatchedFrom string
 	WatchedTo   string
 	TagIDs      []int
-	Sort        string
-	Limit       int
-	Offset      int
+	// Archived filters on deleted_from_jellyfin: "" = all, "only" = archived
+	// only, "active" = hide archived.
+	Archived string
+	Sort     string
+	Limit    int
+	Offset   int
 }
 
 var showSortClauses = map[string]string{
@@ -101,6 +104,8 @@ func buildShowWhere(f ShowListFilter, userID int, includeStatus bool) (string, [
 		sb.WriteString(") AND tag_id IN (SELECT id FROM tags WHERE user_id = ?))")
 		args = append(args, userID)
 	}
+
+	sb.WriteString(archivedClause(f.Archived))
 
 	return sb.String(), args
 }

@@ -12,6 +12,7 @@ export interface MediaFiltersState {
   watchedFrom: string;
   watchedTo: string;
   tagIds: number[];
+  archived: string;
   sort: string;
   setStatusFilter: (v: string) => void;
   setSearchFilter: (v: string) => void;
@@ -21,6 +22,7 @@ export interface MediaFiltersState {
   setWatchedFrom: (v: string) => void;
   setWatchedTo: (v: string) => void;
   setTagIds: (v: number[]) => void;
+  setArchived: (v: string) => void;
   setSort: (v: string) => void;
   applyAll: (snapshot: Partial<MediaFiltersSnapshot>) => void;
 }
@@ -34,6 +36,7 @@ export interface MediaFiltersSnapshot {
   watchedFrom: string;
   watchedTo: string;
   tagIds: number[];
+  archived: string;
   sort: string;
 }
 
@@ -62,6 +65,7 @@ function readFromParams(sp: URLSearchParams): MediaFiltersSnapshot {
     watchedFrom: sp.get("watched_from") ?? "",
     watchedTo: sp.get("watched_to") ?? "",
     tagIds: parseTagIDs(sp.get("tags")),
+    archived: sp.get("archived") ?? "",
     sort: sp.get("sort") ?? "",
   };
 }
@@ -76,6 +80,7 @@ function toParams(snap: MediaFiltersSnapshot): URLSearchParams {
   if (snap.watchedFrom) sp.set("watched_from", snap.watchedFrom);
   if (snap.watchedTo) sp.set("watched_to", snap.watchedTo);
   if (snap.tagIds.length > 0) sp.set("tags", snap.tagIds.join(","));
+  if (snap.archived) sp.set("archived", snap.archived);
   if (snap.sort) sp.set("sort", snap.sort);
   return sp;
 }
@@ -142,6 +147,7 @@ export function useMediaFilters(): MediaFiltersState {
   const setWatchedFrom = useCallback((v: string) => setSnap((s) => ({ ...s, watchedFrom: v })), []);
   const setWatchedTo = useCallback((v: string) => setSnap((s) => ({ ...s, watchedTo: v })), []);
   const setTagIds = useCallback((v: number[]) => setSnap((s) => ({ ...s, tagIds: v })), []);
+  const setArchived = useCallback((v: string) => setSnap((s) => ({ ...s, archived: v })), []);
   const setSort = useCallback((v: string) => setSnap((s) => ({ ...s, sort: v })), []);
 
   const applyAll = useCallback((partial: Partial<MediaFiltersSnapshot>) => {
@@ -158,6 +164,7 @@ export function useMediaFilters(): MediaFiltersState {
       watchedFrom: snap.watchedFrom,
       watchedTo: snap.watchedTo,
       tagIds: snap.tagIds,
+      archived: snap.archived,
       sort: snap.sort,
       setStatusFilter,
       setSearchFilter,
@@ -167,6 +174,7 @@ export function useMediaFilters(): MediaFiltersState {
       setWatchedFrom,
       setWatchedTo,
       setTagIds,
+      setArchived,
       setSort,
       applyAll,
     }),
@@ -180,6 +188,7 @@ export function useMediaFilters(): MediaFiltersState {
       setWatchedFrom,
       setWatchedTo,
       setTagIds,
+      setArchived,
       setSort,
       applyAll,
     ],

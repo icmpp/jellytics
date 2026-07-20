@@ -18,6 +18,7 @@ export interface UseStatusCountsFilters {
   watchedFrom?: string;
   watchedTo?: string;
   tags?: number[];
+  archived?: string;
 }
 
 function buildParams(filters: UseStatusCountsFilters = {}) {
@@ -29,6 +30,7 @@ function buildParams(filters: UseStatusCountsFilters = {}) {
   if (filters.watchedFrom) p.append("watched_from", filters.watchedFrom);
   if (filters.watchedTo) p.append("watched_to", filters.watchedTo);
   if (filters.tags?.length) p.append("tags", filters.tags.join(","));
+  if (filters.archived) p.append("archived", filters.archived);
   return p;
 }
 

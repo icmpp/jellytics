@@ -22,9 +22,13 @@ type MovieListFilter struct {
 	WatchedTo   string
 	TagIDs      []int
 	UserID      int // used for tag filter subquery
-	Sort        string
-	Limit       int
-	Offset      int
+	// Archived filters on the deleted_from_jellyfin flag: "" = all (archived
+	// items stay visible on the library page), "only" = archived only,
+	// "active" = hide archived.
+	Archived string
+	Sort     string
+	Limit    int
+	Offset   int
 }
 
 // movieSortClauses maps whitelisted sort keys to ORDER BY fragments.
@@ -329,7 +333,21 @@ func buildFilterClause(filter MovieListFilter, forShows bool) string {
 		}
 		c += ") AND tag_id IN (SELECT id FROM tags WHERE user_id = ?))"
 	}
+	c += archivedClause(filter.Archived)
 	return c
+}
+
+// archivedClause maps the whitelisted Archived filter values to a SQL fragment.
+// The output contains no user input, so it needs no bind parameters.
+func archivedClause(archived string) string {
+	switch archived {
+	case "only":
+		return " AND deleted_from_jellyfin = 1"
+	case "active":
+		return " AND (deleted_from_jellyfin = 0 OR deleted_from_jellyfin IS NULL)"
+	default:
+		return ""
+	}
 }
 
 func scanMovie(rows interface {

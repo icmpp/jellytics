@@ -9,6 +9,7 @@ export { SortSelect } from "./SortSelect";
 export { StatusSegmented } from "./StatusSegmented";
 export { CardStatusBadge } from "./CardStatusBadge";
 export { CardRatingPill } from "./CardRatingPill";
+export { CardArchivedBadge } from "./CardArchivedBadge";
 export { CardHoverActions } from "./CardHoverActions";
 export { CardChips } from "./CardChips";
 export { MediaCard, type MediaCardProps, type MediaCardProgress } from "./MediaCard";

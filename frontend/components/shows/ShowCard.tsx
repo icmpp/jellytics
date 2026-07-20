@@ -30,6 +30,7 @@ export const ShowCard = memo(function ShowCard({ show }: ShowCardProps) {
       posterUrl={show.jellyfin_id ? getShowPosterUrl(show.jellyfin_id) : undefined}
       status={show.status}
       genre={show.genre}
+      archived={show.deleted_from_jellyfin}
       meta={[show.year, hasEpisodeProgress ? `${totalEpisodes} eps` : null]}
       progress={
         hasEpisodeProgress

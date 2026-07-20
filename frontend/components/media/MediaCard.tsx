@@ -3,7 +3,7 @@
 import { Fragment, memo, type ReactNode } from "react";
 import Link from "next/link";
 import { PosterImage } from "@/components/ui/poster-image";
-import { CardStatusBadge, CardRatingPill, CardChips } from "@/components/media";
+import { CardStatusBadge, CardRatingPill, CardChips, CardArchivedBadge } from "@/components/media";
 import { useRatingsMap, ratingKey } from "@/hooks/useRatingsMap";
 import { cn } from "@/lib/utils";
 
@@ -26,6 +26,8 @@ export interface MediaCardProps {
   meta?: Array<string | number | null | undefined>;
   progress?: MediaCardProgress;
   bottomAccent?: ReactNode;
+  /** Marks the item as archived (deleted from Jellyfin) with a badge. */
+  archived?: boolean;
 }
 
 export const MediaCard = memo(function MediaCard({
@@ -39,6 +41,7 @@ export const MediaCard = memo(function MediaCard({
   meta,
   progress,
   bottomAccent,
+  archived,
 }: MediaCardProps) {
   const ratingsMap = useRatingsMap();
   const userRating = ratingsMap.get(ratingKey(itemType, itemId));
@@ -95,9 +98,13 @@ export const MediaCard = memo(function MediaCard({
             }}
           />
 
-          {/* Top badges */}
+          {/* Top badges. Archived sits top-left; a rating pill drops below it
+              when both are present so they don't overlap. */}
           <CardStatusBadge status={status} />
-          {userRating !== undefined && <CardRatingPill rating={userRating} />}
+          {archived && <CardArchivedBadge />}
+          {userRating !== undefined && (
+            <CardRatingPill rating={userRating} className={archived ? "top-10" : undefined} />
+          )}
 
           {/* Info zone */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex flex-col gap-1 px-3 pb-3 pt-10">

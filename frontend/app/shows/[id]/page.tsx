@@ -309,6 +309,17 @@ export default function ShowDetailPage() {
           </div>
         )}
 
+        {show.deleted_from_jellyfin && !show.removed_from_library && (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-sm bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm font-mono">
+            <Archive className="h-4 w-4 shrink-0" />
+            <span>
+              # archived — removed from Jellyfin
+              {show.archived_at ? ` on ${new Date(show.archived_at).toLocaleDateString()}` : ""} ·
+              stats preserved
+            </span>
+          </div>
+        )}
+
         <div className="grid gap-6 md:gap-8 lg:grid-cols-[280px_1fr] min-w-0 w-full">
           <div className="shrink-0 w-full max-w-[180px] sm:max-w-[200px] mx-auto lg:max-w-none lg:mx-0">
             <div className={MEDIA_POSTER_CONTAINER}>

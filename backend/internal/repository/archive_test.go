@@ -102,6 +102,49 @@ func TestArchivedItemsStayVisibleInLists(t *testing.T) {
 	}
 }
 
+// TestArchivedFilter checks the list filter: default shows all, "only" narrows
+// to archived, "active" hides archived. Applies to movies and shows alike.
+func TestArchivedFilter(t *testing.T) {
+	f := newFixture(t)
+	ctx := context.Background()
+	// A owns movieA (active) plus one archived movie.
+	archived := insertMovie(t, f.db, f.userA, "m-arch", "Archived One")
+	archiveMovie(t, f, archived, time.Now())
+	mstore := NewSQLMovieStore(f.db)
+
+	all, total, err := mstore.List(ctx, f.userA, MovieListFilter{Limit: 50})
+	if err != nil || total != 2 || len(all) != 2 {
+		t.Fatalf("default should list all (2): total=%d len=%d err=%v", total, len(all), err)
+	}
+
+	only, total, err := mstore.List(ctx, f.userA, MovieListFilter{Archived: "only", Limit: 50})
+	if err != nil || total != 1 || len(only) != 1 || only[0].ID != archived {
+		t.Fatalf("only should list the archived movie: total=%d len=%d err=%v", total, len(only), err)
+	}
+
+	active, total, err := mstore.List(ctx, f.userA, MovieListFilter{Archived: "active", Limit: 50})
+	if err != nil || total != 1 || len(active) != 1 || active[0].ID != f.movieA {
+		t.Fatalf("active should hide the archived movie: total=%d len=%d err=%v", total, len(active), err)
+	}
+
+	// Status counts honor the archived filter too.
+	counts, err := mstore.StatusCounts(ctx, f.userA, MovieListFilter{Archived: "active"})
+	if err != nil || counts.All != 1 {
+		t.Fatalf("status counts should honor archived filter: all=%d err=%v", counts.All, err)
+	}
+
+	// Shows mirror the behavior.
+	sarch := insertShow(t, f.db, f.userA, "s-arch", "Archived Show")
+	if _, err := f.db.Exec(`UPDATE shows SET deleted_from_jellyfin = 1, archived_at = ? WHERE id = ?`, time.Now(), sarch); err != nil {
+		t.Fatalf("archive show: %v", err)
+	}
+	sstore := NewSQLShowStore(f.db)
+	sOnly, sTotal, err := sstore.List(ctx, f.userA, ShowListFilter{Archived: "only", Limit: 50})
+	if err != nil || sTotal != 1 || len(sOnly) != 1 || sOnly[0].ID != sarch {
+		t.Fatalf("show only-archived filter wrong: total=%d len=%d err=%v", sTotal, len(sOnly), err)
+	}
+}
+
 // TestArchiveFieldsOnDetail verifies the single-item reads surface the flag too.
 func TestArchiveFieldsOnDetail(t *testing.T) {
 	f := newFixture(t)

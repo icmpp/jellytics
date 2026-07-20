@@ -30,6 +30,10 @@ export interface Show {
   last_watched_at?: string;
   created_at: string;
   removed_from_library?: boolean;
+  /** True when the series was deleted from Jellyfin and archived. */
+  deleted_from_jellyfin?: boolean;
+  /** ISO timestamp of when it was archived (deleted from Jellyfin). */
+  archived_at?: string;
   up_next?: UpNext | null;
 }
 
@@ -47,6 +51,7 @@ interface UseShowsFilters {
   watchedFrom?: string;
   watchedTo?: string;
   tags?: number[];
+  archived?: string;
   sort?: string;
   limit?: number;
   offset?: number;
@@ -62,6 +67,7 @@ export function useShows(filters?: UseShowsFilters, options?: { enabled?: boolea
   if (filters?.watchedFrom) params.append("watched_from", filters.watchedFrom);
   if (filters?.watchedTo) params.append("watched_to", filters.watchedTo);
   if (filters?.tags?.length) params.append("tags", filters.tags.join(","));
+  if (filters?.archived) params.append("archived", filters.archived);
   if (filters?.sort) params.append("sort", filters.sort);
   if (filters?.limit !== undefined && filters?.limit !== null) {
     params.append("limit", filters.limit.toString());
@@ -99,6 +105,7 @@ export function useShowsInfinite(
       if (filters?.watchedFrom) params.append("watched_from", filters.watchedFrom);
       if (filters?.watchedTo) params.append("watched_to", filters.watchedTo);
       if (filters?.tags?.length) params.append("tags", filters.tags.join(","));
+      if (filters?.archived) params.append("archived", filters.archived);
       if (filters?.sort) params.append("sort", filters.sort);
       params.append("limit", pageSize.toString());
       params.append("offset", pageParam.toString());

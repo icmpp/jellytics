@@ -15,7 +15,6 @@ import { useReviewsList } from "@/hooks/useReviews";
 import { JellyfinServerCard } from "@/components/settings/JellyfinServerCard";
 import { SyncManagementCard } from "@/components/settings/SyncManagementCard";
 import { SystemConfigCard } from "@/components/settings/SystemConfigCard";
-import { SyncPreferencesCard } from "@/components/settings/SyncPreferencesCard";
 import { DisplaySettingsCard } from "@/components/settings/DisplaySettingsCard";
 import { TagsCard } from "@/components/settings/TagsCard";
 import { NotificationsCard } from "@/components/settings/NotificationsCard";
@@ -29,8 +28,6 @@ interface Settings {
 }
 
 const DEFAULT_PREFS: UserPrefs = {
-  sync_interval_minutes: 60,
-  auto_sync: true,
   display_items_per_page: 50,
   default_date_range_days: 30,
   show_completion_percentage: true,
@@ -67,7 +64,7 @@ export default function SettingsPage() {
   const [loadingSystemSettings, setLoadingSystemSettings] = useState(false);
   const [savingSystemSettings, setSavingSystemSettings] = useState(false);
   const [syncConfig, setSyncConfig] = useState<SyncConfig>({
-    sync_interval_seconds: 60,
+    sync_interval_seconds: 300,
     worker_pool_size: 5,
     sync_enabled: true,
   });
@@ -91,8 +88,6 @@ export default function SettingsPage() {
   useEffect(() => {
     if (preferences && Object.keys(preferences).length > 0) {
       setPrefs({
-        sync_interval_minutes: preferences.sync_interval_minutes ?? 60,
-        auto_sync: preferences.auto_sync ?? true,
         display_items_per_page: preferences.display_items_per_page ?? 50,
         default_date_range_days: preferences.default_date_range_days ?? 30,
         show_completion_percentage: preferences.show_completion_percentage ?? true,
@@ -399,7 +394,6 @@ export default function SettingsPage() {
               setNewTagName={setNewTagName}
             />
             <div className="space-y-6">
-              <SyncPreferencesCard prefs={prefs} setPrefs={setPrefs} />
               <DisplaySettingsCard prefs={prefs} setPrefs={setPrefs} />
               <NotificationsCard prefs={prefs} setPrefs={setPrefs} />
             </div>

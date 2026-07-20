@@ -7,8 +7,6 @@ export interface SyncStatus {
 }
 
 export interface UserPrefs {
-  sync_interval_minutes: number;
-  auto_sync: boolean;
   display_items_per_page: number;
   default_date_range_days: number;
   show_completion_percentage: boolean;

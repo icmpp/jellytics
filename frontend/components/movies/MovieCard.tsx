@@ -21,6 +21,7 @@ export const MovieCard = memo(function MovieCard({ movie }: MovieCardProps) {
       posterUrl={movie.jellyfin_id ? getMoviePosterUrl(movie.jellyfin_id) : undefined}
       status={movie.status}
       genre={movie.genre}
+      archived={movie.deleted_from_jellyfin}
       meta={[movie.year, formatRuntime(movie.runtime_minutes)]}
       progress={
         partial
