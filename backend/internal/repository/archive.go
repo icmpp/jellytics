@@ -34,15 +34,18 @@ func (s *SQLArchiveStore) RemovedShows(ctx context.Context, userID int) ([]model
 	return s.removed(ctx, userID, "show", "shows", "watched_episodes", "/api/v1/images/shows/")
 }
 
-// removed lists soft-deleted rows from the movies/shows table. countCol is the
-// per-type column mapped onto ArchiveItem.WatchCount; posterPrefix builds the
-// poster URL from the jellyfin id.
+// removed lists rows archived because they were deleted from Jellyfin
+// (deleted_from_jellyfin = 1). These remain visible on the movies/series pages;
+// this is the dedicated archive view. countCol is the per-type column mapped
+// onto ArchiveItem.WatchCount; posterPrefix builds the poster URL from the
+// jellyfin id. User "removed from library" rows (deleted_at) are a separate
+// concept and are intentionally excluded here.
 func (s *SQLArchiveStore) removed(ctx context.Context, userID int, itemType, table, countCol, posterPrefix string) ([]models.ArchiveItem, error) {
 	rows, err := s.db.QueryContext(ctx,
-		`SELECT id, jellyfin_id, title, year, status, total_watch_time_minutes, `+countCol+`, deleted_at
+		`SELECT id, jellyfin_id, title, year, status, total_watch_time_minutes, `+countCol+`, archived_at
 		 FROM `+table+`
-		 WHERE user_id = ? AND deleted_at IS NOT NULL
-		 ORDER BY deleted_at DESC`,
+		 WHERE user_id = ? AND deleted_from_jellyfin = 1 AND deleted_at IS NULL
+		 ORDER BY archived_at DESC, id DESC`,
 		userID)
 	if err != nil {
 		return nil, errors.Wrap(err, errors.CodeDatabaseError, "Failed to query removed "+table)
@@ -53,16 +56,16 @@ func (s *SQLArchiveStore) removed(ctx context.Context, userID int, itemType, tab
 	for rows.Next() {
 		var it models.ArchiveItem
 		var year sql.NullInt64
-		var deletedAt sql.NullTime
+		var archivedAt sql.NullTime
 		var status sql.NullString
 		it.Type = itemType
 		if err := rows.Scan(&it.ID, &it.JellyfinID, &it.Title, &year, &status,
-			&it.TotalWatchTimeMins, &it.WatchCount, &deletedAt); err != nil {
+			&it.TotalWatchTimeMins, &it.WatchCount, &archivedAt); err != nil {
 			return nil, errors.Wrap(err, errors.CodeDatabaseError, "Failed to scan removed "+table)
 		}
 		it.Status = status.String
-		if deletedAt.Valid {
-			t := deletedAt.Time.Format(isoLayout)
+		if archivedAt.Valid {
+			t := archivedAt.Time.Format(isoLayout)
 			it.RemovedAt = &t
 		}
 		if year.Valid {

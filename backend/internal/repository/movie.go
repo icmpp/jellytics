@@ -98,7 +98,8 @@ func (s *SQLMovieStore) List(ctx context.Context, userID int, filter MovieListFi
 		SELECT id, jellyfin_id, title, overview, poster_url, backdrop_url, genre, year,
 		       imdb_id, tmdb_id, runtime_minutes, status, watched, watch_count,
 		       total_watch_time_minutes, completion_percentage,
-		       first_watched_at, last_watched_at, created_at
+		       first_watched_at, last_watched_at, created_at,
+		       COALESCE(deleted_from_jellyfin, 0), archived_at
 		FROM movies ` + baseWhere + buildFilterClause(filter, false) + `
 		ORDER BY ` + movieOrderBy(filter.Sort) + ` LIMIT ? OFFSET ?`
 	args = append(args, filter.Limit, filter.Offset)
@@ -128,18 +129,21 @@ func (s *SQLMovieStore) GetByID(ctx context.Context, id, userID int) (*models.Mo
 	var firstWatchedAt sql.NullTime
 	var lastWatchedAt sql.NullTime
 	var deletedAt sql.NullTime
+	var archivedAt sql.NullTime
 
 	err := s.db.QueryRowContext(ctx,
 		`SELECT id, jellyfin_id, title, overview, poster_url, backdrop_url, genre, year,
 		        imdb_id, tmdb_id, runtime_minutes, status, watched, watch_count,
 		        total_watch_time_minutes, completion_percentage,
-		        first_watched_at, last_watched_at, created_at, deleted_at
+		        first_watched_at, last_watched_at, created_at, deleted_at,
+		        COALESCE(deleted_from_jellyfin, 0), archived_at
 		 FROM movies WHERE id = ? AND user_id = ?`, id, userID).Scan(
 		&movie.ID, &movie.JellyfinID, &movie.Title, &movie.Overview, &movie.PosterURL,
 		&movie.BackdropURL, &genre, &year, &movie.IMDBID, &movie.TMDBID,
 		&runtimeMinutes, &movie.Status, &movie.Watched, &movie.WatchCount,
 		&movie.TotalWatchTimeMinutes, &movie.CompletionPercentage,
 		&firstWatchedAt, &lastWatchedAt, &movie.CreatedAt, &deletedAt,
+		&movie.DeletedFromJellyfin, &archivedAt,
 	)
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -148,6 +152,9 @@ func (s *SQLMovieStore) GetByID(ctx context.Context, id, userID int) (*models.Mo
 		return nil, errors.Wrap(err, errors.CodeDatabaseError, "Failed to get movie")
 	}
 	applyMovieNulls(&movie, &genre, &year, &runtimeMinutes, &firstWatchedAt, &lastWatchedAt, &deletedAt)
+	if archivedAt.Valid {
+		movie.ArchivedAt = &archivedAt.Time
+	}
 	return &movie, nil
 }
 
@@ -334,17 +341,22 @@ func scanMovie(rows interface {
 	var runtimeMinutes sql.NullInt64
 	var firstWatchedAt sql.NullTime
 	var lastWatchedAt sql.NullTime
+	var archivedAt sql.NullTime
 	err := rows.Scan(
 		&movie.ID, &movie.JellyfinID, &movie.Title, &movie.Overview, &movie.PosterURL,
 		&movie.BackdropURL, &genre, &year, &movie.IMDBID, &movie.TMDBID,
 		&runtimeMinutes, &movie.Status, &movie.Watched, &movie.WatchCount,
 		&movie.TotalWatchTimeMinutes, &movie.CompletionPercentage,
 		&firstWatchedAt, &lastWatchedAt, &movie.CreatedAt,
+		&movie.DeletedFromJellyfin, &archivedAt,
 	)
 	if err != nil {
 		return nil, fmt.Errorf("scan movie: %w", err)
 	}
 	applyMovieNulls(&movie, &genre, &year, &runtimeMinutes, &firstWatchedAt, &lastWatchedAt, nil)
+	if archivedAt.Valid {
+		movie.ArchivedAt = &archivedAt.Time
+	}
 	return &movie, nil
 }
 

@@ -10,6 +10,7 @@ type Show struct {
 	PosterURL             string     `json:"poster_url" db:"poster_url"`
 	LocalPosterPath       *string    `json:"local_poster_path" db:"local_poster_path"`
 	DeletedFromJellyfin   bool       `json:"deleted_from_jellyfin" db:"deleted_from_jellyfin"`
+	ArchivedAt            *time.Time `json:"archived_at,omitempty" db:"archived_at"`
 	Genre                 string     `json:"genre" db:"genre"`
 	Year                  *int       `json:"year" db:"year"`
 	IMDBID                string     `json:"imdb_id" db:"imdb_id"`

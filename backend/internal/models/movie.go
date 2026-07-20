@@ -12,6 +12,7 @@ type Movie struct {
 	LocalPosterPath       *string    `json:"local_poster_path" db:"local_poster_path"`
 	LocalBackdropPath     *string    `json:"local_backdrop_path" db:"local_backdrop_path"`
 	DeletedFromJellyfin   bool       `json:"deleted_from_jellyfin" db:"deleted_from_jellyfin"`
+	ArchivedAt            *time.Time `json:"archived_at,omitempty" db:"archived_at"`
 	Genre                 string     `json:"genre" db:"genre"`
 	Year                  *int       `json:"year" db:"year"`
 	IMDBID                string     `json:"imdb_id" db:"imdb_id"`

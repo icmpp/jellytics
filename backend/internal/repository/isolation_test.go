@@ -38,8 +38,8 @@ func insertUser(t *testing.T, db *sql.DB, username, jellyfinID string) int {
 func insertMovie(t *testing.T, db *sql.DB, userID int, jellyfinID, title string) int {
 	t.Helper()
 	res, err := db.Exec(
-		`INSERT INTO movies (jellyfin_id, title, overview, poster_url, genre, user_id, status)
-		 VALUES (?, ?, '', '', '[]', ?, 'pending')`,
+		`INSERT INTO movies (jellyfin_id, title, overview, poster_url, backdrop_url, imdb_id, tmdb_id, genre, user_id, status)
+		 VALUES (?, ?, '', '', '', '', '', '[]', ?, 'pending')`,
 		jellyfinID, title, userID)
 	if err != nil {
 		t.Fatalf("insert movie: %v", err)

@@ -143,7 +143,8 @@ func (s *SQLShowStore) List(ctx context.Context, userID int, filter ShowListFilt
 	rows, err := s.db.QueryContext(ctx, `
 		SELECT id, jellyfin_id, title, overview, poster_url, genre, year, status,
 		       total_episodes, watched_episodes, total_watch_time_minutes,
-		       first_watched_at, last_watched_at, created_at
+		       first_watched_at, last_watched_at, created_at,
+		       COALESCE(deleted_from_jellyfin, 0), archived_at
 		FROM shows
 		WHERE `+where+`
 		ORDER BY `+showOrderBy(filter.Sort)+`
@@ -175,12 +176,13 @@ func scanShowListRow(rows *sql.Rows) (models.Show, error) {
 	var show models.Show
 	var genre sql.NullString
 	var year, totalEpisodes sql.NullInt64
-	var firstWatchedAt, lastWatchedAt sql.NullTime
+	var firstWatchedAt, lastWatchedAt, archivedAt sql.NullTime
 
 	if err := rows.Scan(
 		&show.ID, &show.JellyfinID, &show.Title, &show.Overview, &show.PosterURL,
 		&genre, &year, &show.Status, &totalEpisodes, &show.WatchedEpisodes,
 		&show.TotalWatchTimeMinutes, &firstWatchedAt, &lastWatchedAt, &show.CreatedAt,
+		&show.DeletedFromJellyfin, &archivedAt,
 	); err != nil {
 		return models.Show{}, err
 	}
@@ -198,6 +200,9 @@ func scanShowListRow(rows *sql.Rows) (models.Show, error) {
 	}
 	if lastWatchedAt.Valid {
 		show.LastWatchedAt = &lastWatchedAt.Time
+	}
+	if archivedAt.Valid {
+		show.ArchivedAt = &archivedAt.Time
 	}
 	return show, nil
 }
@@ -293,6 +298,7 @@ func (s *SQLShowStore) GetWithEpisodes(ctx context.Context, id, userID int) (*mo
 		`SELECT s.id, s.jellyfin_id, s.title, s.overview, s.poster_url, s.genre, s.year, s.status,
 		        s.total_episodes, s.watched_episodes, s.total_watch_time_minutes,
 		        s.first_watched_at, s.last_watched_at, s.created_at, s.deleted_at,
+		        COALESCE(s.deleted_from_jellyfin, 0), s.archived_at,
 		        e.id as ep_id, e.jellyfin_id as ep_jellyfin_id, e.title as ep_title,
 		        e.episode_number, e.season_number, e.duration_minutes, e.watched, e.watched_at,
 		        e.watch_count, e.completion_percentage, e.created_at as ep_created_at
@@ -310,7 +316,7 @@ func (s *SQLShowStore) GetWithEpisodes(ctx context.Context, id, userID int) (*mo
 	var episodes []models.Episode
 	var genre sql.NullString
 	var year, totalEpisodes sql.NullInt64
-	var firstWatchedAt, lastWatchedAt, showDeletedAt sql.NullTime
+	var firstWatchedAt, lastWatchedAt, showDeletedAt, showArchivedAt sql.NullTime
 	var epID sql.NullInt64
 	var epJellyfinID, epTitle sql.NullString
 	var epEpisodeNumber, epSeasonNumber, epDurationMinutes, epWatchCount sql.NullInt64
@@ -323,7 +329,7 @@ func (s *SQLShowStore) GetWithEpisodes(ctx context.Context, id, userID int) (*mo
 			&show.ID, &show.JellyfinID, &show.Title, &show.Overview, &show.PosterURL,
 			&genre, &year, &show.Status, &totalEpisodes, &show.WatchedEpisodes,
 			&show.TotalWatchTimeMinutes, &firstWatchedAt, &lastWatchedAt, &show.CreatedAt,
-			&showDeletedAt,
+			&showDeletedAt, &show.DeletedFromJellyfin, &showArchivedAt,
 			&epID, &epJellyfinID, &epTitle, &epEpisodeNumber, &epSeasonNumber,
 			&epDurationMinutes, &epWatched, &epWatchedAt, &epWatchCount,
 			&epCompletionPercentage, &epCreatedAt,
@@ -379,6 +385,9 @@ func (s *SQLShowStore) GetWithEpisodes(ctx context.Context, id, userID int) (*mo
 		return nil, nil, nil
 	}
 	show.RemovedFromLibrary = showDeletedAt.Valid
+	if showArchivedAt.Valid {
+		show.ArchivedAt = &showArchivedAt.Time
+	}
 	return &show, episodes, nil
 }
 

@@ -944,113 +944,92 @@ func nullIfEmpty(s string) *string {
 }
 
 func (s *SyncService) markDeletedMovies(ctx context.Context, userID int, activeJellyfinIDs map[string]bool) {
-	rows, err := s.db.QueryContext(ctx,
-		`SELECT id, jellyfin_id FROM movies WHERE user_id = ? AND (deleted_from_jellyfin = 0 OR deleted_from_jellyfin IS NULL)`,
-		userID)
-	if err != nil {
-		if strings.Contains(err.Error(), "no such column") {
-			return // Column not yet migrated, skip
-		}
-		log.Warn().Err(err).Int("user_id", userID).Msg("Failed to query movies for deletion check")
-		return
-	}
-	defer rows.Close()
-
-	var toMark []int
-	for rows.Next() {
-		var id int
-		var jellyfinID string
-		if err := rows.Scan(&id, &jellyfinID); err != nil {
-			continue
-		}
-		if !activeJellyfinIDs[jellyfinID] {
-			toMark = append(toMark, id)
-		}
-	}
-	if err := rows.Err(); err != nil {
-		log.Warn().Err(err).Int("user_id", userID).Msg("Error iterating movies for deletion check")
-	}
-
-	if len(toMark) == 0 {
-		return
-	}
-	now := time.Now()
-	const batchSize = 100
-	for i := 0; i < len(toMark); i += batchSize {
-		end := i + batchSize
-		if end > len(toMark) {
-			end = len(toMark)
-		}
-		batch := toMark[i:end]
-		placeholders := make([]string, len(batch))
-		args := make([]interface{}, 0, len(batch)+1)
-		args = append(args, now)
-		for j, id := range batch {
-			placeholders[j] = "?"
-			args = append(args, id)
-		}
-		query := `UPDATE movies SET deleted_from_jellyfin = 1, updated_at = ? WHERE id IN (` + strings.Join(placeholders, ",") + `)`
-		_, err := s.db.ExecContext(ctx, query, args...)
-		if err != nil {
-			log.Warn().Err(err).Int("count", len(batch)).Msg("Failed to mark movies as deleted from Jellyfin")
-		} else if len(batch) > 0 {
-			log.Debug().Int("count", len(batch)).Msg("Marked movies deleted")
-		}
-	}
+	s.reconcileArchivedState(ctx, userID, "movies", activeJellyfinIDs)
 }
 
 func (s *SyncService) markDeletedShows(ctx context.Context, userID int, activeJellyfinIDs map[string]bool) {
+	s.reconcileArchivedState(ctx, userID, "shows", activeJellyfinIDs)
+}
+
+// reconcileArchivedState brings the archive flag in line with what Jellyfin
+// currently reports for one media table. Rows whose jellyfin_id is absent from
+// activeJellyfinIDs are archived (deleted_from_jellyfin=1, archived_at set to
+// now if not already recorded). Rows that were archived but have reappeared in
+// Jellyfin are un-archived (flag cleared, archived_at nulled) so a re-added
+// title returns to the library cleanly. Archived rows stay visible on the
+// movies/series pages; only the flag and archive page treat them specially.
+func (s *SyncService) reconcileArchivedState(ctx context.Context, userID int, table string, activeJellyfinIDs map[string]bool) {
 	rows, err := s.db.QueryContext(ctx,
-		`SELECT id, jellyfin_id FROM shows WHERE user_id = ? AND (deleted_from_jellyfin = 0 OR deleted_from_jellyfin IS NULL)`,
+		`SELECT id, jellyfin_id, COALESCE(deleted_from_jellyfin, 0) FROM `+table+` WHERE user_id = ?`,
 		userID)
 	if err != nil {
 		if strings.Contains(err.Error(), "no such column") {
 			return // Column not yet migrated, skip
 		}
-		log.Warn().Err(err).Int("user_id", userID).Msg("Failed to query shows for deletion check")
+		log.Warn().Err(err).Str("table", table).Int("user_id", userID).Msg("Failed to query for archive reconcile")
 		return
 	}
 	defer rows.Close()
 
-	var toMark []int
+	var toArchive, toRestore []int
 	for rows.Next() {
 		var id int
 		var jellyfinID string
-		if err := rows.Scan(&id, &jellyfinID); err != nil {
+		var archived bool
+		if err := rows.Scan(&id, &jellyfinID, &archived); err != nil {
 			continue
 		}
-		if !activeJellyfinIDs[jellyfinID] {
-			toMark = append(toMark, id)
+		present := activeJellyfinIDs[jellyfinID]
+		switch {
+		case !present && !archived:
+			toArchive = append(toArchive, id)
+		case present && archived:
+			toRestore = append(toRestore, id)
 		}
 	}
 	if err := rows.Err(); err != nil {
-		log.Warn().Err(err).Int("user_id", userID).Msg("Error iterating shows for deletion check")
+		log.Warn().Err(err).Str("table", table).Int("user_id", userID).Msg("Error iterating rows for archive reconcile")
 	}
 
-	if len(toMark) == 0 {
-		return
-	}
 	now := time.Now()
+	// Newly archived: record archived_at only if not already set, so re-syncs
+	// never overwrite the original removal time.
+	s.batchUpdateIDs(ctx, toArchive,
+		`UPDATE `+table+` SET deleted_from_jellyfin = 1, archived_at = COALESCE(archived_at, ?), updated_at = ? WHERE id IN (`,
+		now, now)
+	if len(toArchive) > 0 {
+		log.Debug().Str("table", table).Int("count", len(toArchive)).Msg("Archived items removed from Jellyfin")
+	}
+	// Reappeared: clear the flag and archive timestamp.
+	s.batchUpdateIDs(ctx, toRestore,
+		`UPDATE `+table+` SET deleted_from_jellyfin = 0, archived_at = NULL, updated_at = ? WHERE id IN (`,
+		now)
+	if len(toRestore) > 0 {
+		log.Debug().Str("table", table).Int("count", len(toRestore)).Msg("Un-archived items that reappeared in Jellyfin")
+	}
+}
+
+// batchUpdateIDs runs setPrefix (an UPDATE ... WHERE id IN ( fragment) against
+// ids in batches of 100. leadingArgs are the SET-clause bind values that come
+// before the IN placeholders.
+func (s *SyncService) batchUpdateIDs(ctx context.Context, ids []int, setPrefix string, leadingArgs ...interface{}) {
 	const batchSize = 100
-	for i := 0; i < len(toMark); i += batchSize {
+	for i := 0; i < len(ids); i += batchSize {
 		end := i + batchSize
-		if end > len(toMark) {
-			end = len(toMark)
+		if end > len(ids) {
+			end = len(ids)
 		}
-		batch := toMark[i:end]
+		batch := ids[i:end]
 		placeholders := make([]string, len(batch))
-		args := make([]interface{}, 0, len(batch)+1)
-		args = append(args, now)
+		args := make([]interface{}, 0, len(leadingArgs)+len(batch))
+		args = append(args, leadingArgs...)
 		for j, id := range batch {
 			placeholders[j] = "?"
 			args = append(args, id)
 		}
-		query := `UPDATE shows SET deleted_from_jellyfin = 1, updated_at = ? WHERE id IN (` + strings.Join(placeholders, ",") + `)`
-		_, err := s.db.ExecContext(ctx, query, args...)
-		if err != nil {
-			log.Warn().Err(err).Int("count", len(batch)).Msg("Failed to mark shows as deleted from Jellyfin")
-		} else if len(batch) > 0 {
-			log.Debug().Int("count", len(batch)).Msg("Marked shows deleted")
+		query := setPrefix + strings.Join(placeholders, ",") + `)`
+		if _, err := s.db.ExecContext(ctx, query, args...); err != nil {
+			log.Warn().Err(err).Int("count", len(batch)).Msg("Failed batch archive-state update")
 		}
 	}
 }
