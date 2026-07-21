@@ -392,7 +392,7 @@ func (s *SyncService) SyncUser(ctx context.Context, userID int) error {
 			Str("show_name", item.Name).
 			Msg("Syncing show")
 
-		if err, _ := s.syncShow(ctx, userID, user.JellyfinUserID, item, jfClient, accessToken, itemHash, episodesBySeries); err != nil {
+		if err := s.syncShow(ctx, userID, user.JellyfinUserID, item, jfClient, accessToken, itemHash, episodesBySeries); err != nil {
 			log.Error().
 				Err(err).
 				Int("user_id", userID).
@@ -512,6 +512,11 @@ func (s *SyncService) SyncUser(ctx context.Context, userID int) error {
 
 	s.markDeletedShows(ctx, userID, jellyfinShowIDs)
 
+	// Collapse same-title duplicates (re-imports / multiple libraries) onto a
+	// single canonical row. Runs last so it sees every upserted item and its
+	// aggregated stats feed the snapshot below.
+	s.MergeDuplicates(ctx, userID)
+
 	_, err = s.db.ExecContext(ctx, "UPDATE users SET last_sync_at = ? WHERE id = ?", time.Now(), userID)
 	if err != nil {
 		log.Warn().Err(err).Msg("Failed to update last sync time")
@@ -528,58 +533,44 @@ func (s *SyncService) SyncUser(ctx context.Context, userID int) error {
 	return nil
 }
 
-func (s *SyncService) syncShow(ctx context.Context, userID int, jellyfinUserID string, item jellyfin.Item, jfClient jellyfin.API, accessToken string, syncHash string, episodesBySeries map[string][]jellyfin.Item) (error, bool) {
+func (s *SyncService) syncShow(ctx context.Context, userID int, jellyfinUserID string, item jellyfin.Item, jfClient jellyfin.API, accessToken string, syncHash string, episodesBySeries map[string][]jellyfin.Item) error {
 	userDataHash := computeUserDataHash(item)
 	tx, err := beginTxWithRetry(ctx, s.db, item.Id)
 	if err != nil {
-		return errors.Wrap(err, errors.CodeDatabaseError, "Failed to begin transaction"), false
+		return errors.Wrap(err, errors.CodeDatabaseError, "Failed to begin transaction")
 	}
 	defer tx.Rollback()
 
 	genreJSON, _ := json.Marshal(item.Genres)
 
+	// Upsert on the (jellyfin_id, user_id) unique key so a Jellyfin item can only
+	// ever map to a single show row — idempotent and safe against re-runs. status
+	// is set only on insert; on update it's left to the episode-driven logic below.
+	posterURL := fmt.Sprintf("%s/Items/%s/Images/Primary", jfClient.BaseURL(), item.Id)
+	now := time.Now()
+
 	var showID int
-	var isNewShow bool
 	err = tx.QueryRowContext(ctx,
-		`SELECT id FROM shows WHERE jellyfin_id = ? AND user_id = ?`,
-		item.Id, userID).Scan(&showID)
-
-	if err == sql.ErrNoRows {
-		isNewShow = true
-		result, err := tx.ExecContext(ctx,
-			`INSERT INTO shows (jellyfin_id, title, overview, poster_url, genre, year, imdb_id, tmdb_id, status, user_id, created_at, updated_at)
-			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
-			item.Id, item.Name, item.Overview,
-			fmt.Sprintf("%s/Items/%s/Images/Primary", jfClient.BaseURL(), item.Id),
-			string(genreJSON), item.ProductionYear,
-			item.ProviderIds.Imdb, item.ProviderIds.Tmdb,
-			userID, time.Now(), time.Now())
-		if err != nil {
-			return errors.Wrap(err, errors.CodeDatabaseError, "Failed to insert show"), false
-		}
-		showID64, _ := result.LastInsertId()
-		showID = int(showID64)
-
-		if _, hashErr := tx.ExecContext(ctx, "UPDATE shows SET sync_hash = ?, userdata_hash = ? WHERE id = ?", syncHash, userDataHash, showID); hashErr != nil {
-			log.Warn().Err(hashErr).Int("show_id", showID).Msg("Failed to update show hash")
-		}
-	} else if err != nil {
-		return errors.Wrap(err, errors.CodeDatabaseError, "Failed to look up show"), false
-	} else {
-		_, err = tx.ExecContext(ctx,
-			`UPDATE shows SET title = ?, overview = ?, poster_url = ?, genre = ?, year = ?, imdb_id = ?, tmdb_id = ?, updated_at = ? WHERE id = ?`,
-			item.Name, item.Overview,
-			fmt.Sprintf("%s/Items/%s/Images/Primary", jfClient.BaseURL(), item.Id),
-			string(genreJSON), item.ProductionYear,
-			item.ProviderIds.Imdb, item.ProviderIds.Tmdb,
-			time.Now(), showID)
-		if err != nil {
-			return errors.Wrap(err, errors.CodeDatabaseError, "Failed to update show"), false
-		}
-
-		if _, hashErr := tx.ExecContext(ctx, "UPDATE shows SET sync_hash = ?, userdata_hash = ? WHERE id = ?", syncHash, userDataHash, showID); hashErr != nil {
-			log.Warn().Err(hashErr).Int("show_id", showID).Msg("Failed to update show hash")
-		}
+		`INSERT INTO shows
+		   (jellyfin_id, title, overview, poster_url, genre, year, imdb_id, tmdb_id, status, user_id, created_at, updated_at, sync_hash, userdata_hash)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)
+		 ON CONFLICT(jellyfin_id, user_id) DO UPDATE SET
+		   title = excluded.title,
+		   overview = excluded.overview,
+		   poster_url = excluded.poster_url,
+		   genre = excluded.genre,
+		   year = excluded.year,
+		   imdb_id = excluded.imdb_id,
+		   tmdb_id = excluded.tmdb_id,
+		   updated_at = excluded.updated_at,
+		   sync_hash = excluded.sync_hash,
+		   userdata_hash = excluded.userdata_hash
+		 RETURNING id`,
+		item.Id, item.Name, item.Overview, posterURL, string(genreJSON), item.ProductionYear,
+		item.ProviderIds.Imdb, item.ProviderIds.Tmdb, userID, now, now, syncHash, userDataHash,
+	).Scan(&showID)
+	if err != nil {
+		return errors.Wrap(err, errors.CodeDatabaseError, "Failed to upsert show")
 	}
 
 	if err := s.syncEpisodes(ctx, tx, showID, item.Id, jfClient, accessToken, userID, jellyfinUserID, episodesBySeries[item.Id]); err != nil {
@@ -591,7 +582,7 @@ func (s *SyncService) syncShow(ctx context.Context, userID int, jellyfinUserID s
 	}
 
 	if err := tx.Commit(); err != nil {
-		return errors.Wrap(err, errors.CodeDatabaseError, "Failed to commit show transaction"), false
+		return errors.Wrap(err, errors.CodeDatabaseError, "Failed to commit show transaction")
 	}
 
 	if s.imageService != nil && !s.imageService.ImageExists("shows", item.Id, "poster") {
@@ -616,7 +607,7 @@ func (s *SyncService) syncShow(ctx context.Context, userID int, jellyfinUserID s
 		}
 	}
 
-	return nil, isNewShow
+	return nil
 }
 
 func (s *SyncService) syncEpisodes(ctx context.Context, tx *sql.Tx, showID int, seriesID string, jfClient jellyfin.API, accessToken string, userID int, jellyfinUserID string, preFetchedEpisodes []jellyfin.Item) error {
@@ -823,61 +814,51 @@ func (s *SyncService) syncMovie(ctx context.Context, userID int, item jellyfin.I
 		totalWatchTimeMinutes = int(float64(runtimeMinutes) * item.UserData.PlayedPercentage / 100)
 	}
 
+	// Upsert on the (jellyfin_id, user_id) unique key so a Jellyfin movie can only
+	// ever map to a single row — idempotent and safe against re-runs. backdrop_url
+	// is seeded empty on insert and left untouched on update (as before).
+	posterURL := fmt.Sprintf("%s/Items/%s/Images/Primary", jfClient.BaseURL(), item.Id)
+	now := time.Now()
+
 	var movieID int
 	err = tx.QueryRowContext(ctx,
-		`SELECT id FROM movies WHERE jellyfin_id = ? AND user_id = ?`,
-		item.Id, userID).Scan(&movieID)
-
-	if err == sql.ErrNoRows {
-
-		result, err := tx.ExecContext(ctx,
-			`INSERT INTO movies (
-				jellyfin_id, title, overview, poster_url, backdrop_url, genre, year,
-				imdb_id, tmdb_id, runtime_minutes, status, watched, watch_count,
-				total_watch_time_minutes, completion_percentage,
-				first_watched_at, last_watched_at, user_id, created_at, updated_at
-			) VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-			item.Id, item.Name, item.Overview,
-			fmt.Sprintf("%s/Items/%s/Images/Primary", jfClient.BaseURL(), item.Id),
-			string(genreJSON), item.ProductionYear,
-			item.ProviderIds.Imdb, item.ProviderIds.Tmdb,
-			runtimeMinutes, status, watched, watchCount,
-			totalWatchTimeMinutes, completionPercentage,
-			firstWatchedAt, lastWatchedAt, userID, time.Now(), time.Now())
-		if err != nil {
-			return err
-		}
-		movieID64, _ := result.LastInsertId()
-		movieID = int(movieID64)
-
-		if _, hashErr := tx.ExecContext(ctx, "UPDATE movies SET sync_hash = ?, userdata_hash = ? WHERE id = ?", syncHash, userDataHash, movieID); hashErr != nil {
-			log.Warn().Err(hashErr).Int("movie_id", movieID).Msg("Failed to update movie hash")
-		}
-	} else if err != nil {
+		`INSERT INTO movies (
+			jellyfin_id, title, overview, poster_url, backdrop_url, genre, year,
+			imdb_id, tmdb_id, runtime_minutes, status, watched, watch_count,
+			total_watch_time_minutes, completion_percentage,
+			first_watched_at, last_watched_at, user_id, created_at, updated_at,
+			sync_hash, userdata_hash
+		) VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		ON CONFLICT(jellyfin_id, user_id) DO UPDATE SET
+			title = excluded.title,
+			overview = excluded.overview,
+			poster_url = excluded.poster_url,
+			genre = excluded.genre,
+			year = excluded.year,
+			imdb_id = excluded.imdb_id,
+			tmdb_id = excluded.tmdb_id,
+			runtime_minutes = excluded.runtime_minutes,
+			status = excluded.status,
+			watched = excluded.watched,
+			watch_count = excluded.watch_count,
+			total_watch_time_minutes = excluded.total_watch_time_minutes,
+			completion_percentage = excluded.completion_percentage,
+			first_watched_at = excluded.first_watched_at,
+			last_watched_at = excluded.last_watched_at,
+			updated_at = excluded.updated_at,
+			sync_hash = excluded.sync_hash,
+			userdata_hash = excluded.userdata_hash
+		RETURNING id`,
+		item.Id, item.Name, item.Overview, posterURL,
+		string(genreJSON), item.ProductionYear,
+		item.ProviderIds.Imdb, item.ProviderIds.Tmdb,
+		runtimeMinutes, status, watched, watchCount,
+		totalWatchTimeMinutes, completionPercentage,
+		firstWatchedAt, lastWatchedAt, userID, now, now,
+		syncHash, userDataHash,
+	).Scan(&movieID)
+	if err != nil {
 		return err
-	} else {
-		_, err = tx.ExecContext(ctx,
-			`UPDATE movies SET
-				title = ?, overview = ?, poster_url = ?,
-				genre = ?, year = ?, imdb_id = ?, tmdb_id = ?,
-				runtime_minutes = ?, status = ?, watched = ?, watch_count = ?,
-				total_watch_time_minutes = ?, completion_percentage = ?,
-				first_watched_at = ?, last_watched_at = ?, updated_at = ?
-			WHERE id = ?`,
-			item.Name, item.Overview,
-			fmt.Sprintf("%s/Items/%s/Images/Primary", jfClient.BaseURL(), item.Id),
-			string(genreJSON), item.ProductionYear,
-			item.ProviderIds.Imdb, item.ProviderIds.Tmdb,
-			runtimeMinutes, status, watched, watchCount,
-			totalWatchTimeMinutes, completionPercentage,
-			firstWatchedAt, lastWatchedAt, time.Now(), movieID)
-		if err != nil {
-			return err
-		}
-
-		if _, hashErr := tx.ExecContext(ctx, "UPDATE movies SET sync_hash = ?, userdata_hash = ? WHERE id = ?", syncHash, userDataHash, movieID); hashErr != nil {
-			log.Warn().Err(hashErr).Int("movie_id", movieID).Msg("Failed to update movie hash")
-		}
 	}
 
 	if (watched || completionPercentage > 0) && lastWatchedAt != nil {

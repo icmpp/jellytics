@@ -43,7 +43,7 @@ func (s *StatsService) GetOverview(ctx context.Context, userID int) (*models.Sta
 				COUNT(CASE WHEN status = 'pending' THEN 1 END),
 				COALESCE(SUM(total_watch_time_minutes), 0),
 				COUNT(*)
-			FROM shows WHERE user_id = ?`,
+			FROM shows WHERE user_id = ? AND duplicate_of IS NULL`,
 			userID).Scan(&showsWatched, &showsWatching, &showsPending, &showsWatchTime, &totalShows)
 	}()
 
@@ -53,7 +53,7 @@ func (s *StatsService) GetOverview(ctx context.Context, userID int) (*models.Sta
 		episodesErr = s.db.QueryRowContext(ctx,
 			`SELECT COUNT(*) FROM episodes e
 			 INNER JOIN shows s ON e.show_id = s.id
-			 WHERE s.user_id = ? AND e.watched = 1`,
+			 WHERE s.user_id = ? AND s.duplicate_of IS NULL AND e.watched = 1`,
 			userID).Scan(&episodesWatched)
 	}()
 
@@ -67,7 +67,7 @@ func (s *StatsService) GetOverview(ctx context.Context, userID int) (*models.Sta
 				COUNT(DISTINCT CASE WHEN m.status = 'pending' THEN m.id END),
 				COALESCE(SUM(m.total_watch_time_minutes), 0),
 				COUNT(DISTINCT m.id)
-			FROM movies m WHERE m.user_id = ?`,
+			FROM movies m WHERE m.user_id = ? AND m.duplicate_of IS NULL`,
 			userID).Scan(&moviesWatched, &moviesWatching, &moviesPending, &moviesWatchTime, &totalMovies)
 	}()
 
@@ -101,9 +101,9 @@ func (s *StatsService) GetGenreBreakdown(ctx context.Context, userID int) (map[s
 	query := `
 		SELECT genre
 		FROM (
-			SELECT genre FROM shows WHERE user_id = ? AND genre IS NOT NULL
+			SELECT genre FROM shows WHERE user_id = ? AND duplicate_of IS NULL AND genre IS NOT NULL
 			UNION ALL
-			SELECT genre FROM movies WHERE user_id = ? AND genre IS NOT NULL
+			SELECT genre FROM movies WHERE user_id = ? AND duplicate_of IS NULL AND genre IS NOT NULL
 		)
 	`
 
@@ -230,13 +230,13 @@ func (s *StatsService) GetMilestones(ctx context.Context, userID int) ([]models.
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		showsErr = s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM shows WHERE user_id = ? AND status = 'watched'`, userID).Scan(&showsWatched)
+		showsErr = s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM shows WHERE user_id = ? AND duplicate_of IS NULL AND status = 'watched'`, userID).Scan(&showsWatched)
 	}()
 
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		moviesErr = s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM movies WHERE user_id = ? AND status = 'watched'`, userID).Scan(&moviesWatched)
+		moviesErr = s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM movies WHERE user_id = ? AND duplicate_of IS NULL AND status = 'watched'`, userID).Scan(&moviesWatched)
 	}()
 
 	wg.Wait()
@@ -327,7 +327,7 @@ func (s *StatsService) GetPeriodSummary(ctx context.Context, userID int, period 
 	go func() {
 		defer wg.Done()
 		s.db.QueryRowContext(ctx,
-			`SELECT COUNT(*) FROM shows WHERE user_id = ? AND first_watched_at >= `+dateFilter+` AND first_watched_at IS NOT NULL`, userID,
+			`SELECT COUNT(*) FROM shows WHERE user_id = ? AND duplicate_of IS NULL AND first_watched_at >= `+dateFilter+` AND first_watched_at IS NOT NULL`, userID,
 		).Scan(&summary.ShowsStarted)
 	}()
 
@@ -335,7 +335,7 @@ func (s *StatsService) GetPeriodSummary(ctx context.Context, userID int, period 
 	go func() {
 		defer wg.Done()
 		s.db.QueryRowContext(ctx,
-			`SELECT COUNT(*) FROM shows WHERE user_id = ? AND status = 'watched' AND last_watched_at >= `+dateFilter+` AND last_watched_at IS NOT NULL`, userID,
+			`SELECT COUNT(*) FROM shows WHERE user_id = ? AND duplicate_of IS NULL AND status = 'watched' AND last_watched_at >= `+dateFilter+` AND last_watched_at IS NOT NULL`, userID,
 		).Scan(&summary.ShowsCompleted)
 	}()
 
@@ -343,7 +343,7 @@ func (s *StatsService) GetPeriodSummary(ctx context.Context, userID int, period 
 	go func() {
 		defer wg.Done()
 		s.db.QueryRowContext(ctx,
-			`SELECT COUNT(*) FROM movies WHERE user_id = ? AND status = 'watched' AND last_watched_at >= `+dateFilter+` AND last_watched_at IS NOT NULL`, userID,
+			`SELECT COUNT(*) FROM movies WHERE user_id = ? AND duplicate_of IS NULL AND status = 'watched' AND last_watched_at >= `+dateFilter+` AND last_watched_at IS NOT NULL`, userID,
 		).Scan(&summary.MoviesWatched)
 	}()
 
@@ -351,9 +351,9 @@ func (s *StatsService) GetPeriodSummary(ctx context.Context, userID int, period 
 
 	// Compute top genre by counting every genre entry across watched shows/movies in the period.
 	genreRows, err := s.db.QueryContext(ctx, `
-		SELECT genre FROM shows WHERE user_id = ? AND genre IS NOT NULL AND last_watched_at >= `+dateFilter+`
+		SELECT genre FROM shows WHERE user_id = ? AND duplicate_of IS NULL AND genre IS NOT NULL AND last_watched_at >= `+dateFilter+`
 		UNION ALL
-		SELECT genre FROM movies WHERE user_id = ? AND genre IS NOT NULL AND last_watched_at >= `+dateFilter,
+		SELECT genre FROM movies WHERE user_id = ? AND duplicate_of IS NULL AND genre IS NOT NULL AND last_watched_at >= `+dateFilter,
 		userID, userID)
 	if err == nil {
 		defer genreRows.Close()
@@ -416,7 +416,7 @@ func (s *StatsService) GetYearInReview(ctx context.Context, userID int, year int
 	result.EpisodesWatched = episodesWatched
 
 	_ = s.db.QueryRowContext(ctx,
-		`SELECT COUNT(*) FROM movies WHERE user_id = ? AND status = 'watched' 
+		`SELECT COUNT(*) FROM movies WHERE user_id = ? AND duplicate_of IS NULL AND status = 'watched' 
 		 AND date(last_watched_at) >= ? AND date(last_watched_at) <= ?`,
 		userID, startStr, endStr).Scan(&moviesWatched)
 	result.MoviesWatched = moviesWatched
@@ -424,7 +424,7 @@ func (s *StatsService) GetYearInReview(ctx context.Context, userID int, year int
 	movieRows, err := s.db.QueryContext(ctx, `
 		SELECT id, title, total_watch_time_minutes
 		FROM movies
-		WHERE user_id = ? AND last_watched_at IS NOT NULL
+		WHERE user_id = ? AND duplicate_of IS NULL AND last_watched_at IS NOT NULL
 		  AND date(last_watched_at) >= ? AND date(last_watched_at) <= ?
 		ORDER BY total_watch_time_minutes DESC
 		LIMIT 5`, userID, startStr, endStr)
@@ -446,7 +446,7 @@ func (s *StatsService) GetYearInReview(ctx context.Context, userID int, year int
 	showRows, err := s.db.QueryContext(ctx, `
 		SELECT id, title, total_watch_time_minutes
 		FROM shows
-		WHERE user_id = ? AND last_watched_at IS NOT NULL
+		WHERE user_id = ? AND duplicate_of IS NULL AND last_watched_at IS NOT NULL
 		  AND date(last_watched_at) >= ? AND date(last_watched_at) <= ?
 		ORDER BY total_watch_time_minutes DESC
 		LIMIT 5`, userID, startStr, endStr)
@@ -467,10 +467,10 @@ func (s *StatsService) GetYearInReview(ctx context.Context, userID int, year int
 
 	genreRows, err := s.db.QueryContext(ctx, `
 		SELECT genre FROM (
-			SELECT genre FROM shows WHERE user_id = ? AND genre IS NOT NULL
+			SELECT genre FROM shows WHERE user_id = ? AND duplicate_of IS NULL AND genre IS NOT NULL
 			  AND date(last_watched_at) >= ? AND date(last_watched_at) <= ?
 			UNION ALL
-			SELECT genre FROM movies WHERE user_id = ? AND genre IS NOT NULL
+			SELECT genre FROM movies WHERE user_id = ? AND duplicate_of IS NULL AND genre IS NOT NULL
 			  AND date(last_watched_at) >= ? AND date(last_watched_at) <= ?
 		)`, userID, startStr, endStr, userID, startStr, endStr)
 	if err != nil {
@@ -529,7 +529,7 @@ func (s *StatsService) GetYearInReview(ctx context.Context, userID int, year int
 	movieMonthRows, mmErr := s.db.QueryContext(ctx, `
 		SELECT strftime('%Y-%m', last_watched_at) as month, COUNT(*)
 		FROM movies
-		WHERE user_id = ? AND status = 'watched'
+		WHERE user_id = ? AND duplicate_of IS NULL AND status = 'watched'
 		  AND date(last_watched_at) >= ? AND date(last_watched_at) <= ?
 		GROUP BY strftime('%Y-%m', last_watched_at)
 		ORDER BY month`, userID, startStr, endStr)

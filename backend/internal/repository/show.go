@@ -56,7 +56,7 @@ func showOrderBy(sort string) string {
 // includeStatus controls whether the status filter is applied (status-counts omit it).
 func buildShowWhere(f ShowListFilter, userID int, includeStatus bool) (string, []interface{}) {
 	var sb strings.Builder
-	sb.WriteString("user_id = ? AND deleted_at IS NULL")
+	sb.WriteString("user_id = ? AND deleted_at IS NULL AND duplicate_of IS NULL")
 	args := []interface{}{userID}
 
 	if includeStatus && f.Status != "" {

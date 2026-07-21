@@ -54,11 +54,11 @@ func (s *SQLRecommendationStore) RatedGenres(ctx context.Context, userID int) ([
 	rows, err := s.db.QueryContext(ctx, `
 		SELECT r.rating, m.genre
 		FROM ratings r JOIN movies m ON r.item_type = 'movie' AND r.item_id = m.id AND m.user_id = ?
-		WHERE r.user_id = ? AND m.deleted_at IS NULL
+		WHERE r.user_id = ? AND m.deleted_at IS NULL AND m.duplicate_of IS NULL
 		UNION ALL
 		SELECT r.rating, s.genre
 		FROM ratings r JOIN shows s ON r.item_type = 'show' AND r.item_id = s.id AND s.user_id = ?
-		WHERE r.user_id = ? AND s.deleted_at IS NULL`,
+		WHERE r.user_id = ? AND s.deleted_at IS NULL AND s.duplicate_of IS NULL`,
 		userID, userID, userID, userID)
 	if err != nil {
 		return nil, errors.Wrap(err, errors.CodeDatabaseError, "Failed to load rated genres")
@@ -80,10 +80,10 @@ func (s *SQLRecommendationStore) RatedGenres(ctx context.Context, userID int) ([
 
 func (s *SQLRecommendationStore) WatchedGenres(ctx context.Context, userID int) ([]string, error) {
 	rows, err := s.db.QueryContext(ctx, `
-		SELECT genre FROM movies WHERE user_id = ? AND deleted_at IS NULL
+		SELECT genre FROM movies WHERE user_id = ? AND deleted_at IS NULL AND duplicate_of IS NULL
 		  AND (status = 'watched' OR first_watched_at IS NOT NULL)
 		UNION ALL
-		SELECT genre FROM shows WHERE user_id = ? AND deleted_at IS NULL
+		SELECT genre FROM shows WHERE user_id = ? AND deleted_at IS NULL AND duplicate_of IS NULL
 		  AND (status = 'watched' OR first_watched_at IS NOT NULL)`,
 		userID, userID)
 	if err != nil {
@@ -108,14 +108,14 @@ func (s *SQLRecommendationStore) Candidates(ctx context.Context, userID int) ([]
 		       (w.id IS NOT NULL) AS on_watchlist
 		FROM movies m
 		LEFT JOIN watchlist w ON w.item_type = 'movie' AND w.item_id = m.id AND w.user_id = ?
-		WHERE m.user_id = ? AND m.deleted_at IS NULL
+		WHERE m.user_id = ? AND m.deleted_at IS NULL AND m.duplicate_of IS NULL
 		  AND (m.status = 'pending' OR m.first_watched_at IS NULL)
 		UNION ALL
 		SELECT 'show', s.id, s.title, s.jellyfin_id, s.genre, s.created_at,
 		       (w.id IS NOT NULL) AS on_watchlist
 		FROM shows s
 		LEFT JOIN watchlist w ON w.item_type = 'show' AND w.item_id = s.id AND w.user_id = ?
-		WHERE s.user_id = ? AND s.deleted_at IS NULL
+		WHERE s.user_id = ? AND s.deleted_at IS NULL AND s.duplicate_of IS NULL
 		  AND (s.status = 'pending' OR s.first_watched_at IS NULL)`,
 		userID, userID, userID, userID)
 	if err != nil {

@@ -44,7 +44,7 @@ func (s *SQLArchiveStore) removed(ctx context.Context, userID int, itemType, tab
 	rows, err := s.db.QueryContext(ctx,
 		`SELECT id, jellyfin_id, title, year, status, total_watch_time_minutes, `+countCol+`, archived_at
 		 FROM `+table+`
-		 WHERE user_id = ? AND deleted_from_jellyfin = 1 AND deleted_at IS NULL
+		 WHERE user_id = ? AND deleted_from_jellyfin = 1 AND deleted_at IS NULL AND duplicate_of IS NULL
 		 ORDER BY archived_at DESC, id DESC`,
 		userID)
 	if err != nil {

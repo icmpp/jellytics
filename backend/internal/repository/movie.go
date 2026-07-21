@@ -87,7 +87,7 @@ func NewSQLMovieStore(db *sql.DB) *SQLMovieStore {
 }
 
 func (s *SQLMovieStore) List(ctx context.Context, userID int, filter MovieListFilter) ([]*models.Movie, int, error) {
-	baseWhere := "WHERE user_id = ? AND deleted_at IS NULL"
+	baseWhere := "WHERE user_id = ? AND deleted_at IS NULL AND duplicate_of IS NULL"
 	args := []interface{}{userID}
 	countArgs := []interface{}{userID}
 	buildFilters(&args, &countArgs, filter, false)
@@ -222,7 +222,7 @@ func (s *SQLMovieStore) StatusCounts(ctx context.Context, userID int, filter Mov
 	dummyCountArgs := []interface{}{userID}
 	buildFilters(&args, &dummyCountArgs, countFilter, false)
 
-	query := `SELECT status, COUNT(*) FROM movies WHERE user_id = ? AND deleted_at IS NULL` +
+	query := `SELECT status, COUNT(*) FROM movies WHERE user_id = ? AND deleted_at IS NULL AND duplicate_of IS NULL` +
 		buildFilterClause(countFilter, false) +
 		` GROUP BY status`
 

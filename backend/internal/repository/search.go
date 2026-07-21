@@ -29,7 +29,7 @@ func (s *SQLSearchStore) Shows(ctx context.Context, userID int, pattern string) 
 	rows, err := s.db.QueryContext(ctx,
 		`SELECT id, jellyfin_id, title, year, status
 		 FROM shows
-		 WHERE user_id = ? AND deleted_at IS NULL AND title LIKE ?
+		 WHERE user_id = ? AND deleted_at IS NULL AND duplicate_of IS NULL AND title LIKE ?
 		 ORDER BY COALESCE(last_watched_at, created_at) DESC
 		 LIMIT 5`,
 		userID, pattern)
@@ -58,7 +58,7 @@ func (s *SQLSearchStore) Movies(ctx context.Context, userID int, pattern string)
 	rows, err := s.db.QueryContext(ctx,
 		`SELECT id, jellyfin_id, title, year, status
 		 FROM movies
-		 WHERE user_id = ? AND deleted_at IS NULL AND title LIKE ?
+		 WHERE user_id = ? AND deleted_at IS NULL AND duplicate_of IS NULL AND title LIKE ?
 		 ORDER BY COALESCE(last_watched_at, created_at) DESC
 		 LIMIT 5`,
 		userID, pattern)
@@ -88,7 +88,7 @@ func (s *SQLSearchStore) Episodes(ctx context.Context, userID int, pattern strin
 		`SELECT e.id, e.show_id, s.jellyfin_id, s.title, e.title, e.season_number, e.episode_number, e.watched
 		 FROM episodes e
 		 JOIN shows s ON e.show_id = s.id
-		 WHERE s.user_id = ? AND s.deleted_at IS NULL AND e.title LIKE ?
+		 WHERE s.user_id = ? AND s.deleted_at IS NULL AND s.duplicate_of IS NULL AND e.title LIKE ?
 		 ORDER BY e.watched_at DESC
 		 LIMIT 5`,
 		userID, pattern)
